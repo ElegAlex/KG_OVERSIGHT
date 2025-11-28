@@ -47,6 +47,7 @@ interface GraphCanvasProps {
 interface ExtendedNodeAttributes extends SigmaNodeAttributes {
   originalColor?: string;
   originalSize?: number;
+  originalLabel?: string;
   kqiStatus?: 'good' | 'warning' | 'critical' | null;
   kqiAlertCount?: number;
 }
@@ -141,8 +142,10 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       graph.forEachNode((n) => {
         const originalColor = graph.getNodeAttribute(n, 'originalColor');
         const originalSize = graph.getNodeAttribute(n, 'originalSize');
+        const originalLabel = graph.getNodeAttribute(n, 'originalLabel');
         if (originalColor) graph.setNodeAttribute(n, 'color', originalColor);
         if (originalSize) graph.setNodeAttribute(n, 'size', originalSize);
+        if (originalLabel !== undefined) graph.setNodeAttribute(n, 'label', originalLabel);
       });
       graph.forEachEdge((e) => {
         graph.setEdgeAttribute(e, 'hidden', false);
@@ -159,17 +162,20 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       graph.forEachNode((n) => {
         const currentColor = graph.getNodeAttribute(n, 'color');
         const currentSize = graph.getNodeAttribute(n, 'size');
+        const currentLabel = graph.getNodeAttribute(n, 'label');
 
         // Sauvegarder les valeurs originales
         if (!graph.getNodeAttribute(n, 'originalColor')) {
           graph.setNodeAttribute(n, 'originalColor', currentColor);
           graph.setNodeAttribute(n, 'originalSize', currentSize);
+          graph.setNodeAttribute(n, 'originalLabel', currentLabel);
         }
 
         if (!neighbors.has(n)) {
-          // Dimmer : couleur grise foncée adaptée au thème sombre
+          // Dimmer : couleur grise foncée et masquer le label
           graph.setNodeAttribute(n, 'color', '#334155'); // slate-700
           graph.setNodeAttribute(n, 'size', (currentSize ?? 10) * 0.7);
+          graph.setNodeAttribute(n, 'label', ''); // Masquer le label
         } else if (n === nodeId) {
           // Nœud survolé : agrandir
           graph.setNodeAttribute(n, 'size', (currentSize ?? 10) * 1.3);
