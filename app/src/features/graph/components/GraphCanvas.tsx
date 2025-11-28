@@ -239,14 +239,10 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
         const res = { ...data };
         const nodeType = data.nodeType;
 
-        // Toujours afficher le label pour :
-        // 1. Nœuds sélectionnés
-        // 2. Nœud survolé
-        // 3. Études cliniques (hub central)
-        // 4. Nœuds mis en évidence
+        // Forcer le label pour les nœuds sélectionnés, études et highlights
+        // (PAS pour le hover - le tooltip suffit)
         if (
           selectedNodeIdsRef.current.has(node) ||
-          node === hoveredNodeIdRef.current ||
           nodeType === 'EtudeClinique' ||
           data.highlighted
         ) {
