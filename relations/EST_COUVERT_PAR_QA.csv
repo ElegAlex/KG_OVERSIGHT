@@ -1,0 +1,6 @@
+from,to,date_lien,validite
+ST-001,QA-001,2024-01-15,Active
+ST-001,QA-001-v2,2022-03-01,Archivée
+ST-002,QA-002,2023-09-01,Active
+ST-003,QA-003,2022-01-15,Active
+ST-004,QA-004,2024-02-01,Active

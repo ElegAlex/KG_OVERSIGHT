@@ -1,0 +1,4 @@
+id,nom,statut,criticite,date_debut,date_fin,autorite,type_inspection,resultat,nb_observations,nb_critiques,source_donnees
+INS-2023-001,Inspection ANSM - Alpha Clinical,Clôturé,,2023-09-18,2023-09-22,ANSM,Routine,Conforme,2,,Système Inspection
+INS-2024-001,Inspection EMA - Delta Logistics,Clôturé,Critique,2024-07-08,2024-07-12,EMA,For Cause,Non conforme,5,1,Système Inspection
+INS-2024-002,Inspection FDA - Beta Lab,Planifié,Majeur,2025-01-20,2025-01-24,FDA,Pre-Approval,,,,Système Inspection

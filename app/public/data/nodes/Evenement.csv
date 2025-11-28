@@ -1,0 +1,6 @@
+id,description,statut,criticite,date_creation,date_cloture,type_evenement,source,impact,source_donnees
+EVT-2024-001,Nouvelle exigence ICH E6 R3 - Oversight renforcé,Actif,Critique,2024-01-15,,Réglementaire,ICH,Révision processus supervision ST,Veille Réglementaire
+EVT-2024-002,Demande audit IT list - Conformité Annex 11,Clôturé,Majeur,2024-03-01,2024-06-30,Demande interne,Direction IT,Mise en conformité systèmes,Demandes internes
+EVT-2024-003,Nouveau KQI température - Exigence client,Actif,Standard,2024-05-10,,Demande client,Pharma Corp,,Demandes clients
+EVT-2024-004,Extension périmètre Beta Lab - Immunologie,En cours,Majeur,2024-09-15,,Demande opérationnelle,,,Demandes opérationnelles
+EVT-2025-001,Préparation inspection FDA - Beta Lab,Planifié,Critique,2025-01-05,,Préparation réglementaire,,,Planification

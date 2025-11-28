@@ -1,0 +1,4 @@
+id,nom,statut,criticite,date_application,reference,impact,source_donnees
+CTX-001,ICH E6 R3 - GCP Guidelines 2024,Applicable,Critique,2025-07-23,ICH E6(R3),Révision majeure oversight,Veille Réglementaire
+CTX-002,EU CTR 536/2014 - Règlement Essais Cliniques,Applicable,,2022-01-31,EU 536/2014,,Veille Réglementaire
+CTX-003,Annex 11 - Computerized Systems,Applicable,,2011-06-30,EU GMP Annex 11,,Veille Réglementaire

@@ -1,0 +1,9 @@
+id,description,statut,criticite,date_detection,date_cloture,capa_id,concerne_st2,source_donnees
+FND-2022-001-01,Procédure de formation non à jour,Clôturé,Mineur,2022-05-15,2022-07-15,CAPA-2022-012,,GED Qualité
+FND-2022-001-02,Délai notification des événements >24h,Clôturé,Observation,2022-05-15,2022-06-30,,,GED Qualité
+FND-2024-001-01,Non-respect de la chaîne du froid - 3 excursions,Clôturé,Critique,2024-04-05,2024-06-15,CAPA-2024-008,,GED Qualité
+FND-2024-001-02,Calibration des sondes température retardée,Clôturé,Majeur,2024-04-05,2024-05-30,CAPA-2024-009,,GED Qualité
+FND-2024-001-03,Documentation du transporteur ST2 incomplète,En cours,Majeur,2024-04-05,2024-12-31,,ST-008,GED Qualité
+FND-INS-2023-01,Archivage électronique - Audit trail incomplet,Clôturé,Mineur,2023-09-22,2023-12-15,,,GED Qualité
+FND-INS-2023-02,Formation GCP - Refresh à planifier,Clôturé,Observation,2023-09-22,2023-11-30,,,GED Qualité
+FND-INS-2024-01,Gestion température transport - Défaillance systémique,En cours,Critique,2024-07-12,2025-01-31,CAPA-2024-015,,GED Qualité

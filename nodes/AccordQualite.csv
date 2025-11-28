@@ -1,0 +1,6 @@
+id,nom,statut,date_debut,date_fin,version,revision_en_cours,source_donnees
+QA-001,Quality Agreement - Alpha Clinical v3,Signé,2024-01-15,2027-01-14,3,false,GED QA
+QA-001-v2,Quality Agreement - Alpha Clinical v2 - Archivé,Archivé,2022-03-01,2024-01-14,2,false,GED QA
+QA-002,Quality Agreement - Beta Lab v2,Signé,2023-09-01,2026-08-31,2,false,GED QA
+QA-003,Quality Agreement - Gamma v1,Signé,2022-01-15,2025-01-14,1,false,GED QA
+QA-004,Quality Agreement - Delta v2,En révision,2024-02-01,2027-01-31,2,true,GED QA

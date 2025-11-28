@@ -1,0 +1,265 @@
+id,sous_traitant_id,sous_traitant_nom,indicateur,periode,valeur,seuil_alerte,seuil_objectif,statut,tendance
+KQI-001,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2023-Q1,94,90,95,À surveiller,→ Stable
+KQI-002,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2023-Q2,95,90,95,Conforme,↑ Amélioration
+KQI-003,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2023-Q3,96,90,95,Conforme,↑ Amélioration
+KQI-004,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2023-Q4,94,90,95,À surveiller,↓ Dégradation
+KQI-005,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2024-Q1,97,90,95,Conforme,↑ Amélioration
+KQI-006,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2024-Q2,96,90,95,Conforme,↓ Dégradation
+KQI-007,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2024-Q3,98,90,95,Conforme,↑ Amélioration
+KQI-008,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2024-Q4,97,90,95,Conforme,↓ Dégradation
+KQI-009,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2025-Q1,98,90,95,Conforme,↑ Amélioration
+KQI-010,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2025-Q2,97,90,95,Conforme,↓ Dégradation
+KQI-011,ST-001,CRO Alpha Clinical Services,Taux conformité documentaire,2025-Q3,98,90,95,Conforme,↑ Amélioration
+KQI-012,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2023-Q1,12,15,10,À surveiller,→ Stable
+KQI-013,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2023-Q2,11,15,10,À surveiller,↑ Amélioration
+KQI-014,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2023-Q3,10,15,10,Conforme,↑ Amélioration
+KQI-015,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2023-Q4,11,15,10,À surveiller,↓ Dégradation
+KQI-016,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2024-Q1,9,15,10,Conforme,↑ Amélioration
+KQI-017,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2024-Q2,10,15,10,Conforme,↓ Dégradation
+KQI-018,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2024-Q3,8,15,10,Conforme,↑ Amélioration
+KQI-019,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2024-Q4,9,15,10,Conforme,↓ Dégradation
+KQI-020,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2025-Q1,8,15,10,Conforme,↑ Amélioration
+KQI-021,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2025-Q2,9,15,10,Conforme,↓ Dégradation
+KQI-022,ST-001,CRO Alpha Clinical Services,Délai livraison rapports,2025-Q3,8,15,10,Conforme,↑ Amélioration
+KQI-023,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2023-Q1,88,85,92,À surveiller,→ Stable
+KQI-024,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2023-Q2,89,85,92,À surveiller,↑ Amélioration
+KQI-025,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2023-Q3,91,85,92,À surveiller,↑ Amélioration
+KQI-026,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2023-Q4,87,85,92,À surveiller,↓ Dégradation
+KQI-027,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2024-Q1,93,85,92,Conforme,↑ Amélioration
+KQI-028,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2024-Q2,91,85,92,À surveiller,↓ Dégradation
+KQI-029,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2024-Q3,94,85,92,Conforme,↑ Amélioration
+KQI-030,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2024-Q4,92,85,92,Conforme,↓ Dégradation
+KQI-031,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2025-Q1,95,85,92,Conforme,↑ Amélioration
+KQI-032,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2025-Q2,94,85,92,Conforme,↓ Dégradation
+KQI-033,ST-001,CRO Alpha Clinical Services,Taux de queries résolus J+5,2025-Q3,96,85,92,Conforme,↑ Amélioration
+KQI-034,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2023-Q1,97,95,98,À surveiller,→ Stable
+KQI-035,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2023-Q2,98,95,98,Conforme,↑ Amélioration
+KQI-036,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2023-Q3,96,95,98,À surveiller,↓ Dégradation
+KQI-037,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2023-Q4,94,95,98,ALERTE,↓ Dégradation
+KQI-038,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2024-Q1,92,95,98,ALERTE,↓ Dégradation
+KQI-039,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2024-Q2,95,95,98,À surveiller,↑ Amélioration
+KQI-040,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2024-Q3,97,95,98,À surveiller,↑ Amélioration
+KQI-041,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2024-Q4,98,95,98,Conforme,↑ Amélioration
+KQI-042,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2025-Q1,98,95,98,Conforme,→ Stable
+KQI-043,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2025-Q2,99,95,98,Conforme,↑ Amélioration
+KQI-044,ST-002,Beta Bioanalytics Lab,Taux conformité méthodes,2025-Q3,98,95,98,Conforme,↓ Dégradation
+KQI-045,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2023-Q1,20,25,18,À surveiller,→ Stable
+KQI-046,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2023-Q2,19,25,18,À surveiller,↑ Amélioration
+KQI-047,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2023-Q3,21,25,18,À surveiller,↓ Dégradation
+KQI-048,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2023-Q4,24,25,18,À surveiller,↓ Dégradation
+KQI-049,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2024-Q1,28,25,18,ALERTE,↓ Dégradation
+KQI-050,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2024-Q2,22,25,18,À surveiller,↑ Amélioration
+KQI-051,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2024-Q3,19,25,18,À surveiller,↑ Amélioration
+KQI-052,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2024-Q4,18,25,18,Conforme,↑ Amélioration
+KQI-053,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2025-Q1,17,25,18,Conforme,↑ Amélioration
+KQI-054,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2025-Q2,18,25,18,Conforme,↓ Dégradation
+KQI-055,ST-002,Beta Bioanalytics Lab,Délai résultats bioanalyse,2025-Q3,17,25,18,Conforme,↑ Amélioration
+KQI-056,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2023-Q1,99,98,99,Conforme,→ Stable
+KQI-057,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2023-Q2,99,98,99,Conforme,→ Stable
+KQI-058,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2023-Q3,98,98,99,À surveiller,↓ Dégradation
+KQI-059,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2023-Q4,97,98,99,ALERTE,↓ Dégradation
+KQI-060,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2024-Q1,96,98,99,ALERTE,↓ Dégradation
+KQI-061,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2024-Q2,98,98,99,À surveiller,↑ Amélioration
+KQI-062,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2024-Q3,99,98,99,Conforme,↑ Amélioration
+KQI-063,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2024-Q4,99,98,99,Conforme,→ Stable
+KQI-064,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2025-Q1,99,98,99,Conforme,→ Stable
+KQI-065,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2025-Q2,99,98,99,Conforme,→ Stable
+KQI-066,ST-002,Beta Bioanalytics Lab,Taux échantillons valides,2025-Q3,99,98,99,Conforme,→ Stable
+KQI-067,ST-003,Gamma Data Management,Taux erreur saisie CRF,2023-Q1,2,3,1.5,À surveiller,→ Stable
+KQI-068,ST-003,Gamma Data Management,Taux erreur saisie CRF,2023-Q2,1.8,3,1.5,À surveiller,↑ Amélioration
+KQI-069,ST-003,Gamma Data Management,Taux erreur saisie CRF,2023-Q3,2.2,3,1.5,À surveiller,↓ Dégradation
+KQI-070,ST-003,Gamma Data Management,Taux erreur saisie CRF,2023-Q4,2.8,3,1.5,À surveiller,↓ Dégradation
+KQI-071,ST-003,Gamma Data Management,Taux erreur saisie CRF,2024-Q1,3.5,3,1.5,ALERTE,↓ Dégradation
+KQI-072,ST-003,Gamma Data Management,Taux erreur saisie CRF,2024-Q2,2.5,3,1.5,À surveiller,↑ Amélioration
+KQI-073,ST-003,Gamma Data Management,Taux erreur saisie CRF,2024-Q3,1.9,3,1.5,À surveiller,↑ Amélioration
+KQI-074,ST-003,Gamma Data Management,Taux erreur saisie CRF,2024-Q4,1.6,3,1.5,À surveiller,↑ Amélioration
+KQI-075,ST-003,Gamma Data Management,Taux erreur saisie CRF,2025-Q1,1.4,3,1.5,Conforme,↑ Amélioration
+KQI-076,ST-003,Gamma Data Management,Taux erreur saisie CRF,2025-Q2,1.5,3,1.5,Conforme,↓ Dégradation
+KQI-077,ST-003,Gamma Data Management,Taux erreur saisie CRF,2025-Q3,1.3,3,1.5,Conforme,↑ Amélioration
+KQI-078,ST-003,Gamma Data Management,Délai database lock,2023-Q1,5,7,4,À surveiller,→ Stable
+KQI-079,ST-003,Gamma Data Management,Délai database lock,2023-Q2,4,7,4,Conforme,↑ Amélioration
+KQI-080,ST-003,Gamma Data Management,Délai database lock,2023-Q3,5,7,4,À surveiller,↓ Dégradation
+KQI-081,ST-003,Gamma Data Management,Délai database lock,2023-Q4,6,7,4,À surveiller,↓ Dégradation
+KQI-082,ST-003,Gamma Data Management,Délai database lock,2024-Q1,9,7,4,ALERTE,↓ Dégradation
+KQI-083,ST-003,Gamma Data Management,Délai database lock,2024-Q2,6,7,4,À surveiller,↑ Amélioration
+KQI-084,ST-003,Gamma Data Management,Délai database lock,2024-Q3,5,7,4,À surveiller,↑ Amélioration
+KQI-085,ST-003,Gamma Data Management,Délai database lock,2024-Q4,4,7,4,Conforme,↑ Amélioration
+KQI-086,ST-003,Gamma Data Management,Délai database lock,2025-Q1,4,7,4,Conforme,→ Stable
+KQI-087,ST-003,Gamma Data Management,Délai database lock,2025-Q2,3,7,4,Conforme,↑ Amélioration
+KQI-088,ST-003,Gamma Data Management,Délai database lock,2025-Q3,4,7,4,Conforme,↓ Dégradation
+KQI-089,ST-003,Gamma Data Management,Disponibilité système,2023-Q1,99.5,99,99.5,Conforme,→ Stable
+KQI-090,ST-003,Gamma Data Management,Disponibilité système,2023-Q2,99.6,99,99.5,Conforme,↑ Amélioration
+KQI-091,ST-003,Gamma Data Management,Disponibilité système,2023-Q3,99.3,99,99.5,À surveiller,↓ Dégradation
+KQI-092,ST-003,Gamma Data Management,Disponibilité système,2023-Q4,99.1,99,99.5,À surveiller,↓ Dégradation
+KQI-093,ST-003,Gamma Data Management,Disponibilité système,2024-Q1,98.8,99,99.5,ALERTE,↓ Dégradation
+KQI-094,ST-003,Gamma Data Management,Disponibilité système,2024-Q2,99.2,99,99.5,À surveiller,↑ Amélioration
+KQI-095,ST-003,Gamma Data Management,Disponibilité système,2024-Q3,99.5,99,99.5,Conforme,↑ Amélioration
+KQI-096,ST-003,Gamma Data Management,Disponibilité système,2024-Q4,99.7,99,99.5,Conforme,↑ Amélioration
+KQI-097,ST-003,Gamma Data Management,Disponibilité système,2025-Q1,99.8,99,99.5,Conforme,↑ Amélioration
+KQI-098,ST-003,Gamma Data Management,Disponibilité système,2025-Q2,99.7,99,99.5,Conforme,↓ Dégradation
+KQI-099,ST-003,Gamma Data Management,Disponibilité système,2025-Q3,99.8,99,99.5,Conforme,↑ Amélioration
+KQI-100,ST-004,Delta Clinical Logistics,Taux livraison temps,2023-Q1,98,95,98,Conforme,→ Stable
+KQI-101,ST-004,Delta Clinical Logistics,Taux livraison temps,2023-Q2,99,95,98,Conforme,↑ Amélioration
+KQI-102,ST-004,Delta Clinical Logistics,Taux livraison temps,2023-Q3,97,95,98,À surveiller,↓ Dégradation
+KQI-103,ST-004,Delta Clinical Logistics,Taux livraison temps,2023-Q4,85,95,98,ALERTE,↓ Dégradation
+KQI-104,ST-004,Delta Clinical Logistics,Taux livraison temps,2024-Q1,78,95,98,ALERTE,↓ Dégradation
+KQI-105,ST-004,Delta Clinical Logistics,Taux livraison temps,2024-Q2,88,95,98,ALERTE,↑ Amélioration
+KQI-106,ST-004,Delta Clinical Logistics,Taux livraison temps,2024-Q3,94,95,98,ALERTE,↑ Amélioration
+KQI-107,ST-004,Delta Clinical Logistics,Taux livraison temps,2024-Q4,97,95,98,À surveiller,↑ Amélioration
+KQI-108,ST-004,Delta Clinical Logistics,Taux livraison temps,2025-Q1,98,95,98,Conforme,↑ Amélioration
+KQI-109,ST-004,Delta Clinical Logistics,Taux livraison temps,2025-Q2,97,95,98,À surveiller,↓ Dégradation
+KQI-110,ST-004,Delta Clinical Logistics,Taux livraison temps,2025-Q3,98,95,98,Conforme,↑ Amélioration
+KQI-111,ST-004,Delta Clinical Logistics,Excursions température,2023-Q1,0,2,0,Conforme,→ Stable
+KQI-112,ST-004,Delta Clinical Logistics,Excursions température,2023-Q2,0,2,0,Conforme,→ Stable
+KQI-113,ST-004,Delta Clinical Logistics,Excursions température,2023-Q3,1,2,0,À surveiller,↓ Dégradation
+KQI-114,ST-004,Delta Clinical Logistics,Excursions température,2023-Q4,5,2,0,ALERTE,↓ Dégradation
+KQI-115,ST-004,Delta Clinical Logistics,Excursions température,2024-Q1,3,2,0,ALERTE,↑ Amélioration
+KQI-116,ST-004,Delta Clinical Logistics,Excursions température,2024-Q2,1,2,0,À surveiller,↑ Amélioration
+KQI-117,ST-004,Delta Clinical Logistics,Excursions température,2024-Q3,0,2,0,Conforme,↑ Amélioration
+KQI-118,ST-004,Delta Clinical Logistics,Excursions température,2024-Q4,0,2,0,Conforme,→ Stable
+KQI-119,ST-004,Delta Clinical Logistics,Excursions température,2025-Q1,0,2,0,Conforme,→ Stable
+KQI-120,ST-004,Delta Clinical Logistics,Excursions température,2025-Q2,0,2,0,Conforme,→ Stable
+KQI-121,ST-004,Delta Clinical Logistics,Excursions température,2025-Q3,0,2,0,Conforme,→ Stable
+KQI-122,ST-004,Delta Clinical Logistics,Taux conformité documentation,2023-Q1,95,90,95,Conforme,→ Stable
+KQI-123,ST-004,Delta Clinical Logistics,Taux conformité documentation,2023-Q2,96,90,95,Conforme,↑ Amélioration
+KQI-124,ST-004,Delta Clinical Logistics,Taux conformité documentation,2023-Q3,94,90,95,À surveiller,↓ Dégradation
+KQI-125,ST-004,Delta Clinical Logistics,Taux conformité documentation,2023-Q4,78,90,95,ALERTE,↓ Dégradation
+KQI-126,ST-004,Delta Clinical Logistics,Taux conformité documentation,2024-Q1,82,90,95,ALERTE,↑ Amélioration
+KQI-127,ST-004,Delta Clinical Logistics,Taux conformité documentation,2024-Q2,89,90,95,ALERTE,↑ Amélioration
+KQI-128,ST-004,Delta Clinical Logistics,Taux conformité documentation,2024-Q3,93,90,95,À surveiller,↑ Amélioration
+KQI-129,ST-004,Delta Clinical Logistics,Taux conformité documentation,2024-Q4,95,90,95,Conforme,↑ Amélioration
+KQI-130,ST-004,Delta Clinical Logistics,Taux conformité documentation,2025-Q1,96,90,95,Conforme,↑ Amélioration
+KQI-131,ST-004,Delta Clinical Logistics,Taux conformité documentation,2025-Q2,97,90,95,Conforme,↑ Amélioration
+KQI-132,ST-004,Delta Clinical Logistics,Taux conformité documentation,2025-Q3,97,90,95,Conforme,→ Stable
+KQI-133,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-134,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-135,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-136,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2023-Q4,2,1,0,ALERTE,→ Stable
+KQI-137,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-138,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-139,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-140,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-141,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-142,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-143,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'inspection,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-144,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-145,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2023-Q2,1,1,0,ALERTE,→ Stable
+KQI-146,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-147,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-148,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-149,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-150,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-151,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-152,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-153,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-154,ST-001,CRO Alpha Clinical Services,Nombre de findings critiques d'audit,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-155,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-156,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-157,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2023-Q3,1,1,0,ALERTE,→ Stable
+KQI-158,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-159,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-160,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-161,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-162,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-163,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-164,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-165,ST-001,CRO Alpha Clinical Services,Nombre d'événement qualité critique,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-166,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-167,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-168,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-169,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-170,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-171,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-172,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-173,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-174,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-175,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-176,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'inspection,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-177,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-178,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-179,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-180,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-181,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-182,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-183,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-184,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-185,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-186,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-187,ST-002,Beta Bioanalytics Lab,Nombre de findings critiques d'audit,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-188,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-189,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-190,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-191,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-192,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-193,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-194,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2024-Q3,1,1,0,ALERTE,→ Stable
+KQI-195,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-196,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-197,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-198,ST-002,Beta Bioanalytics Lab,Nombre d'événement qualité critique,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-199,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-200,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-201,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-202,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-203,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-204,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-205,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-206,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-207,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-208,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-209,ST-003,Gamma Data Management,Nombre de findings critiques d'inspection,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-210,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-211,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-212,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-213,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-214,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-215,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-216,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-217,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-218,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-219,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-220,ST-003,Gamma Data Management,Nombre de findings critiques d'audit,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-221,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-222,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-223,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-224,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-225,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-226,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2024-Q2,1,1,0,ALERTE,→ Stable
+KQI-227,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-228,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-229,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-230,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-231,ST-003,Gamma Data Management,Nombre d'événement qualité critique,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-232,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-233,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-234,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-235,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-236,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-237,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-238,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2024-Q3,1,1,0,ALERTE,→ Stable
+KQI-239,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-240,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-241,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-242,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'inspection,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-243,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-244,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-245,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-246,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-247,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2024-Q1,0,1,0,Conforme,→ Stable
+KQI-248,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2024-Q2,1,1,0,ALERTE,→ Stable
+KQI-249,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-250,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2024-Q4,0,1,0,Conforme,→ Stable
+KQI-251,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-252,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-253,ST-004,Delta Clinical Logistics,Nombre de findings critiques d'audit,2025-Q3,0,1,0,Conforme,→ Stable
+KQI-254,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2023-Q1,0,1,0,Conforme,→ Stable
+KQI-255,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2023-Q2,0,1,0,Conforme,→ Stable
+KQI-256,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2023-Q3,0,1,0,Conforme,→ Stable
+KQI-257,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2023-Q4,0,1,0,Conforme,→ Stable
+KQI-258,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2024-Q1,1,1,0,ALERTE,→ Stable
+KQI-259,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2024-Q2,0,1,0,Conforme,→ Stable
+KQI-260,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2024-Q3,0,1,0,Conforme,→ Stable
+KQI-261,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2024-Q4,1,1,0,ALERTE,→ Stable
+KQI-262,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2025-Q1,0,1,0,Conforme,→ Stable
+KQI-263,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2025-Q2,0,1,0,Conforme,→ Stable
+KQI-264,ST-004,Delta Clinical Logistics,Nombre d'événement qualité critique,2025-Q3,0,1,0,Conforme,→ Stable

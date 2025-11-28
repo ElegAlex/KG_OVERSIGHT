@@ -1,0 +1,6 @@
+from,to,date_lien,validite,impact
+EVT-2024-001,ST-001,2024-01-15,Active,Renforcement supervision
+EVT-2024-001,ST-004,2024-01-15,Active,Renforcement supervision
+EVT-2024-003,ST-004,2024-05-10,Active,Nouveau KQI
+EVT-2024-004,ST-002,2024-09-15,Active,Extension domaine
+EVT-2025-001,ST-002,2025-01-05,Active,Préparation inspection

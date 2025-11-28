@@ -1,0 +1,9 @@
+id,nom,statut,criticite,date_creation,type_service,pays,niveau_actuel,source_donnees
+ST-001,CRO Alpha Clinical Services,Approuvé,Critique,2020-03-15,CRO Full Service,France,1,Base ST
+ST-002,Beta Bioanalytics Lab,Approuvé,Majeur,2021-06-01,Laboratoire Bioanalyse,Belgique,1,Base ST
+ST-003,Gamma Data Management,Approuvé,Standard,2019-01-10,Data Management,France,1,Base ST
+ST-004,Delta Clinical Logistics,Sous surveillance,Critique,2022-02-20,Logistique Clinique,Pays-Bas,1,Base ST
+ST-005,Epsilon Medical Writing,Approuvé,Mineur,2023-04-01,Rédaction Médicale,UK,1,Base ST
+ST-006,Omega Sample Storage,Déclaré,Majeur,2022-08-15,Stockage Échantillons,France,2,Déclarations ST
+ST-007,Sigma IT Infrastructure,Déclaré,Standard,2021-09-01,Infrastructure IT,Irlande,2,Déclarations ST
+ST-008,Kappa Transport Solutions,En évaluation,Critique,2024-06-01,Transport Température Contrôlée,Allemagne,2,Déclarations ST

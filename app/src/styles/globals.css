@@ -1,0 +1,246 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   KG-Oversight - Styles globaux
+   ============================================================================= */
+
+/* Variables CSS pour le thème */
+:root {
+  /* Couleurs de base */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-primary: #3b82f6;
+  --color-primary-foreground: #f8fafc;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #1e293b;
+
+  /* Couleurs des nœuds du graphe */
+  --node-soustraitant: #8B5CF6;
+  --node-contrat: #6366F1;
+  --node-accordqualite: #3B82F6;
+  --node-audit: #10B981;
+  --node-inspection: #14B8A6;
+  --node-finding: #F59E0B;
+  --node-evenementqualite: #EF4444;
+  --node-decision: #F97316;
+  --node-evaluationrisque: #EC4899;
+  --node-reunionqualite: #06B6D4;
+  --node-etudeclinique: #22C55E;
+  --node-domaineservice: #A855F7;
+  --node-contextereglementaire: #64748B;
+  --node-alerte: #DC2626;
+  --node-evenement: #0EA5E9;
+  --node-kqi: #84CC16;
+
+  /* Criticités */
+  --criticite-critique: #DC2626;
+  --criticite-majeur: #F97316;
+  --criticite-standard: #3B82F6;
+  --criticite-mineur: #6B7280;
+
+  /* Risque */
+  --risque-low: #22C55E;
+  --risque-medium: #F59E0B;
+  --risque-high: #DC2626;
+}
+
+.dark {
+  --color-background: #0f172a;
+  --color-foreground: #f8fafc;
+  --color-card: #1e293b;
+  --color-card-foreground: #f8fafc;
+  --color-primary: #60a5fa;
+  --color-primary-foreground: #1e293b;
+  --color-muted: #334155;
+  --color-muted-foreground: #94a3b8;
+  --color-border: #334155;
+  --color-accent: #334155;
+  --color-accent-foreground: #f8fafc;
+}
+
+/* =============================================================================
+   Styles de base
+   ============================================================================= */
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* =============================================================================
+   Layout principal
+   ============================================================================= */
+
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 320px;
+  grid-template-areas:
+    "header header"
+    "main sidebar"
+    "timeline timeline";
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Layout v2 avec filtres à gauche et détails à droite */
+.app-layout-v2 {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "content"
+    "timeline";
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-content {
+  grid-area: content;
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  overflow: hidden;
+}
+
+.app-filters {
+  overflow-y: auto;
+}
+
+.app-details {
+  overflow-y: auto;
+}
+
+.app-header {
+  grid-area: header;
+}
+
+.app-main {
+  overflow: hidden;
+  position: relative;
+}
+
+.app-sidebar {
+  grid-area: sidebar;
+  overflow-y: auto;
+}
+
+.app-timeline {
+  grid-area: timeline;
+  height: 160px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* =============================================================================
+   Graphe Sigma.js
+   ============================================================================= */
+
+.sigma-container {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-background);
+}
+
+.sigma-container canvas {
+  outline: none;
+}
+
+/* Tooltip du graphe */
+.graph-tooltip {
+  position: absolute;
+  z-index: 50;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  max-width: 300px;
+}
+
+/* =============================================================================
+   Timeline vis-timeline
+   ============================================================================= */
+
+.vis-timeline {
+  border: none;
+  background-color: var(--color-background);
+}
+
+.vis-item {
+  border: none;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* =============================================================================
+   Dashboard ECharts
+   ============================================================================= */
+
+.echarts-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* =============================================================================
+   Utilitaires
+   ============================================================================= */
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-muted-foreground);
+  border-radius: 4px;
+  opacity: 0.3;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.5;
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Classes utilitaires personnalisées */
+.bg-background { background-color: var(--color-background); }
+.bg-card { background-color: var(--color-card); }
+.bg-muted { background-color: var(--color-muted); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-primary { background-color: var(--color-primary); }
+
+.text-foreground { color: var(--color-foreground); }
+.text-muted-foreground { color: var(--color-muted-foreground); }
+.text-card-foreground { color: var(--color-card-foreground); }
+.text-primary { color: var(--color-primary); }
+.text-primary-foreground { color: var(--color-primary-foreground); }
+
+.border-border { border-color: var(--color-border); }

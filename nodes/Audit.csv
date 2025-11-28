@@ -1,0 +1,7 @@
+id,nom,statut,criticite,date_debut,date_fin,type_audit,resultat,declencheur,source_donnees
+AUD-2022-001,Audit Qualification - Alpha Clinical,Clôturé,,2022-05-15,2022-05-18,Qualification,Satisfaisant,,Système Audit
+AUD-2023-001,Audit Routine - Alpha Clinical,Clôturé,,2023-06-10,2023-06-12,Routine,Satisfaisant,,Système Audit
+AUD-2023-002,Audit Routine - Beta Lab,Clôturé,,2023-03-20,2023-03-22,Routine,Satisfaisant avec observations,,Système Audit
+AUD-2024-001,Audit For Cause - Delta Logistics,Clôturé,Critique,2024-04-05,2024-04-08,For Cause,Non satisfaisant,QE-2024-001,Système Audit
+AUD-2024-002,Audit Routine - Alpha Clinical 2024,En cours,,2024-10-15,2024-10-18,Routine,,,Système Audit
+AUD-2025-001,Audit Remote - Gamma Data Mgmt,Planifié,,2025-02-15,2025-02-16,Remote,,,Système Audit

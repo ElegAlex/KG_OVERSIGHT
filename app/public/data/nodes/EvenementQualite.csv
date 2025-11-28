@@ -1,0 +1,6 @@
+id,description,statut,criticite,date_creation,date_cloture,impact,nb_echantillons_impactes,retard_jours,nb_erreurs,delai_detection_mois,source_donnees
+QE-2023-001,Déviation protocole - Visite patient hors fenêtre,Clôturé,Mineur,2023-07-12,2023-08-15,Faible,,,,,GED Qualité
+QE-2024-001,Excursion température transport échantillons,Clôturé,Critique,2024-03-18,2024-05-20,Élevé,45,,,,GED Qualité
+QE-2024-002,Retard livraison données CRF,Clôturé,Majeur,2024-05-20,2024-07-10,,,12,,,GED Qualité
+QE-2024-003,Erreur saisie données bioanalyse,En cours,Majeur,2024-09-05,,,,,8,,GED Qualité
+QE-2024-004,Non-déclaration sous-traitant niveau 2,En cours,Critique,2024-10-20,,,,,,4,GED Qualité

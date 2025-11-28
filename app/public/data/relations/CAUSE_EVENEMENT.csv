@@ -1,0 +1,4 @@
+from,to,date_lien,validite,impact
+CTX-001,EVT-2024-001,2024-01-15,Active,Révision processus oversight
+CTX-003,EVT-2024-002,2024-03-01,Active,Audit IT systèmes
+CTX-001,EVT-2025-001,2025-01-05,Active,Préparation inspection

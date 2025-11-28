@@ -1,0 +1,6 @@
+from,to,date_lien,validite
+ST-001,CTR-001,2020-03-15,Active
+ST-002,CTR-002,2021-06-01,Active
+ST-003,CTR-003,2022-01-01,Active
+ST-004,CTR-004,2024-01-01,Active
+ST-004,CTR-004-v1,2022-02-20,Archivée

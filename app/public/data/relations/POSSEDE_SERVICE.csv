@@ -1,0 +1,6 @@
+from,to,date_lien,validite,score_evaluation,en_reevaluation
+ST-001,DOM-002,2020-03-15,Active,92,false
+ST-002,DOM-001,2021-06-01,Active,88,false
+ST-002,DOM-005,2024-11-20,Active,,false
+ST-003,DOM-003,2022-01-10,Active,85,false
+ST-004,DOM-004,2022-02-20,Active,72,true

@@ -1,0 +1,5 @@
+id,nom,statut,criticite,date_debut,date_fin,phase,indication,nb_patients,source_donnees
+ETU-2023-001,ONCO-PHASE2-2023 - Étude oncologie phase II,Active,Critique,2023-01-15,2025-06-30,II,Oncologie,150,CTMS
+ETU-2023-002,CARDIO-PHASE3-2023 - Étude cardiovasculaire phase III,Active,Critique,2023-06-01,2026-12-31,III,Cardiovasculaire,450,CTMS
+ETU-2024-001,NEURO-PHASE1-2024 - Étude neurologie phase I,En démarrage,Majeur,2024-09-01,2026-03-31,I,Neurologie,48,CTMS
+ETU-2025-001,IMMUNO-PHASE2-2025 - Étude immunologie phase II,Planifiée,Majeur,2025-03-01,2027-09-30,II,Immunologie,200,CTMS

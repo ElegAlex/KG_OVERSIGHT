@@ -1,0 +1,9 @@
+id,nom,statut,criticite,date_reunion,trimestre,semestre,periodicite,motif,source_donnees
+QOM-2024-Q1-ST001,QOM Q1 2024 - Alpha Clinical,Réalisé,,2024-03-28,2024-Q1,,Trimestrielle,,Sharepoint
+QOM-2024-Q2-ST001,QOM Q2 2024 - Alpha Clinical,Réalisé,,2024-06-27,2024-Q2,,Trimestrielle,,Sharepoint
+QOM-2024-Q3-ST001,QOM Q3 2024 - Alpha Clinical,Réalisé,,2024-09-26,2024-Q3,,Trimestrielle,,Sharepoint
+QOM-2024-Q4-ST001,QOM Q4 2024 - Alpha Clinical,Planifié,,2024-12-19,2024-Q4,,Trimestrielle,,Sharepoint
+QOM-2024-Q1-ST004,QOM Q1 2024 - Delta Logistics,Réalisé,,2024-03-15,2024-Q1,,Trimestrielle,,Sharepoint
+QOM-2024-Q2-ST004,QOM Q2 2024 - Delta Logistics (Extraordinaire),Réalisé,Critique,2024-04-15,2024-Q2,,Extraordinaire,Suite audit for cause,Sharepoint
+QOM-2024-Q3-ST004,QOM Q3 2024 - Delta Logistics (Mensuelle),Réalisé,,2024-09-12,2024-Q3,,Mensuelle,Surveillance renforcée,Sharepoint
+QOM-2024-S2-ST002,QOM S2 2024 - Beta Lab,Réalisé,,2024-10-10,,2024-S2,Semestrielle,,Sharepoint

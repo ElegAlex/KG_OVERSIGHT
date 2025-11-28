@@ -1,0 +1,7 @@
+id,description,statut,criticite,date_decision,decideur,nature,duree_mois,source_donnees
+DEC-2022-001,Approbation Alpha Clinical post-audit qualification,Appliquée,,2022-08-15,Directeur Qualité,Approbation,,CR Réunions
+DEC-2024-001,Mise sous surveillance renforcée Delta,Appliquée,Critique,2024-06-01,Comité Qualité,Surveillance renforcée,12,CR Réunions
+DEC-2024-002,Audit For Cause Delta suite incident température,Appliquée,Critique,2024-03-25,Directeur Qualité,Audit For Cause,,CR Réunions
+DEC-2024-003,Évaluation ST2 Kappa Transport obligatoire,En cours,Critique,2024-11-01,Comité Qualité,Évaluation obligatoire ST2,,CR Réunions
+DEC-2024-004,Maintien collaboration Beta Lab avec plan amélioration,Appliquée,,2024-10-15,Directeur Opérations,Maintien conditionnel,,CR Réunions
+DEC-2024-005,Renforcement supervision Alpha suite évaluation,Appliquée,,2024-12-01,Comité Qualité,Ajustement supervision,,CR Réunions

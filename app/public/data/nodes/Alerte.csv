@@ -1,0 +1,4 @@
+id,description,statut,criticite,date_creation,date_resolution,niveau,regle_id,declencheur,st_concerne,source_donnees
+ALR-2024-001,ALERTE HAUTE - Risque qualité Delta Logistics,Résolue,Critique,2024-03-20,2024-09-30,HAUTE,RGL-001,QE-2024-001,,Moteur Inférence
+ALR-2024-002,ALERTE MOYENNE - KQI dégradé Gamma Data,Active,Majeur,2024-06-15,,MOYENNE,RGL-004,KQI dégradation 3 périodes,,Moteur Inférence
+ALR-2024-003,ALERTE HAUTE - ST2 critique non évalué,Active,Critique,2024-10-25,,HAUTE,RGL-003,QE-2024-004,ST-008,Moteur Inférence

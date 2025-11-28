@@ -1,0 +1,6 @@
+id,nom,statut,criticite,date_creation,categorie,complexite,source_donnees
+DOM-001,Bioanalyse - Analyses PK/PD,Actif,Majeur,2021-06-01,Laboratoire,Haute,Grille Qualification
+DOM-002,Monitoring clinique - Phase II/III,Actif,Critique,2020-03-15,CRO,Haute,Grille Qualification
+DOM-003,Data Management - EDC/CDMS,Actif,Standard,2022-01-10,IT/Data,Moyenne,Grille Qualification
+DOM-004,Logistique médicaments - Chaîne du froid,En réévaluation,Critique,2022-02-20,Logistique,Haute,Grille Qualification
+DOM-005,Immunologie - Biomarqueurs,Non évalué,Majeur,2024-11-20,Laboratoire,Très haute,Grille Qualification

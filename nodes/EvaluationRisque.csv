@@ -1,0 +1,7 @@
+id,description,statut,criticite,date_evaluation,score,evolution,findings_critiques,qe_critiques,kqi_alertes,inspection_recente,audit_for_cause,prochaine_evaluation,source_donnees
+EVA-2023-001,Évaluation annuelle Alpha Clinical 2023,Clôturé,,2023-11-15,Low,,0,0,1,false,false,2024-11-15,Base ST
+EVA-2023-002,Évaluation annuelle Beta Lab 2023,Clôturé,,2023-12-01,Low,,0,0,0,false,false,2024-12-01,Base ST
+EVA-2024-001,Évaluation annuelle Alpha Clinical 2024,Clôturé,,2024-11-15,Medium,Low→Medium,0,1,2,true,false,2025-11-15,Base ST
+EVA-2024-002,Évaluation annuelle Delta Logistics 2024,Clôturé,Critique,2024-06-15,High,Medium→High,1,1,5,false,true,2024-12-15,Base ST
+EVA-2024-003,Évaluation annuelle Gamma Data 2024,Clôturé,,2024-08-20,Low,,0,0,2,false,false,2025-08-20,Base ST
+EVA-2024-004,Réévaluation Delta Logistics Q4 2024,En cours,Critique,2024-12-01,Medium,High→Medium (en cours),0,0,1,false,false,,Base ST

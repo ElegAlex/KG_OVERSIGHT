@@ -1,0 +1,4 @@
+from,to,date_lien,validite,contexte_etudes
+ST-006,ST-002,2022-08-15,Active,"[""ETU-2023-001"", ""ETU-2023-002""]"
+ST-007,ST-003,2021-09-01,Active,"[""ETU-2024-001""]"
+ST-008,ST-004,2024-06-01,Active,"[""ETU-2023-002""]"

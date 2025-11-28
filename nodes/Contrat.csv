@@ -1,0 +1,6 @@
+id,nom,statut,date_debut,date_fin,type_contrat,montant_annuel,version,source_donnees
+CTR-001,Master Service Agreement - Alpha Clinical Services,Actif,2020-03-15,2025-03-14,MSA,2.5M€,,Base Contrats
+CTR-002,Contrat Bioanalyse - Beta Lab,Actif,2021-06-01,2026-05-31,Service Agreement,800K€,,Base Contrats
+CTR-003,Data Management Agreement - Gamma,Actif,2022-01-01,2027-12-31,Service Agreement,450K€,,Base Contrats
+CTR-004,Logistics Services - Delta (v2),Actif,2024-01-01,2026-12-31,Service Agreement,1.2M€,2,Base Contrats
+CTR-004-v1,Logistics Services - Delta (v1) - Archivé,Archivé,2022-02-20,2023-12-31,Service Agreement,,1,Base Contrats

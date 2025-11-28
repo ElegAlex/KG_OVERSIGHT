@@ -1,0 +1,13 @@
+from,to,date_lien,validite,niveau,role,via
+ETU-2023-001,ST-001,2023-01-15,Active,1,Gestion opérationnelle,
+ETU-2023-001,ST-002,2023-01-15,Active,1,Analyses bioanalytiques,
+ETU-2023-001,ST-004,2023-01-15,Active,1,Logistique,
+ETU-2023-001,ST-008,2023-06-01,Active,2,Transport frigorifique,ST-004
+ETU-2023-002,ST-001,2023-03-01,Active,1,Gestion opérationnelle,
+ETU-2023-002,ST-003,2023-03-01,Active,1,Data Management,
+ETU-2023-002,ST-004,2023-03-01,Active,1,Logistique,
+ETU-2023-002,ST-006,2023-04-01,Active,2,Stockage échantillons,ST-002
+ETU-2024-001,ST-001,2024-01-15,Active,1,Gestion opérationnelle,
+ETU-2024-001,ST-002,2024-01-15,Active,1,Analyses bioanalytiques,
+ETU-2024-001,ST-007,2024-02-01,Active,2,Infrastructure IT,ST-003
+ETU-2025-001,ST-002,2025-01-01,Active,1,Analyses immunologiques,
