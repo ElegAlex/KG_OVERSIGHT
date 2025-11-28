@@ -359,11 +359,15 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
   // Mettre à jour les couleurs Sigma quand le thème change
   useEffect(() => {
     const sigma = sigmaRef.current;
-    if (!sigma) return;
+    const container = containerRef.current;
+    if (!sigma || !container) return;
 
     // Mettre à jour les settings de couleur
     sigma.setSetting('labelColor', { color: themeColors.labelColor });
     sigma.setSetting('defaultEdgeColor', themeColors.defaultEdgeColor);
+
+    // Forcer un resize pour re-render complet du canvas
+    sigma.resize();
     sigma.refresh();
   }, [themeColors]);
 
