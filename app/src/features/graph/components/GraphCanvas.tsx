@@ -359,17 +359,18 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
   // Mettre à jour les couleurs Sigma quand le thème change
   useEffect(() => {
     const sigma = sigmaRef.current;
-    const container = containerRef.current;
-    if (!sigma || !container) return;
+    if (!sigma) return;
 
     // Mettre à jour les settings de couleur
     sigma.setSetting('labelColor', { color: themeColors.labelColor });
     sigma.setSetting('defaultEdgeColor', themeColors.defaultEdgeColor);
 
-    // Forcer un resize pour re-render complet du canvas
-    sigma.resize();
-    sigma.refresh();
-  }, [themeColors]);
+    // Forcer un re-render complet après un court délai (DOM doit être mis à jour)
+    requestAnimationFrame(() => {
+      sigma.resize();
+      sigma.refresh();
+    });
+  }, [theme, themeColors]);
 
   // Mise à jour des nœuds du graphe
   useEffect(() => {
