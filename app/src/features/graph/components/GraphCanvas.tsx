@@ -9,6 +9,7 @@ import Graph from 'graphology';
 import Sigma from 'sigma';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { themeAtom } from '@shared/stores/themeAtom';
 import {
   filteredNodesAtom,
   filteredEdgesAtom,
@@ -75,6 +76,14 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
   // État local
   const [isLayoutRunning, setIsLayoutRunning] = useState(false);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const theme = useAtomValue(themeAtom);
+
+  // Couleurs selon le thème
+  const themeColors = useMemo(() => ({
+    labelColor: theme === 'dark' ? '#f1f5f9' : '#1e293b',
+    dimmedNodeColor: theme === 'dark' ? '#334155' : '#cbd5e1',
+    defaultEdgeColor: theme === 'dark' ? '#475569' : '#94a3b8',
+  }), [theme]);
 
   // Calculer les agrégations KQI pour tous les ST
   const kqiAggregations = useMemo(() => {
@@ -172,8 +181,8 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
         }
 
         if (!neighbors.has(n)) {
-          // Dimmer : couleur grise foncée et masquer le label
-          graph.setNodeAttribute(n, 'color', '#334155'); // slate-700
+          // Dimmer : couleur adaptée au thème et masquer le label
+          graph.setNodeAttribute(n, 'color', themeColors.dimmedNodeColor);
           graph.setNodeAttribute(n, 'size', (currentSize ?? 10) * 0.7);
           graph.setNodeAttribute(n, 'label', ''); // Masquer le label
         } else if (n === nodeId) {
@@ -190,7 +199,7 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
     }
 
     sigma.refresh();
-  }, []);
+  }, [themeColors.dimmedNodeColor]);
 
   // Refs pour les valeurs courantes (évite les dépendances dans useEffect)
   const selectedNodeIdsRef = useRef(selectedNodeIds);
@@ -218,7 +227,7 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
     const graph = new Graph<ExtendedNodeAttributes, SigmaEdgeAttributes>();
     graphRef.current = graph;
 
-    // Créer l'instance Sigma avec settings améliorés pour thème sombre
+    // Créer l'instance Sigma avec settings améliorés
     const sigma = new Sigma(graph, containerRef.current, {
       // Rendu des labels - seuil dynamique selon zoom
       renderLabels: true,
@@ -227,11 +236,11 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       labelFont: 'Inter, system-ui, sans-serif',
       labelSize: 11,
       labelWeight: '500',
-      labelColor: { color: '#f1f5f9' }, // slate-100 pour thème sombre
+      labelColor: { color: '#f1f5f9' }, // Sera mis à jour par l'effet thème
 
-      // Couleurs par défaut adaptées au thème sombre
+      // Couleurs par défaut
       defaultNodeColor: '#6B7280',
-      defaultEdgeColor: '#475569', // slate-600
+      defaultEdgeColor: '#475569', // Sera mis à jour par l'effet thème
       defaultNodeType: 'circle',
 
       // Camera
@@ -362,6 +371,17 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
   useEffect(() => {
     sigmaRef.current?.refresh();
   }, [selectedNodeIds, hoveredNodeId]);
+
+  // Mettre à jour les couleurs Sigma quand le thème change
+  useEffect(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+
+    // Mettre à jour les settings de couleur
+    sigma.setSetting('labelColor', { color: themeColors.labelColor });
+    sigma.setSetting('defaultEdgeColor', themeColors.defaultEdgeColor);
+    sigma.refresh();
+  }, [themeColors]);
 
   // Mise à jour des nœuds du graphe
   useEffect(() => {

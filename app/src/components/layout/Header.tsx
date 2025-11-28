@@ -3,9 +3,11 @@
  * Design system inspiré Linear/Vercel
  */
 
-import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle } from 'lucide-react';
+import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon } from 'lucide-react';
+import { useAtom } from 'jotai';
 import { cn } from '@/lib/utils';
 import { statPillColors, type StatPillColor } from '@/styles/colors';
+import { themeAtom, type Theme } from '@shared/stores/themeAtom';
 import type { LucideIcon } from 'lucide-react';
 
 interface HeaderProps {
@@ -43,6 +45,30 @@ function StatPill({ icon: Icon, value, label, color, pulse }: StatPillProps) {
       <span className="text-sm font-medium tabular-nums">{value}</span>
       <span className="text-xs opacity-60">{label}</span>
     </div>
+  );
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = useAtom(themeAtom);
+
+  const toggleTheme = () => {
+    const newTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="btn-ghost p-2 rounded-lg"
+      title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+    >
+      {theme === 'dark' ? (
+        <Sun className="w-4 h-4" />
+      ) : (
+        <Moon className="w-4 h-4" />
+      )}
+    </button>
   );
 }
 
@@ -116,6 +142,7 @@ export function Header({
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          <ThemeToggle />
           <button
             className="btn-ghost p-2 rounded-lg"
             title="Paramètres"

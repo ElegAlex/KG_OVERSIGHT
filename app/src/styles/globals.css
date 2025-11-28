@@ -5,7 +5,7 @@
    Inspiration : Linear, Vercel Dashboard, Arc Browser
    ============================================================================= */
 
-/* Variables CSS pour le thème dark moderne */
+/* Variables CSS pour le thème */
 :root {
   /* Base colors - Dark theme by default */
   --color-background: #0f172a;
@@ -19,6 +19,31 @@
   --color-border: rgba(255, 255, 255, 0.1);
   --color-accent: #334155;
   --color-accent-foreground: #f8fafc;
+
+  /* Layout backgrounds */
+  --bg-app: linear-gradient(to bottom right, #020617, #0f172a, #020617);
+  --bg-sidebar: rgba(15, 23, 42, 0.8);
+  --bg-main: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+  --bg-timeline: rgba(15, 23, 42, 0.9);
+  --bg-glass: rgba(30, 41, 59, 0.5);
+  --bg-glass-darker: rgba(15, 23, 42, 0.8);
+  --bg-input: rgba(30, 41, 59, 0.5);
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-tooltip: rgba(30, 41, 59, 0.95);
+
+  /* Graph specific */
+  --graph-label-color: #f1f5f9;
+  --graph-dimmed-node: #334155;
+  --graph-pattern-dot: rgba(255, 255, 255, 0.03);
+  --graph-edge-color: rgba(148, 163, 184, 0.3);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(100, 116, 139, 0.4);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.6);
+
+  /* Glow */
+  --glow-primary: rgba(99, 102, 241, 0.5);
+  --glow-line: rgba(99, 102, 241, 0.3);
 
   /* Couleurs des nœuds du graphe */
   --node-soustraitant: #10b981;
@@ -51,6 +76,50 @@
 }
 
 /* =============================================================================
+   Light Theme
+   ============================================================================= */
+
+[data-theme="light"] {
+  /* Base colors - Light theme */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-primary: #4f46e5;
+  --color-primary-foreground: #ffffff;
+  --color-muted: #e2e8f0;
+  --color-muted-foreground: #64748b;
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+
+  /* Layout backgrounds */
+  --bg-app: linear-gradient(to bottom right, #f1f5f9, #ffffff, #f1f5f9);
+  --bg-sidebar: rgba(255, 255, 255, 0.9);
+  --bg-main: linear-gradient(to bottom right, #f8fafc, #ffffff, #f8fafc);
+  --bg-timeline: rgba(255, 255, 255, 0.95);
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-glass-darker: rgba(241, 245, 249, 0.9);
+  --bg-input: rgba(241, 245, 249, 0.8);
+  --bg-hover: rgba(0, 0, 0, 0.03);
+  --bg-tooltip: rgba(255, 255, 255, 0.98);
+
+  /* Graph specific */
+  --graph-label-color: #1e293b;
+  --graph-dimmed-node: #cbd5e1;
+  --graph-pattern-dot: rgba(0, 0, 0, 0.04);
+  --graph-edge-color: rgba(100, 116, 139, 0.3);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(100, 116, 139, 0.3);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.5);
+
+  /* Glow */
+  --glow-primary: rgba(79, 70, 229, 0.3);
+  --glow-line: rgba(79, 70, 229, 0.2);
+}
+
+/* =============================================================================
    Styles de base
    ============================================================================= */
 
@@ -59,11 +128,11 @@
 }
 
 html {
-  background-color: #0f172a;
+  background-color: var(--color-background);
 }
 
 body {
-  background: linear-gradient(to bottom right, #020617, #0f172a, #020617);
+  background: var(--bg-app);
   color: var(--color-foreground);
   font-family: Inter, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -71,6 +140,11 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] body {
+  background: var(--bg-app);
 }
 
 /* =============================================================================
@@ -87,7 +161,7 @@ body {
     "timeline";
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(to bottom right, #020617, #0f172a, #020617);
+  background: var(--bg-app);
 }
 
 .app-content {
@@ -99,25 +173,25 @@ body {
 
 .app-filters {
   overflow-y: auto;
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-sidebar);
   backdrop-filter: blur(24px);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid var(--color-border);
 }
 
 .app-details {
   overflow-y: auto;
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-sidebar);
   backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid var(--color-border);
 }
 
 .app-header {
   grid-area: header;
   position: relative;
   z-index: 50;
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-sidebar);
   backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* Ligne de glow subtile sous le header */
@@ -127,22 +201,22 @@ body {
   inset-inline: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(99, 102, 241, 0.5), transparent);
+  background: linear-gradient(to right, transparent, var(--glow-primary), transparent);
 }
 
 .app-main {
   overflow: hidden;
   position: relative;
-  background: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+  background: var(--bg-main);
 }
 
 .app-timeline {
   grid-area: timeline;
   height: 160px;
   position: relative;
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-timeline);
   backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--color-border);
 }
 
 /* Ligne de glow subtile en haut de la timeline */
@@ -152,7 +226,7 @@ body {
   inset-inline: 0;
   top: 0;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(99, 102, 241, 0.3), transparent);
+  background: linear-gradient(to right, transparent, var(--glow-line), transparent);
 }
 
 /* =============================================================================
@@ -171,7 +245,7 @@ body {
 
 /* Pattern dots subtil pour le fond du graphe */
 .graph-pattern-bg {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--graph-pattern-dot) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -181,15 +255,14 @@ body {
   z-index: 50;
   padding: 12px 16px;
   font-size: 13px;
-  background: rgba(30, 41, 59, 0.95);
+  background: var(--bg-tooltip);
   backdrop-filter: blur(12px);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 10px 15px -3px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 4px 6px -1px rgba(0, 0, 0, 0.15),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
   pointer-events: none;
   max-width: 320px;
 }
@@ -233,18 +306,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 /* =============================================================================
@@ -265,21 +338,21 @@ body {
    ============================================================================= */
 
 .glass {
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--bg-glass);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
 }
 
 .glass-darker {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-glass-darker);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--bg-glass);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
 }
 
@@ -411,22 +484,26 @@ body {
   width: 100%;
   padding: 0.625rem 1rem;
   padding-left: 2.5rem;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-input);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   font-size: 0.875rem;
-  color: #f8fafc;
+  color: var(--color-foreground);
   transition: all 0.2s;
 }
 
 .input-modern::placeholder {
-  color: #64748b;
+  color: var(--color-muted-foreground);
 }
 
 .input-modern:focus {
   outline: none;
-  border-color: rgba(99, 102, 241, 0.5);
+  border-color: var(--glow-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="light"] .input-modern:focus {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 /* =============================================================================
@@ -438,14 +515,14 @@ body {
   background: transparent;
   border: none;
   border-radius: 0.5rem;
-  color: #94a3b8;
+  color: var(--color-muted-foreground);
   transition: all 0.2s;
   cursor: pointer;
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #f8fafc;
+  background: var(--bg-hover);
+  color: var(--color-foreground);
 }
 
 .btn-ghost:active {
@@ -479,16 +556,15 @@ body {
    ============================================================================= */
 
 .card-modern {
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--bg-glass);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   transition: all 0.2s;
 }
 
 .card-modern:hover {
-  background: rgba(51, 65, 85, 0.5);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--bg-hover);
 }
 
 /* =============================================================================
@@ -519,7 +595,7 @@ body {
   appearance: none;
   width: 1rem;
   height: 1rem;
-  border: 2px solid rgba(100, 116, 139, 0.5);
+  border: 2px solid var(--color-muted-foreground);
   border-radius: 0.25rem;
   background: transparent;
   cursor: pointer;
@@ -527,12 +603,53 @@ body {
 }
 
 .checkbox-modern:checked {
-  background: #6366f1;
-  border-color: #6366f1;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
 }
 
 .checkbox-modern:focus-visible {
-  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline: 2px solid var(--glow-primary);
   outline-offset: 2px;
+}
+
+/* =============================================================================
+   Light theme specific overrides
+   ============================================================================= */
+
+[data-theme="light"] .text-slate-300 {
+  color: #475569;
+}
+
+[data-theme="light"] .text-slate-400 {
+  color: #64748b;
+}
+
+[data-theme="light"] .text-slate-500 {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .bg-slate-800\/50 {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .bg-slate-800\/80 {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .bg-slate-900\/80 {
+  background-color: rgba(248, 250, 252, 0.9);
+}
+
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .ring-white\/10 {
+  --tw-ring-color: rgba(0, 0, 0, 0.1);
 }

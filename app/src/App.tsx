@@ -4,7 +4,7 @@
  * Design System moderne inspiré Linear/Vercel/Arc
  */
 
-import { Provider as JotaiProvider, useSetAtom, useAtomValue } from 'jotai';
+import { Provider as JotaiProvider, useSetAtom, useAtomValue, useAtom } from 'jotai';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GraphCanvas, NodeDetailsPanel, FilterPanel, GraphControls, GraphLegend } from '@features/graph';
 import { KQIPanel } from '@features/kqi';
@@ -16,6 +16,7 @@ import {
   filteredNodesAtom,
   selectedStudyIdAtom,
 } from '@shared/stores/selectionAtoms';
+import { themeAtom } from '@shared/stores/themeAtom';
 import { loadAllData } from '@features/import/services/dataLoader';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import type { GraphNode } from '@data/types';
@@ -84,9 +85,15 @@ function AppContent() {
   const [allNodesData, setAllNodesData] = useState<Map<string, GraphNode>>(new Map());
   const filteredNodes = useAtomValue(filteredNodesAtom);
   const selectedStudyId = useAtomValue(selectedStudyIdAtom);
+  const [theme] = useAtom(themeAtom);
 
   // Ref pour les contrôles du graphe
   const sigmaRef = useRef<Sigma | null>(null);
+
+  // Appliquer le thème au chargement
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Calculer les stats
   const stats = useMemo(() => {
