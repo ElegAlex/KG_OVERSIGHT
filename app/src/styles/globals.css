@@ -94,21 +94,21 @@
   --color-accent-foreground: #0f172a;
 
   /* Layout backgrounds */
-  --bg-app: linear-gradient(to bottom right, #f1f5f9, #ffffff, #f1f5f9);
-  --bg-sidebar: rgba(255, 255, 255, 0.9);
-  --bg-main: linear-gradient(to bottom right, #f8fafc, #ffffff, #f8fafc);
-  --bg-timeline: rgba(255, 255, 255, 0.95);
-  --bg-glass: rgba(255, 255, 255, 0.7);
-  --bg-glass-darker: rgba(241, 245, 249, 0.9);
-  --bg-input: rgba(241, 245, 249, 0.8);
-  --bg-hover: rgba(0, 0, 0, 0.03);
+  --bg-app: #f8fafc;
+  --bg-sidebar: rgba(255, 255, 255, 0.95);
+  --bg-main: #ffffff;
+  --bg-timeline: rgba(255, 255, 255, 0.98);
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  --bg-glass-darker: rgba(241, 245, 249, 0.95);
+  --bg-input: rgba(241, 245, 249, 0.9);
+  --bg-hover: rgba(0, 0, 0, 0.04);
   --bg-tooltip: rgba(255, 255, 255, 0.98);
 
   /* Graph specific */
   --graph-label-color: #1e293b;
   --graph-dimmed-node: #cbd5e1;
-  --graph-pattern-dot: rgba(0, 0, 0, 0.04);
-  --graph-edge-color: rgba(100, 116, 139, 0.3);
+  --graph-pattern-dot: rgba(100, 116, 139, 0.08);
+  --graph-edge-color: rgba(100, 116, 139, 0.4);
 
   /* Scrollbar */
   --scrollbar-thumb: rgba(100, 116, 139, 0.3);
@@ -116,7 +116,20 @@
 
   /* Glow */
   --glow-primary: rgba(79, 70, 229, 0.3);
-  --glow-line: rgba(79, 70, 229, 0.2);
+  --glow-line: rgba(79, 70, 229, 0.15);
+}
+
+[data-theme="light"] html,
+[data-theme="light"] body {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .app-layout-v2 {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .app-main {
+  background: #ffffff;
 }
 
 /* =============================================================================

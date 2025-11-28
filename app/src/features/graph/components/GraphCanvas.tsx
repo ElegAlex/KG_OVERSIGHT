@@ -47,8 +47,6 @@ interface GraphCanvasProps {
 // Extended attributes pour le hover et KQI
 interface ExtendedNodeAttributes extends SigmaNodeAttributes {
   originalColor?: string;
-  originalSize?: number;
-  originalLabel?: string;
   kqiStatus?: 'good' | 'warning' | 'critical' | null;
   kqiAlertCount?: number;
 }
@@ -140,7 +138,7 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
     setIsLayoutRunning(false);
   }, [prePositionStudies]);
 
-  // Highlight des voisins au hover
+  // Highlight des voisins au hover - simplifié : juste atténuation des non-voisins
   const highlightNeighbors = useCallback((nodeId: string | null) => {
     const graph = graphRef.current;
     const sigma = sigmaRef.current;
@@ -150,11 +148,7 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       // Restaurer tous les nœuds et arêtes
       graph.forEachNode((n) => {
         const originalColor = graph.getNodeAttribute(n, 'originalColor');
-        const originalSize = graph.getNodeAttribute(n, 'originalSize');
-        const originalLabel = graph.getNodeAttribute(n, 'originalLabel');
         if (originalColor) graph.setNodeAttribute(n, 'color', originalColor);
-        if (originalSize) graph.setNodeAttribute(n, 'size', originalSize);
-        if (originalLabel !== undefined) graph.setNodeAttribute(n, 'label', originalLabel);
       });
       graph.forEachEdge((e) => {
         graph.setEdgeAttribute(e, 'hidden', false);
@@ -167,27 +161,18 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
         neighbors.add(neighbor);
       });
 
-      // Dimmer les nœuds non-voisins
+      // Atténuer les nœuds non-voisins (couleur seulement, pas de changement de taille)
       graph.forEachNode((n) => {
         const currentColor = graph.getNodeAttribute(n, 'color');
-        const currentSize = graph.getNodeAttribute(n, 'size');
-        const currentLabel = graph.getNodeAttribute(n, 'label');
 
-        // Sauvegarder les valeurs originales
+        // Sauvegarder la couleur originale si pas déjà fait
         if (!graph.getNodeAttribute(n, 'originalColor')) {
           graph.setNodeAttribute(n, 'originalColor', currentColor);
-          graph.setNodeAttribute(n, 'originalSize', currentSize);
-          graph.setNodeAttribute(n, 'originalLabel', currentLabel);
         }
 
         if (!neighbors.has(n)) {
-          // Dimmer : couleur adaptée au thème et masquer le label
+          // Atténuer : couleur grisée adaptée au thème
           graph.setNodeAttribute(n, 'color', themeColors.dimmedNodeColor);
-          graph.setNodeAttribute(n, 'size', (currentSize ?? 10) * 0.7);
-          graph.setNodeAttribute(n, 'label', ''); // Masquer le label
-        } else if (n === nodeId) {
-          // Nœud survolé : agrandir
-          graph.setNodeAttribute(n, 'size', (currentSize ?? 10) * 1.3);
         }
       });
 
