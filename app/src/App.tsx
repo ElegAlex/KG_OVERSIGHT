@@ -181,7 +181,7 @@ function AppContent() {
 
         {/* Zone centrale du graphe */}
         <main className="app-main graph-pattern-bg">
-          <GraphCanvas />
+          <GraphCanvas key={theme} />
 
           {/* Légende flottante */}
           <GraphLegend
