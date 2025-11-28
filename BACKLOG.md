@@ -127,8 +127,8 @@
 ### Fichiers de données disponibles
 - `nodes/*.csv` : 16 fichiers (1 par type)
 - `relations/*.csv` : 18+ fichiers
-- `schema.cypher` : Schéma Kuzu
-- `import.cypher` : Script d'import
+- `schema.kuzu` : Schéma Kuzu (DDL)
+- `import.kuzu` : Script d'import Kuzu
 
 ---
 

@@ -1,12 +1,16 @@
 /**
- * KG-Oversight - Panneau de détails du nœud sélectionné
- * Affiche les propriétés et relations du nœud avec onglets
+ * KG-Oversight - Panneau de détails du noeud sélectionné
+ * Design moderne avec glassmorphism
  */
 
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Info, GitBranch, ChevronRight, ArrowLeftCircle, ArrowRightCircle } from 'lucide-react';
 import { selectedNodeAtom, selectedNodeIdsAtom, allEdgesAtom, allNodesAtom } from '@shared/stores/selectionAtoms';
 import { getNodeColor, getNodeLabel, getCriticiteColor, getRisqueColor } from '@shared/utils/nodeStyles';
+import { cn } from '@/lib/utils';
+import { slideInRight } from '@/lib/animations';
 import type { GraphNode, GraphEdge, SousTraitant, Audit, Finding, EtudeClinique, Alerte, EvaluationRisque } from '@data/types';
 
 interface NodeDetailsPanelProps {
@@ -22,7 +26,7 @@ export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
   const allNodes = useAtomValue(allNodesAtom);
   const [activeTab, setActiveTab] = useState<TabId>('info');
 
-  // Calculer les relations du nœud
+  // Calculer les relations du noeud
   const { incomingEdges, outgoingEdges } = useMemo(() => {
     if (!selectedNode) return { incomingEdges: [], outgoingEdges: [] };
 
@@ -48,63 +52,62 @@ export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
 
   if (!selectedNode) {
     return (
-      <div className={`flex flex-col items-center justify-center h-full p-6 ${className}`}>
-        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className={cn('flex flex-col items-center justify-center h-full p-6', className)}>
+        <div className="relative">
+          <div className="absolute inset-0 bg-indigo-500/10 blur-2xl rounded-full" />
+          <div className="relative w-16 h-16 rounded-2xl bg-slate-800/50 border border-white/10 flex items-center justify-center mb-4">
+            <Info className="w-7 h-7 text-slate-500" />
+          </div>
         </div>
-        <h2 className="text-sm font-medium text-foreground mb-2">
+        <h2 className="text-sm font-medium text-slate-300 mb-2">
           Aucune sélection
         </h2>
-        <p className="text-xs text-muted-foreground text-center">
-          Cliquez sur un nœud du graphe pour voir ses détails et ses relations.
+        <p className="text-xs text-slate-500 text-center leading-relaxed">
+          Cliquez sur un noeud du graphe pour voir ses détails et ses relations.
         </p>
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col h-full ${className}`}>
+    <div className={cn('flex flex-col h-full', className)}>
       {/* En-tête avec type, nom et bouton fermer */}
-      <div className="p-4 border-b bg-card sticky top-0 z-10">
+      <div className="p-4 border-b border-white/5 sticky top-0 z-10 bg-slate-900/80 backdrop-blur-xl">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <div
-              className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white shadow"
+              className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20 shadow-lg"
               style={{ backgroundColor: getNodeColor(selectedNode._type) }}
             />
-            <span className="text-xs font-medium text-muted-foreground uppercase">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
               {getNodeLabel(selectedNode._type)}
             </span>
           </div>
           <button
             onClick={closePanel}
-            className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors text-slate-500 hover:text-slate-300"
             title="Fermer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </button>
         </div>
-        <h2 className="text-base font-semibold text-foreground mt-2 leading-tight">
+        <h2 className="text-base font-semibold text-white mt-2 leading-tight">
           {getNodeDisplayName(selectedNode)}
         </h2>
-        <p className="text-xs text-muted-foreground mt-1 font-mono">
+        <p className="text-xs text-slate-600 mt-1 font-mono truncate">
           {selectedNode.id}
         </p>
 
         {/* Badges statut et criticité */}
         <div className="flex flex-wrap gap-1.5 mt-3">
           {selectedNode.statut && (
-            <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-muted text-muted-foreground">
+            <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-slate-700/50 text-slate-400 border border-white/5">
               {selectedNode.statut}
             </span>
           )}
           {selectedNode.criticite && (
             <span
-              className="px-2 py-0.5 text-xs font-medium rounded-md text-white"
+              className="px-2 py-0.5 text-xs font-medium rounded-md text-white shadow-sm"
               style={{ backgroundColor: getCriticiteColor(selectedNode.criticite) }}
             >
               {selectedNode.criticite}
@@ -113,124 +116,151 @@ export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
         </div>
       </div>
 
-      {/* Onglets */}
-      <div className="flex border-b bg-muted/30">
+      {/* Onglets modernes */}
+      <div className="flex border-b border-white/5 bg-slate-800/30">
         <button
           onClick={() => setActiveTab('info')}
-          className={`flex-1 px-4 py-2.5 text-xs font-medium transition-colors relative ${
+          className={cn(
+            'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
             activeTab === 'info'
-              ? 'text-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
+              ? 'text-indigo-400'
+              : 'text-slate-500 hover:text-slate-300'
+          )}
         >
-          Informations
+          <span className="flex items-center justify-center gap-1.5">
+            <Info className="w-3.5 h-3.5" />
+            Informations
+          </span>
           {activeTab === 'info' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            <motion.div
+              layoutId="activeTab"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
+            />
           )}
         </button>
         <button
           onClick={() => setActiveTab('relations')}
-          className={`flex-1 px-4 py-2.5 text-xs font-medium transition-colors relative ${
+          className={cn(
+            'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
             activeTab === 'relations'
-              ? 'text-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Relations
-          {totalRelations > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-muted">
-              {totalRelations}
-            </span>
+              ? 'text-indigo-400'
+              : 'text-slate-500 hover:text-slate-300'
           )}
+        >
+          <span className="flex items-center justify-center gap-1.5">
+            <GitBranch className="w-3.5 h-3.5" />
+            Relations
+            {totalRelations > 0 && (
+              <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-700 text-slate-400">
+                {totalRelations}
+              </span>
+            )}
+          </span>
           {activeTab === 'relations' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            <motion.div
+              layoutId="activeTab"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
+            />
           )}
         </button>
       </div>
 
       {/* Contenu selon l'onglet actif */}
       <div className="flex-1 overflow-y-auto p-4">
-        {activeTab === 'info' ? (
-          <div className="space-y-4">
-            <NodeSpecificDetails node={selectedNode} />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Relations entrantes */}
-            {incomingEdges.length > 0 && (
-              <div>
-                <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase mb-2">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                  </svg>
-                  Entrantes ({incomingEdges.length})
-                </h3>
-                <div className="space-y-1.5">
-                  {incomingEdges.slice(0, 15).map((edge) => {
-                    const sourceNode = allNodes.get(edge.source);
-                    return (
-                      <RelationItem
-                        key={edge.id}
-                        edge={edge}
-                        relatedNode={sourceNode}
-                        direction="incoming"
-                        onSelect={() => setSelectedNodeIds(new Set([edge.source]))}
-                      />
-                    );
-                  })}
-                  {incomingEdges.length > 15 && (
-                    <p className="text-xs text-muted-foreground py-1">
-                      ... et {incomingEdges.length - 15} autres
-                    </p>
-                  )}
+        <AnimatePresence mode="wait">
+          {activeTab === 'info' ? (
+            <motion.div
+              key="info"
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="space-y-4"
+            >
+              <NodeSpecificDetails node={selectedNode} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="relations"
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="space-y-4"
+            >
+              {/* Relations entrantes */}
+              {incomingEdges.length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase mb-2">
+                    <ArrowLeftCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    Entrantes ({incomingEdges.length})
+                  </h3>
+                  <div className="space-y-1.5">
+                    {incomingEdges.slice(0, 15).map((edge) => {
+                      const sourceNode = allNodes.get(edge.source);
+                      return (
+                        <RelationItem
+                          key={edge.id}
+                          edge={edge}
+                          relatedNode={sourceNode}
+                          onSelect={() => setSelectedNodeIds(new Set([edge.source]))}
+                        />
+                      );
+                    })}
+                    {incomingEdges.length > 15 && (
+                      <p className="text-xs text-slate-600 py-1">
+                        ... et {incomingEdges.length - 15} autres
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Relations sortantes */}
-            {outgoingEdges.length > 0 && (
-              <div>
-                <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase mb-2">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                  </svg>
-                  Sortantes ({outgoingEdges.length})
-                </h3>
-                <div className="space-y-1.5">
-                  {outgoingEdges.slice(0, 15).map((edge) => {
-                    const targetNode = allNodes.get(edge.target);
-                    return (
-                      <RelationItem
-                        key={edge.id}
-                        edge={edge}
-                        relatedNode={targetNode}
-                        direction="outgoing"
-                        onSelect={() => setSelectedNodeIds(new Set([edge.target]))}
-                      />
-                    );
-                  })}
-                  {outgoingEdges.length > 15 && (
-                    <p className="text-xs text-muted-foreground py-1">
-                      ... et {outgoingEdges.length - 15} autres
-                    </p>
-                  )}
+              {/* Relations sortantes */}
+              {outgoingEdges.length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase mb-2">
+                    <ArrowRightCircle className="w-3.5 h-3.5 text-amber-500" />
+                    Sortantes ({outgoingEdges.length})
+                  </h3>
+                  <div className="space-y-1.5">
+                    {outgoingEdges.slice(0, 15).map((edge) => {
+                      const targetNode = allNodes.get(edge.target);
+                      return (
+                        <RelationItem
+                          key={edge.id}
+                          edge={edge}
+                          relatedNode={targetNode}
+                          onSelect={() => setSelectedNodeIds(new Set([edge.target]))}
+                        />
+                      );
+                    })}
+                    {outgoingEdges.length > 15 && (
+                      <p className="text-xs text-slate-600 py-1">
+                        ... et {outgoingEdges.length - 15} autres
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {totalRelations === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Aucune relation pour ce nœud.
-              </p>
-            )}
-          </div>
-        )}
+              {totalRelations === 0 && (
+                <div className="text-center py-8">
+                  <GitBranch className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">
+                    Aucune relation pour ce noeud.
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
-// Composant pour afficher les détails spécifiques selon le type de nœud
+// Composant pour afficher les détails spécifiques selon le type de noeud
 function NodeSpecificDetails({ node }: { node: GraphNode }) {
   switch (node._type) {
     case 'SousTraitant':
@@ -252,7 +282,7 @@ function NodeSpecificDetails({ node }: { node: GraphNode }) {
 
 function SousTraitantDetails({ node }: { node: SousTraitant }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <DetailRow label="Type de service" value={node.type_service} />
       <DetailRow label="Pays" value={node.pays} />
       <DetailRow label="Niveau" value={node.niveau_actuel === 1 ? 'N1 (Direct)' : 'N2 (Indirect)'} />
@@ -263,7 +293,7 @@ function SousTraitantDetails({ node }: { node: SousTraitant }) {
 
 function AuditDetails({ node }: { node: Audit }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <DetailRow label="Type" value={node.type_audit} />
       <DetailRow label="Résultat" value={node.resultat} />
       <DetailRow label="Date début" value={formatDate(node.date_debut)} />
@@ -277,7 +307,7 @@ function AuditDetails({ node }: { node: Audit }) {
 
 function FindingDetails({ node }: { node: Finding }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <DetailRow label="Description" value={node.description} multiline />
       <DetailRow label="Date détection" value={formatDate(node.date_detection)} />
       <DetailRow label="Date clôture" value={formatDate(node.date_cloture)} />
@@ -290,7 +320,7 @@ function FindingDetails({ node }: { node: Finding }) {
 
 function EtudeDetails({ node }: { node: EtudeClinique }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <DetailRow label="Phase" value={node.phase ? `Phase ${node.phase}` : undefined} />
       <DetailRow label="Indication" value={node.indication} />
       <DetailRow label="Nb patients" value={node.nb_patients?.toString()} />
@@ -302,13 +332,13 @@ function EtudeDetails({ node }: { node: EtudeClinique }) {
 
 function AlerteDetails({ node }: { node: Alerte }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <DetailRow label="Description" value={node.description} multiline />
       {node.niveau && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Niveau:</span>
+        <div className="glass-card p-3">
+          <span className="text-xs text-slate-500 block mb-1.5">Niveau</span>
           <span
-            className="px-2 py-0.5 text-xs font-medium rounded text-white"
+            className="px-2.5 py-1 text-xs font-medium rounded-lg text-white inline-block"
             style={{
               backgroundColor:
                 node.niveau === 'HAUTE' ? '#DC2626' :
@@ -327,12 +357,12 @@ function AlerteDetails({ node }: { node: Alerte }) {
 
 function EvaluationDetails({ node }: { node: EvaluationRisque }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {node.score && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Score:</span>
+        <div className="glass-card p-3">
+          <span className="text-xs text-slate-500 block mb-1.5">Score de risque</span>
           <span
-            className="px-2 py-0.5 text-xs font-medium rounded text-white"
+            className="px-2.5 py-1 text-xs font-medium rounded-lg text-white inline-block"
             style={{ backgroundColor: getRisqueColor(node.score) }}
           >
             {node.score}
@@ -352,7 +382,7 @@ function EvaluationDetails({ node }: { node: EvaluationRisque }) {
 
 function GenericDetails({ node }: { node: GraphNode }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {node.description && (
         <DetailRow label="Description" value={node.description} multiline />
       )}
@@ -363,14 +393,17 @@ function GenericDetails({ node }: { node: GraphNode }) {
   );
 }
 
-// Composant pour une ligne de détail
+// Composant pour une ligne de détail moderne
 function DetailRow({ label, value, multiline = false }: { label: string; value?: string; multiline?: boolean }) {
   if (!value) return null;
 
   return (
-    <div className={multiline ? '' : 'flex items-start gap-2'}>
-      <span className="text-xs text-muted-foreground shrink-0">{label}:</span>
-      <span className={`text-sm text-foreground ${multiline ? 'block mt-1' : ''}`}>
+    <div className="glass-card p-3">
+      <span className="text-xs text-slate-500 block mb-1">{label}</span>
+      <span className={cn(
+        'text-sm text-slate-200',
+        multiline && 'leading-relaxed'
+      )}>
         {value}
       </span>
     </div>
@@ -381,40 +414,36 @@ function DetailRow({ label, value, multiline = false }: { label: string; value?:
 function RelationItem({
   edge,
   relatedNode,
-  direction,
   onSelect,
 }: {
   edge: GraphEdge;
   relatedNode?: GraphNode;
-  direction: 'incoming' | 'outgoing';
   onSelect?: () => void;
 }) {
   const relationLabel = formatRelationType(edge._type);
-  const nodeName = relatedNode ? getNodeDisplayName(relatedNode) : (direction === 'incoming' ? edge.source : edge.target);
+  const nodeName = relatedNode ? getNodeDisplayName(relatedNode) : edge.source;
   const nodeType = relatedNode?._type;
 
   return (
     <button
       onClick={onSelect}
-      className="w-full flex items-center gap-2 p-2 rounded-md bg-muted/30 hover:bg-muted transition-colors text-left group"
+      className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 border border-white/5 hover:bg-slate-700/30 hover:border-white/10 transition-all text-left group"
     >
       {nodeType && (
         <div
-          className="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-black/10"
+          className="w-3 h-3 rounded-full shrink-0 ring-2 ring-white/10"
           style={{ backgroundColor: getNodeColor(nodeType) }}
         />
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wide">
+        <p className="text-[10px] text-slate-500 truncate uppercase tracking-wider">
           {relationLabel}
         </p>
-        <p className="text-sm text-foreground truncate group-hover:text-primary transition-colors">
+        <p className="text-sm text-slate-300 truncate group-hover:text-white transition-colors">
           {nodeName}
         </p>
       </div>
-      <svg className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
+      <ChevronRight className="w-4 h-4 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
     </button>
   );
 }

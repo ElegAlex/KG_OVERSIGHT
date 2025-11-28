@@ -449,7 +449,7 @@ def generate_import_script():
     """Génère le script d'import Kuzu"""
     script = '''-- ============================================================================
 -- SCRIPT D'IMPORT KUZU
--- Exécuter après avoir créé le schéma (schema.cypher)
+-- Exécuter après avoir créé le schéma (schema.kuzu)
 -- ============================================================================
 
 -- Import des nœuds
@@ -497,7 +497,7 @@ COPY EVT_CONCERNE_ST FROM "relations/EVT_CONCERNE_ST.csv" (HEADER=true);
 COPY IMPLIQUE_ST FROM "relations/IMPLIQUE_ST.csv" (HEADER=true);
 '''
     
-    filepath = os.path.join(OUTPUT_DIR, 'import.cypher')
+    filepath = os.path.join(OUTPUT_DIR, 'import.kuzu')
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(script)
     

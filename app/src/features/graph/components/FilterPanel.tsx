@@ -1,10 +1,21 @@
 /**
- * KG-Oversight - Panneau de filtres avec accordéon
- * Permet de filtrer les nœuds par type, criticité et recherche
+ * KG-Oversight - Panneau de filtres moderne
+ * Design system inspiré Linear/Vercel
  */
 
 import { useAtom, useAtomValue } from 'jotai';
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Search,
+  Filter,
+  Layers,
+  AlertTriangle,
+  X,
+  RotateCcw,
+  ChevronRight,
+  Check,
+} from 'lucide-react';
 import {
   visibleNodeTypesAtom,
   visibleCriticitesAtom,
@@ -13,88 +24,173 @@ import {
   allNodesAtom,
 } from '@shared/stores/selectionAtoms';
 import { NODE_COLORS, NODE_LABELS, CRITICITE_COLORS } from '@shared/utils/nodeStyles';
+import { cn } from '@/lib/utils';
+import { collapseContent, rotateChevron, listItem, staggerContainer } from '@/lib/animations';
 import type { NodeType, Criticite } from '@data/types';
 
-// Catégories de types de nœuds pour l'accordéon
-const NODE_TYPE_CATEGORIES: Record<string, { label: string; types: NodeType[]; icon: string }> = {
+// Catégories de types de noeuds avec icônes modernes
+const NODE_TYPE_CATEGORIES: Record<
+  string,
+  { label: string; types: NodeType[]; emoji: string }
+> = {
   acteurs: {
     label: 'Acteurs',
-    icon: '🏢',
+    emoji: '🏢',
     types: ['SousTraitant', 'EtudeClinique'],
   },
   documents: {
     label: 'Documents',
-    icon: '📄',
+    emoji: '📄',
     types: ['Contrat', 'AccordQualite'],
   },
   qualite: {
     label: 'Qualité',
-    icon: '🔍',
+    emoji: '🔍',
     types: ['Audit', 'Inspection', 'Finding', 'EvenementQualite'],
   },
   decisions: {
     label: 'Décisions & Risques',
-    icon: '⚖️',
+    emoji: '⚖️',
     types: ['Decision', 'EvaluationRisque', 'ReunionQualite'],
   },
   alertes: {
     label: 'Alertes & Événements',
-    icon: '🚨',
+    emoji: '🚨',
     types: ['Alerte', 'Evenement'],
   },
   contexte: {
     label: 'Contexte',
-    icon: '📊',
+    emoji: '📊',
     types: ['DomaineService', 'ContexteReglementaire', 'KQI'],
   },
 };
 
-const ALL_NODE_TYPES: NodeType[] = Object.values(NODE_TYPE_CATEGORIES).flatMap((cat) => cat.types);
+const ALL_NODE_TYPES: NodeType[] = Object.values(NODE_TYPE_CATEGORIES).flatMap(
+  (cat) => cat.types
+);
 
-const ALL_CRITICITES: (Criticite | '')[] = ['Critique', 'Majeur', 'Standard', 'Mineur', ''];
+const ALL_CRITICITES: (Criticite | '')[] = [
+  'Critique',
+  'Majeur',
+  'Standard',
+  'Mineur',
+  '',
+];
 
-// Composant Accordéon simple
-function AccordionSection({
+// Composant Section accordéon modernisé
+function FilterSection({
   title,
-  icon,
+  emoji,
   count,
   isOpen,
   onToggle,
   children,
 }: {
   title: string;
-  icon: string;
+  emoji: string;
   count?: number;
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="rounded-xl border border-white/5 overflow-hidden bg-slate-800/30">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+        className="w-full flex items-center justify-between p-3 hover:bg-white/[0.02] transition-colors text-left"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm">{icon}</span>
-          <span className="text-sm font-medium text-foreground">{title}</span>
+          <span className="text-sm">{emoji}</span>
+          <span className="text-sm font-medium text-slate-300">{title}</span>
           {count !== undefined && (
-            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+            <span className="text-xs text-slate-500 bg-slate-700/50 px-1.5 py-0.5 rounded-full">
               {count}
             </span>
           )}
         </div>
-        <svg
-          className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+        <motion.div
+          variants={rotateChevron}
+          animate={isOpen ? 'open' : 'closed'}
+          transition={{ duration: 0.2 }}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+          <ChevronRight className="w-4 h-4 text-slate-600" />
+        </motion.div>
       </button>
-      {isOpen && <div className="p-3 border-t bg-card">{children}</div>}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            variants={collapseContent}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="overflow-hidden"
+          >
+            <div className="p-3 pt-0 border-t border-white/5">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// Composant ligne type de noeud modernisée
+function NodeTypeRow({
+  label,
+  color,
+  count,
+  checked,
+  onChange,
+}: {
+  label: string;
+  color: string;
+  count: number;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <label
+      className={cn(
+        'flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer',
+        'transition-all duration-200',
+        checked ? 'bg-white/5' : 'hover:bg-white/[0.02]'
+      )}
+    >
+      {/* Checkbox custom */}
+      <div className="relative flex-shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="sr-only peer"
+        />
+        <div
+          className={cn(
+            'w-4 h-4 rounded border-2 transition-all duration-200',
+            'flex items-center justify-center',
+            checked
+              ? 'border-indigo-500 bg-indigo-500'
+              : 'border-slate-600 bg-transparent'
+          )}
+        >
+          {checked && <Check className="w-3 h-3 text-white" />}
+        </div>
+      </div>
+
+      {/* Color dot + label */}
+      <div
+        className="w-3 h-3 rounded-full ring-2 ring-white/10 flex-shrink-0"
+        style={{ backgroundColor: color }}
+      />
+      <span
+        className={cn(
+          'flex-1 text-sm transition-colors truncate',
+          checked ? 'text-slate-200' : 'text-slate-500'
+        )}
+      >
+        {label}
+      </span>
+      <span className="text-xs text-slate-600 tabular-nums">{count}</span>
+    </label>
   );
 }
 
@@ -104,13 +200,17 @@ interface FilterPanelProps {
 
 export function FilterPanel({ className = '' }: FilterPanelProps) {
   const [visibleTypes, setVisibleTypes] = useAtom(visibleNodeTypesAtom);
-  const [visibleCriticites, setVisibleCriticites] = useAtom(visibleCriticitesAtom);
+  const [visibleCriticites, setVisibleCriticites] = useAtom(
+    visibleCriticitesAtom
+  );
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const filteredNodes = useAtomValue(filteredNodesAtom);
   const allNodes = useAtomValue(allNodesAtom);
 
-  // État des sections ouvertes (par défaut: acteurs et qualité ouverts)
-  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['acteurs', 'qualite']));
+  // État des sections ouvertes
+  const [openSections, setOpenSections] = useState<Set<string>>(
+    new Set(['acteurs', 'qualite'])
+  );
 
   const toggleSection = (sectionId: string) => {
     setOpenSections((prev) => {
@@ -124,7 +224,7 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
     });
   };
 
-  // Toggle un type de nœud
+  // Toggle un type de noeud
   const toggleNodeType = (type: NodeType) => {
     const newTypes = new Set(visibleTypes);
     if (newTypes.has(type)) {
@@ -150,10 +250,8 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
   const toggleCategory = (categoryTypes: NodeType[], allSelected: boolean) => {
     const newTypes = new Set(visibleTypes);
     if (allSelected) {
-      // Désélectionner tous les types de la catégorie
       categoryTypes.forEach((t) => newTypes.delete(t));
     } else {
-      // Sélectionner tous les types de la catégorie
       categoryTypes.forEach((t) => newTypes.add(t));
     }
     setVisibleTypes(newTypes);
@@ -168,7 +266,14 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
     setVisibleTypes(new Set());
   };
 
-  // Compter les nœuds par type (mémorisé)
+  // Reset tous les filtres
+  const resetFilters = () => {
+    setSearchQuery('');
+    setVisibleTypes(new Set(ALL_NODE_TYPES));
+    setVisibleCriticites(new Set(ALL_CRITICITES));
+  };
+
+  // Compter les noeuds par type
   const countByType = useMemo(() => {
     const counts = new Map<NodeType, number>();
     for (const [, node] of allNodes) {
@@ -180,196 +285,216 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
   // Compter les types visibles par catégorie
   const getCategoryStats = (types: NodeType[]) => {
     let total = 0;
-    let visible = 0;
     for (const type of types) {
       total += countByType.get(type) || 0;
-      if (visibleTypes.has(type)) {
-        visible += countByType.get(type) || 0;
-      }
     }
-    return { total, visible, allSelected: types.every((t) => visibleTypes.has(t)) };
+    return {
+      total,
+      allSelected: types.every((t) => visibleTypes.has(t)),
+    };
   };
 
+  // Pourcentage affiché
+  const displayPercentage =
+    allNodes.size > 0
+      ? Math.round((filteredNodes.size / allNodes.size) * 100)
+      : 0;
+
   return (
-    <div className={`space-y-3 ${className}`}>
-      {/* Barre de recherche */}
-      <div className="relative">
-        <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+    <div className={cn('flex flex-col h-full', className)}>
+      {/* Header sticky avec recherche */}
+      <div className="p-4 border-b border-white/5 sticky top-0 z-10 bg-slate-900/80 backdrop-blur-xl">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="w-4 h-4 text-slate-500" />
+          <h2 className="text-sm font-semibold text-slate-200">Filtres</h2>
+        </div>
+
+        {/* Search bar moderne */}
+        <div className="relative group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher..."
+            className="input-modern"
           />
-        </svg>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Rechercher un nœud..."
-          className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-
-      {/* Compteur avec barre de progression */}
-      <div className="bg-muted/30 rounded-lg p-3">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-medium text-foreground">Nœuds affichés</span>
-          <span className="text-xs text-muted-foreground">
-            {filteredNodes.size} / {allNodes.size}
-          </span>
-        </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${allNodes.size > 0 ? (filteredNodes.size / allNodes.size) * 100 : 0}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Actions globales */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground uppercase">Types de nœuds</span>
-        <div className="flex gap-2">
-          <button
-            onClick={selectAllTypes}
-            className="text-xs text-primary hover:underline"
-          >
-            Tous
-          </button>
-          <span className="text-xs text-muted-foreground">/</span>
-          <button
-            onClick={deselectAllTypes}
-            className="text-xs text-primary hover:underline"
-          >
-            Aucun
-          </button>
-        </div>
-      </div>
-
-      {/* Accordéon par catégorie */}
-      <div className="space-y-2">
-        {Object.entries(NODE_TYPE_CATEGORIES).map(([categoryId, category]) => {
-          const stats = getCategoryStats(category.types);
-
-          return (
-            <AccordionSection
-              key={categoryId}
-              title={category.label}
-              icon={category.icon}
-              count={stats.total}
-              isOpen={openSections.has(categoryId)}
-              onToggle={() => toggleSection(categoryId)}
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
             >
-              {/* Bouton tout sélectionner/désélectionner pour la catégorie */}
-              <div className="flex justify-end mb-2">
-                <button
-                  onClick={() => toggleCategory(category.types, stats.allSelected)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  {stats.allSelected ? 'Désélectionner' : 'Sélectionner tout'}
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                {category.types.map((type) => {
-                  const count = countByType.get(type) || 0;
-                  const isVisible = visibleTypes.has(type);
-
-                  return (
-                    <label
-                      key={type}
-                      className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
-                        isVisible ? 'bg-muted/50' : 'opacity-50'
-                      } hover:bg-muted`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isVisible}
-                        onChange={() => toggleNodeType(type)}
-                        className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5"
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full shrink-0 ring-1 ring-black/10"
-                        style={{ backgroundColor: NODE_COLORS[type]?.bg ?? '#6B7280' }}
-                      />
-                      <span className="text-sm text-foreground flex-1 truncate">
-                        {NODE_LABELS[type]}
-                      </span>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {count}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </AccordionSection>
-          );
-        })}
-      </div>
-
-      {/* Filtres par criticité */}
-      <div className="pt-2 border-t">
-        <label className="text-xs font-medium text-muted-foreground uppercase block mb-2">
-          Criticité
-        </label>
-        <div className="flex flex-wrap gap-1.5">
-          {ALL_CRITICITES.map((crit) => {
-            const isVisible = visibleCriticites.has(crit);
-            const label = crit || 'N/A';
-            const color = crit ? CRITICITE_COLORS[crit] : '#6B7280';
-
-            return (
-              <button
-                key={crit || 'none'}
-                onClick={() => toggleCriticite(crit)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-all ${
-                  isVisible
-                    ? 'text-white border-transparent shadow-sm'
-                    : 'bg-transparent border-current opacity-50 hover:opacity-75'
-                }`}
-                style={{
-                  backgroundColor: isVisible ? color : 'transparent',
-                  color: isVisible ? 'white' : color,
-                  borderColor: isVisible ? 'transparent' : color,
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 bg-slate-700/50 rounded hidden group-focus-within:hidden">
+            ⌘K
+          </kbd>
         </div>
       </div>
 
-      {/* Bouton reset */}
-      <button
-        onClick={() => {
-          setSearchQuery('');
-          setVisibleTypes(new Set(ALL_NODE_TYPES));
-          setVisibleCriticites(new Set(ALL_CRITICITES));
-        }}
-        className="w-full px-3 py-2 text-sm font-medium text-muted-foreground border rounded-lg hover:bg-muted transition-colors flex items-center justify-center gap-2"
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        Réinitialiser
-      </button>
+      {/* Contenu scrollable */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Compteur avec barre de progression moderne */}
+        <div className="glass-card p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-slate-300">
+              Noeuds affichés
+            </span>
+            <span className="text-xs text-slate-400 tabular-nums">
+              {filteredNodes.size} / {allNodes.size}
+            </span>
+          </div>
+          <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${displayPercentage}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-1.5">
+            <span className="text-[10px] text-slate-500">
+              {displayPercentage}% visible
+            </span>
+          </div>
+        </div>
+
+        {/* Actions globales types */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-slate-500" />
+            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              Types de noeuds
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={selectAllTypes}
+              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              Tous
+            </button>
+            <span className="text-xs text-slate-600">/</span>
+            <button
+              onClick={deselectAllTypes}
+              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              Aucun
+            </button>
+          </div>
+        </div>
+
+        {/* Accordéon par catégorie */}
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="space-y-2"
+        >
+          {Object.entries(NODE_TYPE_CATEGORIES).map(
+            ([categoryId, category]) => {
+              const stats = getCategoryStats(category.types);
+
+              return (
+                <motion.div key={categoryId} variants={listItem}>
+                  <FilterSection
+                    title={category.label}
+                    emoji={category.emoji}
+                    count={stats.total}
+                    isOpen={openSections.has(categoryId)}
+                    onToggle={() => toggleSection(categoryId)}
+                  >
+                    {/* Bouton tout sélectionner/désélectionner */}
+                    <div className="flex justify-end mb-2">
+                      <button
+                        onClick={() =>
+                          toggleCategory(category.types, stats.allSelected)
+                        }
+                        className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                      >
+                        {stats.allSelected ? 'Désélectionner' : 'Tout sélectionner'}
+                      </button>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      {category.types.map((type) => {
+                        const count = countByType.get(type) || 0;
+                        const isVisible = visibleTypes.has(type);
+
+                        return (
+                          <NodeTypeRow
+                            key={type}
+                            label={NODE_LABELS[type]}
+                            color={NODE_COLORS[type]?.bg ?? '#6B7280'}
+                            count={count}
+                            checked={isVisible}
+                            onChange={() => toggleNodeType(type)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </FilterSection>
+                </motion.div>
+              );
+            }
+          )}
+        </motion.div>
+
+        {/* Filtres par criticité */}
+        <div className="pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-slate-500" />
+            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              Criticité
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {ALL_CRITICITES.map((crit) => {
+              const isVisible = visibleCriticites.has(crit);
+              const label = crit || 'N/A';
+              const color = crit ? CRITICITE_COLORS[crit] : '#6B7280';
+
+              return (
+                <button
+                  key={crit || 'none'}
+                  onClick={() => toggleCriticite(crit)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200',
+                    isVisible
+                      ? 'text-white border-transparent shadow-sm'
+                      : 'bg-transparent border-current opacity-50 hover:opacity-75'
+                  )}
+                  style={{
+                    backgroundColor: isVisible ? color : 'transparent',
+                    color: isVisible ? 'white' : color,
+                    borderColor: isVisible ? 'transparent' : color,
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer avec reset */}
+      <div className="p-4 border-t border-white/5 bg-slate-900/50">
+        <button
+          onClick={resetFilters}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-400 rounded-xl border border-white/10 hover:bg-white/5 hover:text-slate-300 transition-all duration-200"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Réinitialiser les filtres
+        </button>
+        <div className="flex items-center justify-between mt-3 text-xs text-slate-600">
+          <span>Dernière sync: maintenant</span>
+          <button className="hover:text-indigo-400 transition-colors">
+            Actualiser
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

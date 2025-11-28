@@ -167,8 +167,8 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
         }
 
         if (!neighbors.has(n)) {
-          // Dimmer : couleur grise et taille réduite
-          graph.setNodeAttribute(n, 'color', '#e2e8f0');
+          // Dimmer : couleur grise foncée adaptée au thème sombre
+          graph.setNodeAttribute(n, 'color', '#334155'); // slate-700
           graph.setNodeAttribute(n, 'size', (currentSize ?? 10) * 0.7);
         } else if (n === nodeId) {
           // Nœud survolé : agrandir
@@ -212,7 +212,7 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
     const graph = new Graph<ExtendedNodeAttributes, SigmaEdgeAttributes>();
     graphRef.current = graph;
 
-    // Créer l'instance Sigma avec settings améliorés
+    // Créer l'instance Sigma avec settings améliorés pour thème sombre
     const sigma = new Sigma(graph, containerRef.current, {
       // Rendu des labels - seuil dynamique selon zoom
       renderLabels: true,
@@ -221,11 +221,11 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       labelFont: 'Inter, system-ui, sans-serif',
       labelSize: 11,
       labelWeight: '500',
-      labelColor: { color: '#1e293b' },
+      labelColor: { color: '#f1f5f9' }, // slate-100 pour thème sombre
 
-      // Couleurs par défaut
+      // Couleurs par défaut adaptées au thème sombre
       defaultNodeColor: '#6B7280',
-      defaultEdgeColor: '#94a3b8',
+      defaultEdgeColor: '#475569', // slate-600
       defaultNodeType: 'circle',
 
       // Camera

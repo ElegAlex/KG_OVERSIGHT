@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.5",
+    "framer-motion": "^12.23.24",
     "graphology": "^0.26.0",
     "graphology-layout-forceatlas2": "^0.10.1",
     "graphology-svg": "^0.1.3",
