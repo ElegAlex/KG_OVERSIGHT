@@ -630,39 +630,96 @@ body {
    Light theme specific overrides
    ============================================================================= */
 
+/* Light theme - Textes */
+[data-theme="light"] .text-slate-200 {
+  color: #1e293b;
+}
+
 [data-theme="light"] .text-slate-300 {
-  color: #475569;
+  color: #334155;
 }
 
 [data-theme="light"] .text-slate-400 {
-  color: #64748b;
+  color: #475569;
 }
 
 [data-theme="light"] .text-slate-500 {
-  color: #94a3b8;
+  color: #64748b;
 }
 
-[data-theme="light"] .bg-slate-800\/50 {
-  background-color: rgba(255, 255, 255, 0.8);
+[data-theme="light"] .text-slate-600 {
+  color: #475569;
 }
 
-[data-theme="light"] .bg-slate-800\/80 {
+[data-theme="light"] .text-white {
+  color: #0f172a;
+}
+
+/* Light theme - Backgrounds */
+[data-theme="light"] .bg-slate-700\/50 {
+  background-color: rgba(226, 232, 240, 0.8);
+}
+
+[data-theme="light"] .bg-slate-800\/30 {
   background-color: rgba(255, 255, 255, 0.9);
 }
 
-[data-theme="light"] .bg-slate-900\/80 {
+[data-theme="light"] .bg-slate-800\/50 {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .bg-slate-800\/80 {
+  background-color: rgba(255, 255, 255, 0.98);
+}
+
+[data-theme="light"] .bg-slate-900\/50 {
   background-color: rgba(248, 250, 252, 0.9);
 }
 
-[data-theme="light"] .border-white\/5,
-[data-theme="light"] .border-white\/10 {
-  border-color: rgba(0, 0, 0, 0.08);
+[data-theme="light"] .bg-slate-900\/80 {
+  background-color: rgba(255, 255, 255, 0.95);
 }
 
+/* Light theme - Borders */
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Light theme - Hover states */
 [data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .hover\:bg-white\/\[0\.02\]:hover {
   background-color: rgba(0, 0, 0, 0.03);
 }
 
+[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(99, 102, 241, 0.08);
+}
+
+[data-theme="light"] .bg-white\/\[0\.02\] {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Light theme - Rings */
 [data-theme="light"] .ring-white\/10 {
-  --tw-ring-color: rgba(0, 0, 0, 0.1);
+  --tw-ring-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Light theme - Glass card */
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Light theme - Checkboxes */
+[data-theme="light"] .border-slate-600 {
+  border-color: #cbd5e1;
+}
+
+/* Light theme - Progress bar background */
+[data-theme="light"] .bg-slate-700\/50 {
+  background-color: rgba(203, 213, 225, 0.5);
 }
