@@ -239,8 +239,13 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
         const res = { ...data };
         const nodeType = data.nodeType;
 
+        // Masquer le label du noeud survolé (le tooltip suffit)
+        if (node === hoveredNodeIdRef.current) {
+          res.label = '';
+          return res;
+        }
+
         // Forcer le label pour les nœuds sélectionnés, études et highlights
-        // (PAS pour le hover - le tooltip suffit)
         if (
           selectedNodeIdsRef.current.has(node) ||
           nodeType === 'EtudeClinique' ||
