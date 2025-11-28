@@ -223,6 +223,10 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       labelWeight: '500',
       labelColor: { color: '#f1f5f9' }, // Sera mis à jour par l'effet thème
 
+      // Désactiver le halo/background des labels au hover (on utilise notre tooltip)
+      defaultDrawNodeHover: () => undefined,
+      renderEdgeLabels: false,
+
       // Couleurs par défaut
       defaultNodeColor: '#6B7280',
       defaultEdgeColor: '#475569', // Sera mis à jour par l'effet thème
@@ -238,12 +242,6 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       nodeReducer: (node, data) => {
         const res = { ...data };
         const nodeType = data.nodeType;
-
-        // Masquer le label du noeud survolé (le tooltip suffit)
-        if (node === hoveredNodeIdRef.current) {
-          res.label = '';
-          return res;
-        }
 
         // Forcer le label pour les nœuds sélectionnés, études et highlights
         if (
