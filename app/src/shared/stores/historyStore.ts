@@ -1,10 +1,9 @@
 /**
  * KG-Oversight - Store d'historique pour Undo/Redo
- * Utilise jotai-history pour gérer l'historique des actions
+ * Implémentation simple sans dépendance externe
  */
 
 import { atom } from 'jotai';
-import { withHistory, type HistoryAtom } from 'jotai-history';
 
 // =============================================================================
 // Types
@@ -24,94 +23,98 @@ export interface HistoryEntry {
 }
 
 // =============================================================================
-// État de base avec historique
+// Historique interne
 // =============================================================================
 
-// État de sélection (avec historique)
-const baseSelectedNodeIdsAtom = atom<Set<string>>(new Set());
-export const selectedNodeIdsHistoryAtom = withHistory(baseSelectedNodeIdsAtom, 50);
+interface HistoryState<T> {
+  past: T[];
+  present: T;
+  future: T[];
+}
 
-// État de highlight (avec historique)
-const baseHighlightedNodeIdsAtom = atom<Set<string>>(new Set());
-export const highlightedNodeIdsHistoryAtom = withHistory(baseHighlightedNodeIdsAtom, 50);
+function createHistoryAtom<T>(initialValue: T, maxHistory = 50) {
+  const historyAtom = atom<HistoryState<T>>({
+    past: [],
+    present: initialValue,
+    future: [],
+  });
 
-// État des nœuds développés (avec historique)
-const baseFocusedNodeIdAtom = atom<string | null>(null);
-export const focusedNodeIdHistoryAtom = withHistory(baseFocusedNodeIdAtom, 50);
+  const valueAtom = atom(
+    (get) => get(historyAtom).present,
+    (get, set, newValue: T) => {
+      const state = get(historyAtom);
+      set(historyAtom, {
+        past: [...state.past, state.present].slice(-maxHistory),
+        present: newValue,
+        future: [],
+      });
+    }
+  );
+
+  const undoAtom = atom(null, (get, set) => {
+    const state = get(historyAtom);
+    if (state.past.length === 0) return;
+
+    const previous = state.past[state.past.length - 1];
+    set(historyAtom, {
+      past: state.past.slice(0, -1),
+      present: previous as T,
+      future: [state.present, ...state.future],
+    });
+  });
+
+  const redoAtom = atom(null, (get, set) => {
+    const state = get(historyAtom);
+    if (state.future.length === 0) return;
+
+    const next = state.future[0];
+    set(historyAtom, {
+      past: [...state.past, state.present],
+      present: next as T,
+      future: state.future.slice(1),
+    });
+  });
+
+  const canUndoAtom = atom((get) => get(historyAtom).past.length > 0);
+  const canRedoAtom = atom((get) => get(historyAtom).future.length > 0);
+
+  return { valueAtom, undoAtom, redoAtom, canUndoAtom, canRedoAtom };
+}
 
 // =============================================================================
-// Atoms pour accéder aux valeurs courantes
+// Historiques de sélection
 // =============================================================================
 
-export const selectedNodeIdsValueAtom = atom(
-  (get) => get(selectedNodeIdsHistoryAtom).value,
-  (get, set, newValue: Set<string>) => {
-    set(selectedNodeIdsHistoryAtom, { value: newValue });
-  }
-);
+const selectionHistory = createHistoryAtom<Set<string>>(new Set());
+const highlightHistory = createHistoryAtom<Set<string>>(new Set());
+const focusHistory = createHistoryAtom<string | null>(null);
 
-export const highlightedNodeIdsValueAtom = atom(
-  (get) => get(highlightedNodeIdsHistoryAtom).value,
-  (get, set, newValue: Set<string>) => {
-    set(highlightedNodeIdsHistoryAtom, { value: newValue });
-  }
-);
-
-export const focusedNodeIdValueAtom = atom(
-  (get) => get(focusedNodeIdHistoryAtom).value,
-  (get, set, newValue: string | null) => {
-    set(focusedNodeIdHistoryAtom, { value: newValue });
-  }
-);
+// Exports pour compatibilité
+export const selectedNodeIdsValueAtom = selectionHistory.valueAtom;
+export const highlightedNodeIdsValueAtom = highlightHistory.valueAtom;
+export const focusedNodeIdValueAtom = focusHistory.valueAtom;
 
 // =============================================================================
 // Atoms d'état Undo/Redo
 // =============================================================================
 
-export const canUndoAtom = atom((get) => {
-  const history = get(selectedNodeIdsHistoryAtom);
-  return history.index > 0;
-});
-
-export const canRedoAtom = atom((get) => {
-  const history = get(selectedNodeIdsHistoryAtom);
-  return history.index < history.history.length - 1;
-});
+export const canUndoAtom = selectionHistory.canUndoAtom;
+export const canRedoAtom = selectionHistory.canRedoAtom;
 
 // =============================================================================
-// Actions Undo/Redo
+// Actions Undo/Redo globales
 // =============================================================================
 
-export const undoAtom = atom(null, (get, set) => {
-  const selectionHistory = get(selectedNodeIdsHistoryAtom);
-  const highlightHistory = get(highlightedNodeIdsHistoryAtom);
-  const focusHistory = get(focusedNodeIdHistoryAtom);
-
-  if (selectionHistory.index > 0) {
-    set(selectedNodeIdsHistoryAtom, { index: selectionHistory.index - 1 });
-  }
-  if (highlightHistory.index > 0) {
-    set(highlightedNodeIdsHistoryAtom, { index: highlightHistory.index - 1 });
-  }
-  if (focusHistory.index > 0) {
-    set(focusedNodeIdHistoryAtom, { index: focusHistory.index - 1 });
-  }
+export const undoAtom = atom(null, (_get, set) => {
+  set(selectionHistory.undoAtom);
+  set(highlightHistory.undoAtom);
+  set(focusHistory.undoAtom);
 });
 
-export const redoAtom = atom(null, (get, set) => {
-  const selectionHistory = get(selectedNodeIdsHistoryAtom);
-  const highlightHistory = get(highlightedNodeIdsHistoryAtom);
-  const focusHistory = get(focusedNodeIdHistoryAtom);
-
-  if (selectionHistory.index < selectionHistory.history.length - 1) {
-    set(selectedNodeIdsHistoryAtom, { index: selectionHistory.index + 1 });
-  }
-  if (highlightHistory.index < highlightHistory.history.length - 1) {
-    set(highlightedNodeIdsHistoryAtom, { index: highlightHistory.index + 1 });
-  }
-  if (focusHistory.index < focusHistory.history.length - 1) {
-    set(focusedNodeIdHistoryAtom, { index: focusHistory.index + 1 });
-  }
+export const redoAtom = atom(null, (_get, set) => {
+  set(selectionHistory.redoAtom);
+  set(highlightHistory.redoAtom);
+  set(focusHistory.redoAtom);
 });
 
 // =============================================================================
@@ -149,11 +152,10 @@ export const logActionAtom = atom(
 // =============================================================================
 
 export const historyStatsAtom = atom((get) => {
-  const selectionHistory = get(selectedNodeIdsHistoryAtom);
+  const canUndo = get(canUndoAtom);
+  const canRedo = get(canRedoAtom);
   return {
-    currentIndex: selectionHistory.index,
-    totalSteps: selectionHistory.history.length,
-    canUndo: selectionHistory.index > 0,
-    canRedo: selectionHistory.index < selectionHistory.history.length - 1,
+    canUndo,
+    canRedo,
   };
 });

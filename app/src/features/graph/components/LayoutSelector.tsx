@@ -66,7 +66,7 @@ export function LayoutSelector({
 }: LayoutSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentOption = LAYOUT_OPTIONS.find((opt) => opt.type === currentLayout) || LAYOUT_OPTIONS[0];
+  const currentOption = LAYOUT_OPTIONS.find((opt) => opt.type === currentLayout) ?? LAYOUT_OPTIONS[0]!;
   const CurrentIcon = currentOption.icon;
 
   return (
