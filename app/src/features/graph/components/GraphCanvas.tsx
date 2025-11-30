@@ -451,8 +451,8 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
         label: node.nom ?? node.description ?? node.id,
         nodeType: node._type,
         hidden: false,
-        highlighted: highlightedNodeIds.has(id) || isFocused,
-        forceLabel: highlightedNodeIds.has(id) || isFocused,
+        highlighted: isFocused,
+        forceLabel: isFocused,
         originalColor: color,
         originalSize: size,
         kqiStatus,
@@ -500,7 +500,67 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       applyLayout();
     }
     sigmaRef.current?.refresh();
-  }, [filteredNodes, filteredEdges, highlightedNodeIds, graphViewMode, focusedNodeId, allNodes, allEdges, applyLayout, kqiAggregations]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredNodes, filteredEdges, graphViewMode, focusedNodeId, allNodes, allEdges, applyLayout, kqiAggregations]);
+
+  // Effet séparé pour le highlight des scénarios (ne reconstruit pas le graphe)
+  useEffect(() => {
+    const graph = graphRef.current;
+    const sigma = sigmaRef.current;
+    if (!graph || !sigma || graph.order === 0) return;
+
+    // Mettre à jour les nœuds
+    graph.forEachNode((nodeId) => {
+      const isHighlighted = highlightedNodeIds.has(nodeId);
+      const originalColor = graph.getNodeAttribute(nodeId, 'originalColor');
+      const originalSize = graph.getNodeAttribute(nodeId, 'originalSize');
+
+      if (highlightedNodeIds.size === 0) {
+        // Aucun highlight : restaurer les couleurs originales
+        if (originalColor) graph.setNodeAttribute(nodeId, 'color', originalColor);
+        if (originalSize) graph.setNodeAttribute(nodeId, 'size', originalSize);
+      } else if (isHighlighted) {
+        // Nœud highlighté : orange vif, plus grand
+        graph.setNodeAttribute(nodeId, 'color', '#f97316');
+        graph.setNodeAttribute(nodeId, 'size', (originalSize || 8) * 1.5);
+      } else {
+        // Nœud non highlighté : grisé, plus petit
+        graph.setNodeAttribute(nodeId, 'color', '#64748b');
+        graph.setNodeAttribute(nodeId, 'size', (originalSize || 8) * 0.7);
+      }
+    });
+
+    // Mettre à jour les edges
+    graph.forEachEdge((edgeId, _attrs, source, target) => {
+      const sourceHighlighted = highlightedNodeIds.has(source);
+      const targetHighlighted = highlightedNodeIds.has(target);
+      const isConnected = sourceHighlighted || targetHighlighted;
+
+      if (highlightedNodeIds.size === 0) {
+        // Aucun highlight : restaurer les edges
+        graph.setEdgeAttribute(edgeId, 'color', '#94a3b8');
+        graph.setEdgeAttribute(edgeId, 'size', 1);
+        graph.setEdgeAttribute(edgeId, 'hidden', false);
+      } else if (sourceHighlighted && targetHighlighted) {
+        // Les deux nœuds sont highlightés : edge orange vif
+        graph.setEdgeAttribute(edgeId, 'color', '#f97316');
+        graph.setEdgeAttribute(edgeId, 'size', 2.5);
+        graph.setEdgeAttribute(edgeId, 'hidden', false);
+      } else if (isConnected) {
+        // Un seul nœud highlighté : edge orange atténué
+        graph.setEdgeAttribute(edgeId, 'color', '#fb923c80');
+        graph.setEdgeAttribute(edgeId, 'size', 1.5);
+        graph.setEdgeAttribute(edgeId, 'hidden', false);
+      } else {
+        // Aucun nœud highlighté : edge très atténué
+        graph.setEdgeAttribute(edgeId, 'color', '#47556940');
+        graph.setEdgeAttribute(edgeId, 'size', 0.5);
+        graph.setEdgeAttribute(edgeId, 'hidden', false);
+      }
+    });
+
+    sigma.refresh();
+  }, [highlightedNodeIds]);
 
   // Fonction pour réinitialiser la vue
   const resetCamera = useCallback(() => {

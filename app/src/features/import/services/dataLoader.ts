@@ -1,10 +1,12 @@
 /**
  * KG-Oversight - Service de chargement des données CSV
  * Charge les nœuds et relations depuis les fichiers CSV du repo
+ * Utilise la persistance IndexedDB pour les sessions suivantes
  */
 
 import Papa from 'papaparse';
 import type { GraphNode, GraphEdge, NodeType } from '@data/types';
+import { loadAll, saveAll, hasPersistedData } from '@data/database/persistence';
 
 // Liste des types de nœuds à charger
 const NODE_TYPES: NodeType[] = [
@@ -131,7 +133,10 @@ function parseEdgeRow(row: ParsedRow, relationType: string, index: number): Grap
   } as GraphEdge;
 }
 
-export async function loadAllData(): Promise<{
+/**
+ * Charge les données depuis les fichiers CSV
+ */
+async function loadFromCSV(): Promise<{
   nodes: Map<string, GraphNode>;
   edges: Map<string, GraphEdge>;
 }> {
@@ -167,9 +172,60 @@ export async function loadAllData(): Promise<{
   // Attendre le chargement de tout
   await Promise.all([...nodePromises, ...edgePromises]);
 
-  console.log(`Loaded ${nodes.size} nodes and ${edges.size} edges`);
-
   return { nodes, edges };
+}
+
+/**
+ * Charge toutes les données avec stratégie de persistance
+ * 1. Tente de charger depuis IndexedDB (rapide)
+ * 2. Si pas de données, charge depuis CSV et persiste
+ */
+export async function loadAllData(forceReload = false): Promise<{
+  nodes: Map<string, GraphNode>;
+  edges: Map<string, GraphEdge>;
+  source: 'cache' | 'csv';
+}> {
+  // Vérifier si on a des données en cache et qu'on ne force pas le rechargement
+  if (!forceReload) {
+    try {
+      const hasCached = await hasPersistedData();
+      if (hasCached) {
+        console.log('[DataLoader] Loading from IndexedDB cache...');
+        const cached = await loadAll();
+        if (cached && cached.nodes.size > 0) {
+          console.log(`[DataLoader] Loaded ${cached.nodes.size} nodes and ${cached.edges.size} edges from cache`);
+          return { ...cached, source: 'cache' };
+        }
+      }
+    } catch (error) {
+      console.warn('[DataLoader] Failed to load from cache, falling back to CSV:', error);
+    }
+  }
+
+  // Charger depuis les fichiers CSV
+  console.log('[DataLoader] Loading from CSV files...');
+  const { nodes, edges } = await loadFromCSV();
+  console.log(`[DataLoader] Loaded ${nodes.size} nodes and ${edges.size} edges from CSV`);
+
+  // Persister en arrière-plan (ne pas bloquer le retour)
+  saveAll(nodes, edges).then(() => {
+    console.log('[DataLoader] Data persisted to IndexedDB');
+  }).catch((error) => {
+    console.warn('[DataLoader] Failed to persist data:', error);
+  });
+
+  return { nodes, edges, source: 'csv' };
+}
+
+/**
+ * Force le rechargement depuis les fichiers CSV et met à jour le cache
+ */
+export async function reloadFromCSV(): Promise<{
+  nodes: Map<string, GraphNode>;
+  edges: Map<string, GraphEdge>;
+}> {
+  const result = await loadAllData(true);
+  return { nodes: result.nodes, edges: result.edges };
 }
 
 export default loadAllData;

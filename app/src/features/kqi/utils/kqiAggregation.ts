@@ -201,3 +201,129 @@ export function aggregateAllSTsKQI(
 
   return aggregations;
 }
+
+/**
+ * Exporte les données KQI en format CSV
+ */
+export function exportKQIToCSV(kqiData: KQI[], filename = 'kqi-export.csv'): void {
+  if (kqiData.length === 0) {
+    console.warn('[KQI Export] No data to export');
+    return;
+  }
+
+  // Définir les colonnes
+  const headers = [
+    'ID',
+    'Sous-traitant ID',
+    'Sous-traitant',
+    'Indicateur',
+    'Période',
+    'Valeur',
+    'Seuil Objectif',
+    'Seuil Alerte',
+    'Statut',
+    'Tendance',
+  ];
+
+  // Construire les lignes de données
+  const rows = kqiData.map((kqi) => [
+    kqi.id,
+    kqi.sous_traitant_id,
+    kqi.sous_traitant_nom,
+    kqi.indicateur,
+    kqi.periode,
+    kqi.valeur.toString(),
+    kqi.seuil_objectif.toString(),
+    kqi.seuil_alerte.toString(),
+    kqi.statut,
+    kqi.tendance,
+  ]);
+
+  // Échapper les valeurs pour CSV
+  const escapeCSV = (value: string): string => {
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  };
+
+  // Construire le contenu CSV
+  const csvContent = [
+    headers.map(escapeCSV).join(','),
+    ...rows.map((row) => row.map(escapeCSV).join(',')),
+  ].join('\n');
+
+  // Ajouter le BOM UTF-8 pour Excel
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  // Télécharger le fichier
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+
+  console.log(`[KQI Export] Exported ${kqiData.length} records to ${filename}`);
+}
+
+/**
+ * Exporte les agrégations KQI par sous-traitant en CSV
+ */
+export function exportKQIAggregationsToCSV(
+  aggregations: Map<string, KQIAggregation>,
+  stNames: Map<string, string>,
+  filename = 'kqi-synthese.csv'
+): void {
+  if (aggregations.size === 0) {
+    console.warn('[KQI Export] No data to export');
+    return;
+  }
+
+  const headers = [
+    'Sous-traitant ID',
+    'Sous-traitant',
+    'Statut Global',
+    'Nb Indicateurs',
+    'Nb Alertes',
+    'Nb Attention',
+    'Nb OK',
+    'Nb Dégradations',
+    'Dernière Période',
+  ];
+
+  const rows = Array.from(aggregations.entries()).map(([stId, agg]) => [
+    stId,
+    stNames.get(stId) ?? stId,
+    getKQIStatusLabel(agg.status),
+    agg.totalCount.toString(),
+    agg.alertCount.toString(),
+    agg.warningCount.toString(),
+    agg.okCount.toString(),
+    agg.degradingCount.toString(),
+    agg.latestPeriod,
+  ]);
+
+  const escapeCSV = (value: string): string => {
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  };
+
+  const csvContent = [
+    headers.map(escapeCSV).join(','),
+    ...rows.map((row) => row.map(escapeCSV).join(',')),
+  ].join('\n');
+
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+
+  console.log(`[KQI Export] Exported ${aggregations.size} ST aggregations to ${filename}`);
+}

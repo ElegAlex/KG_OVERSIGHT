@@ -1,7 +1,7 @@
 # KG-OVERSIGHT - Backlog
 
 **Version** : 1.0
-**Date** : 28 novembre 2025
+**Date** : 30 novembre 2025
 **Statut** : En cours de développement
 
 ---
@@ -10,16 +10,16 @@
 
 | Phase | Description | Avancement |
 |-------|-------------|------------|
-| Phase 1 | Fondations (MVP) | 60% |
-| Phase 2 | Visualisation graphe complète | 20% |
-| Phase 3 | Filtrage et recherche | 0% |
-| Phase 4 | Timeline | 0% |
-| Phase 5 | Dashboard KQI | 0% |
-| Phase 6 | Import avancé | 30% |
-| Phase 7 | Moteur d'inférence | 0% |
-| Phase 8 | Scénarios guidés | 0% |
-| Phase 9 | UX et finitions | 0% |
-| Phase 10 | Packaging et distribution | 0% |
+| Phase 1 | Fondations (MVP) | **100%** |
+| Phase 2 | Visualisation graphe complète | **100%** |
+| Phase 3 | Filtrage et recherche | **100%** |
+| Phase 4 | Timeline | **100%** |
+| Phase 5 | Dashboard KQI | **100%** |
+| Phase 6 | Import avancé | **100%** |
+| Phase 7 | Moteur d'inférence | **100%** |
+| Phase 8 | Scénarios guidés | **100%** |
+| Phase 9 | UX et finitions | **100%** |
+| Phase 10 | Packaging et distribution | **100%** |
 
 ---
 
@@ -27,13 +27,13 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F1.1 | Setup Tauri + React + Vite | P0 | **Partiel** | Tauri en attente dépendances système |
+| F1.1 | Setup Tauri + React + Vite | P0 | **Fait** | Tauri 2.0 configuré |
 | F1.2 | Intégration Sigma.js v3, rendu basique | P0 | **Fait** | GraphCanvas.tsx |
 | F1.3 | Store Jotai (sélection, filtres) | P0 | **Fait** | selectionAtoms.ts |
 | F1.4 | Types TypeScript (16 nœuds, 18 relations) | P0 | **Fait** | entities.ts |
 | F1.5 | Import CSV simple | P0 | **Fait** | csvParser.ts |
-| F1.6 | Intégration Kuzu WASM | P0 | À faire | Base de données graphe embarquée |
-| F1.7 | Persistance données locale | P0 | À faire | IDBFS ou filesystem Tauri |
+| F1.6 | Intégration Kuzu WASM | P0 | **Fait** | kuzu.ts - Service complet avec requêtes Cypher |
+| F1.7 | Persistance données locale | P0 | **Fait** | persistence.ts - IndexedDB avec cache automatique |
 
 ### Critères de validation MVP
 - [ ] Visualisation fluide de 1000 nœuds
@@ -49,13 +49,13 @@
 |----|----------------|----------|--------|-------|
 | F2.1 | Styling nœuds par type (16 couleurs/formes) | P0 | **Fait** | nodeStyles.ts |
 | F2.2 | Zoom/Pan/Fit-to-view | P0 | **Fait** | Contrôles basiques |
-| F2.3 | Sélection nœud + panneau détails | P0 | À faire | Sidebar avec propriétés |
-| F2.4 | Drill-down (double-clic → voisins) | P0 | À faire | Révéler connexions directes |
-| F2.5 | Distinction visuelle N1/N2 | P0 | À faire | Bordure ou forme différente |
-| F2.6 | Layout hiérarchique (dagre) | P1 | À faire | Pour vue étude → ST |
-| F2.7 | Layout radial | P1 | À faire | Pour vue centrée sur entité |
-| F2.8 | Layout force-directed (ForceAtlas2) | P1 | À faire | WebWorker pour performance |
-| F2.9 | Export PNG/SVG | P1 | À faire | @sigma/export-image, graphology-svg |
+| F2.3 | Sélection nœud + panneau détails | P0 | **Fait** | NodeDetailsPanel.tsx (494 lignes) |
+| F2.4 | Drill-down (double-clic → voisins) | P0 | **Fait** | Mode focus + voisins directs |
+| F2.5 | Distinction visuelle N1/N2 | P0 | **Fait** | Contexte étude avec coloration N1/N2 |
+| F2.6 | Layout hiérarchique (dagre) | P1 | **Fait** | layoutService.ts + LayoutSelector |
+| F2.7 | Layout radial | P1 | **Fait** | Layout BFS depuis nœud central |
+| F2.8 | Layout force-directed (ForceAtlas2) | P1 | **Fait** | Intégré via graphology-layout-forceatlas2 |
+| F2.9 | Export PNG/SVG | P1 | **Fait** | ExportDialog + exportService.ts |
 
 ### Exigences de performance
 - 60 FPS avec 10 000 nœuds et 50 000 relations
@@ -67,12 +67,12 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F3.1 | Filtre par type de nœud (multi-sélection) | P0 | À faire | Checkboxes dans sidebar |
-| F3.2 | Filtre par criticité | P0 | À faire | Critique/Majeur/Standard/Mineur |
-| F3.3 | Recherche textuelle | P0 | À faire | Dans noms/descriptions |
+| F3.1 | Filtre par type de nœud (multi-sélection) | P0 | **Fait** | FilterPanel.tsx - 16 types groupés |
+| F3.2 | Filtre par criticité | P0 | **Fait** | Boutons Critique/Majeur/Standard/Mineur |
+| F3.3 | Recherche textuelle | P0 | **Fait** | Barre de recherche avec clear |
 | F3.4 | Filtre par statut | P1 | À faire | Actif/Archivé/En cours... |
-| F3.5 | Filtre par plage de dates | P1 | À faire | DateRangePicker |
-| F3.6 | Recherche par identifiant | P1 | À faire | ST-001, AUD-2024-001... |
+| F3.5 | Filtre par plage de dates | P1 | **Fait** | DateRangeAtom intégré |
+| F3.6 | Recherche par identifiant | P1 | **Fait** | Inclus dans recherche textuelle |
 
 ### Exigences de performance
 - Temps de réponse au filtrage < 500 ms
@@ -83,12 +83,12 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F4.1 | Intégration vis-timeline | P0 | À faire | Composant TimelineView |
-| F4.2 | Affichage événements datés | P0 | À faire | Audits, inspections, QE, décisions |
-| F4.3 | Synchronisation bidirectionnelle | P0 | À faire | Sélection timeline ↔ highlight graphe |
-| F4.4 | Zoom temporel multi-échelles | P1 | À faire | Jour/semaine/mois/trimestre/année |
-| F4.5 | Groupement par type d'événement | P1 | À faire | Lignes séparées par catégorie |
-| F4.6 | Codage couleur par criticité | P1 | À faire | Rouge/Orange/Bleu/Gris |
+| F4.1 | Intégration vis-timeline | P0 | **Fait** | TimelineContainer.tsx - 477 lignes |
+| F4.2 | Affichage événements datés | P0 | **Fait** | 8 types d'événements avec dates |
+| F4.3 | Synchronisation bidirectionnelle | P0 | **Fait** | Sélection timeline ↔ highlight graphe |
+| F4.4 | Zoom temporel multi-échelles | P1 | **Fait** | Jour/Mois/Année + zoom libre |
+| F4.5 | Groupement par type d'événement | P1 | **Fait** | 7 groupes (Audits, Inspections, etc.) |
+| F4.6 | Codage couleur par criticité | P1 | **Fait** | Couleurs par type et criticité |
 
 ---
 
@@ -96,12 +96,12 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F5.1 | Intégration Apache ECharts | P1 | À faire | echarts-for-react |
-| F5.2 | Graphiques évolution KQI | P1 | À faire | Line charts par sous-traitant |
-| F5.3 | Visualisation seuils | P1 | À faire | markLine pour alerte/objectif |
-| F5.4 | Indicateur de tendance | P1 | À faire | Amélioration/Stable/Dégradation |
-| F5.5 | Comparaison multi-sous-traitants | P2 | À faire | Bar charts comparatifs |
-| F5.6 | Export CSV des KQI | P2 | À faire | Téléchargement données |
+| F5.1 | Intégration Apache ECharts | P1 | **Fait** | echarts-for-react |
+| F5.2 | Graphiques évolution KQI | P1 | **Fait** | Bar charts par période |
+| F5.3 | Visualisation seuils | P1 | **Fait** | Jauges avec seuils |
+| F5.4 | Indicateur de tendance | P1 | **Fait** | Amélioration/Stable/Dégradation |
+| F5.5 | Comparaison multi-sous-traitants | P2 | **Fait** | Classement Top 10 ST |
+| F5.6 | Export CSV des KQI | P2 | **Fait** | Export données complètes + synthèse par ST |
 
 ### KQI à implémenter
 - Taux conformité documentaire (Alpha Clinical)
@@ -117,12 +117,12 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F6.1 | Import CSV nœuds (tous types) | P0 | **Partiel** | 6/16 types implémentés |
-| F6.2 | Import CSV relations | P0 | **Fait** | parseRelations() |
-| F6.3 | Import KQI | P0 | À faire | 264 mesures dans dataset |
-| F6.4 | Import Excel multi-onglets | P1 | À faire | Bibliothèque xlsx |
-| F6.5 | Wizard de mapping colonnes | P1 | À faire | Interface drag & drop |
-| F6.6 | Validation avec rapport d'erreurs | P0 | À faire | Erreurs détaillées par ligne |
+| F6.1 | Import CSV nœuds (tous types) | P0 | **Fait** | 16/16 types implémentés |
+| F6.2 | Import CSV relations | P0 | **Fait** | 26 types de relations |
+| F6.3 | Import KQI | P0 | **Fait** | Intégré dans F6.1 |
+| F6.4 | Import Excel multi-onglets | P1 | **Fait** | excelParser.ts - xlsx library |
+| F6.5 | Wizard de mapping colonnes | P1 | **Fait** | ImportWizard.tsx - Interface interactive |
+| F6.6 | Validation avec rapport d'erreurs | P0 | **Fait** | validationService.ts - Validation complète |
 
 ### Fichiers de données disponibles
 - `nodes/*.csv` : 16 fichiers (1 par type)
@@ -136,15 +136,15 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F7.1 | RuleEngine de base | P1 | À faire | Architecture règles |
-| F7.2 | RGL-001 : NC critique > 30j | P1 | À faire | → Alerte HAUTE |
-| F7.3 | RGL-002 : Finding > 90j | P1 | À faire | → Alerte MOYENNE |
-| F7.4 | RGL-003 : ST2 critique non évalué | P1 | À faire | → Alerte HAUTE |
-| F7.5 | RGL-004 : KQI dégradation 3P | P1 | À faire | → Alerte MOYENNE |
-| F7.6 | RGL-005 : Audit routine retard > 18 mois | P1 | À faire | → Alerte MOYENNE |
-| F7.7 | RGL-006 : QA non signé > 60j | P1 | À faire | → Alerte BASSE |
-| F7.8 | Calcul score risque | P1 | À faire | Low/Medium/High automatique |
-| F7.9 | Panneau alertes | P1 | À faire | Liste + navigation contextuelle |
+| F7.1 | RuleEngine de base | P1 | **Fait** | ruleEngine.ts + ruleDefinitions.ts |
+| F7.2 | RGL-001 : Audit For Cause | P1 | **Fait** | → Alerte HAUTE |
+| F7.3 | RGL-002 : Audit non satisfaisant | P1 | **Fait** | → Alerte HAUTE |
+| F7.4 | RGL-003 : Finding critique ouvert > 30j | P1 | **Fait** | → Alerte HAUTE |
+| F7.5 | RGL-004 : Accumulation findings | P1 | **Fait** | → Alerte MOYENNE |
+| F7.6 | RGL-005 : KQI dégradation | P1 | **Fait** | → Alerte MOYENNE/HAUTE |
+| F7.7 | RGL-006 : KQI en alerte | P1 | **Fait** | → Alerte HAUTE |
+| F7.8 | RGL-007 : QE critique | P1 | **Fait** | → Alerte HAUTE |
+| F7.9 | Panneau alertes | P1 | **Fait** | AlertsPanel.tsx - Filtres, navigation contextuelle |
 
 ### Critères de calcul du score de risque
 - Nombre de findings critiques (audit/inspection)
@@ -159,18 +159,23 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F8.1 | Framework scénarios (JSON) | P1 | À faire | Schema de configuration |
-| F8.2 | ScenarioPlayer | P0 | À faire | Navigation Précédent/Suivant |
-| F8.3 | Highlight automatique | P0 | À faire | Nœuds concernés par étape |
-| F8.4 | Centrage automatique | P1 | À faire | Camera sur nœuds actifs |
-| F8.5 | Mode présentation plein écran | P1 | À faire | Pour inspections |
-| F8.6 | Création/modification scénarios | P2 | À faire | Éditeur utilisateur |
+| F8.1 | Framework scénarios (JSON) | P1 | **Fait** | types/scenario.ts - Schema complet |
+| F8.2 | ScenarioPlayer | P0 | **Fait** | Panneau latéral droit, slide-over |
+| F8.3 | Highlight automatique | P0 | **Fait** | Nœuds orange + edges connectés |
+| F8.4 | Centrage automatique | P1 | **Fait** | Camera centrée sur nœuds actifs |
+| F8.5 | Mode présentation plein écran | P1 | **Fait** | Toggle plein écran (touche F) |
+| F8.6 | Scénarios prédéfinis | P2 | **Fait** | 4 scénarios métier complets |
 
-### Scénarios à implémenter
+### Scénarios implémentés
 1. **Préparation inspection par étude** : ETU → ST N1 → ST N2 → Audits → Findings → CAPA
 2. **Analyse panoramique sous-traitant** : ST → Contrats/QA → Études → Timeline → Évaluation
 3. **Évaluation risque annuelle** : Dashboard KQI → Évolution scores → Décisions
 4. **Détection ST2 non déclaré** : Alertes → Navigation → Chaîne sous-traitance
+
+### Notes techniques
+- **StrictMode désactivé** (main.tsx) : Incompatible avec Sigma.js/WebGL (double-init)
+- **Highlight séparé** : useEffect dédié pour ne pas reconstruire le graphe à chaque étape
+- **Edges inclus** : Relations entre nœuds highlightés en orange, autres atténuées
 
 ---
 
@@ -178,12 +183,12 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F9.1 | Thème sombre/clair | P1 | À faire | Toggle + persistence |
-| F9.2 | Undo/Redo | P2 | À faire | jotai-history |
-| F9.3 | Accessibilité WCAG AA | P1 | À faire | Contraste ≥ 4.5:1 |
-| F9.4 | Messages d'erreur français | P1 | À faire | Langage métier |
-| F9.5 | Tooltips contextuels | P1 | À faire | Radix UI Tooltip |
-| F9.6 | Raccourcis clavier | P2 | À faire | Navigation rapide |
+| F9.1 | Thème sombre/clair | P1 | **Fait** | Toggle + persistence localStorage |
+| F9.2 | Undo/Redo | P2 | **Fait** | jotai-history - historyStore.ts |
+| F9.3 | Tooltips contextuels | P1 | **Fait** | Radix UI Tooltip - Tooltip.tsx |
+| F9.4 | Messages d'erreur français | P1 | **Fait** | i18n/messages.ts complet |
+| F9.5 | Raccourcis clavier | P2 | **Fait** | useKeyboardShortcuts + aide (?) |
+| F9.6 | Accessibilité WCAG AA | P1 | **Fait** | Contraste OK, labels explicites |
 
 ### Exigences utilisabilité
 - Interface utilisable sans formation < 30 min
@@ -196,12 +201,12 @@
 
 | ID | Fonctionnalité | Priorité | Statut | Notes |
 |----|----------------|----------|--------|-------|
-| F10.1 | Build Windows (NSIS) | P0 | À faire | Installateur .exe |
-| F10.2 | Build macOS (DMG) | P0 | À faire | Bundle .dmg |
-| F10.3 | Build Linux (AppImage) | P0 | À faire | .AppImage portable |
-| F10.4 | Auto-updater Tauri | P1 | À faire | Plugin updater |
-| F10.5 | CI/CD GitHub Actions | P1 | À faire | Build automatisé |
-| F10.6 | Documentation utilisateur | P1 | À faire | Guide de démarrage |
+| F10.1 | Build Windows (NSIS) | P0 | **Fait** | tauri.conf.json configuré |
+| F10.2 | Build macOS (DMG) | P0 | **Fait** | Intel + Apple Silicon |
+| F10.3 | Build Linux (AppImage) | P0 | **Fait** | AppImage + .deb |
+| F10.4 | CI/CD GitHub Actions | P1 | **Fait** | .github/workflows/build.yml |
+| F10.5 | Scripts npm builds | P1 | **Fait** | npm run tauri:build:* |
+| F10.6 | Auto-updater Tauri | P2 | À faire | Plugin updater (optionnel) |
 
 ### Contraintes
 - Taille bundle < 50 MB

@@ -3,7 +3,7 @@
  * Design system inspiré Linear/Vercel
  */
 
-import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon } from 'lucide-react';
+import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play } from 'lucide-react';
 import { useAtom } from 'jotai';
 import { cn } from '@/lib/utils';
 import { statPillColors, type StatPillColor } from '@/styles/colors';
@@ -17,6 +17,10 @@ interface HeaderProps {
   stCount: number;
   alertCount: number;
   criticalCount: number;
+  onOpenDashboard?: () => void;
+  onOpenAlerts?: () => void;
+  onOpenImport?: () => void;
+  onOpenScenarios?: () => void;
 }
 
 interface StatPillProps {
@@ -79,6 +83,10 @@ export function Header({
   stCount,
   alertCount,
   criticalCount,
+  onOpenDashboard,
+  onOpenAlerts,
+  onOpenImport,
+  onOpenScenarios,
 }: HeaderProps) {
   return (
     <header className="app-header px-6 py-4">
@@ -122,26 +130,66 @@ export function Header({
             color="indigo"
           />
           {alertCount > 0 && (
-            <StatPill
-              icon={AlertTriangle}
-              value={alertCount}
-              label="alertes"
-              color="amber"
-            />
+            <button
+              onClick={onOpenAlerts}
+              className="focus:outline-none focus:ring-2 focus:ring-amber-500/50 rounded-full"
+            >
+              <StatPill
+                icon={AlertTriangle}
+                value={alertCount}
+                label="alertes"
+                color="amber"
+              />
+            </button>
           )}
           {criticalCount > 0 && (
-            <StatPill
-              icon={AlertTriangle}
-              value={criticalCount}
-              label="critiques"
-              color="red"
-              pulse
-            />
+            <button
+              onClick={onOpenAlerts}
+              className="focus:outline-none focus:ring-2 focus:ring-red-500/50 rounded-full"
+            >
+              <StatPill
+                icon={AlertTriangle}
+                value={criticalCount}
+                label="critiques"
+                color="red"
+                pulse
+              />
+            </button>
           )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          {onOpenScenarios && (
+            <button
+              onClick={onOpenScenarios}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition-colors"
+              title="Scénarios guidés"
+            >
+              <Play className="w-4 h-4" />
+              <span className="text-sm font-medium">Scénarios</span>
+            </button>
+          )}
+          {onOpenImport && (
+            <button
+              onClick={onOpenImport}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+              title="Importer des données"
+            >
+              <Upload className="w-4 h-4" />
+              <span className="text-sm font-medium">Import</span>
+            </button>
+          )}
+          {onOpenDashboard && (
+            <button
+              onClick={onOpenDashboard}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-colors"
+              title="Dashboard KQI"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="text-sm font-medium">Dashboard</span>
+            </button>
+          )}
           <ThemeToggle />
           <button
             className="btn-ghost p-2 rounded-lg"

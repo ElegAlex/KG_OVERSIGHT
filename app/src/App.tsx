@@ -6,9 +6,25 @@
 
 import { Provider as JotaiProvider, useSetAtom, useAtomValue, useAtom } from 'jotai';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { GraphCanvas, NodeDetailsPanel, FilterPanel, GraphControls, GraphLegend } from '@features/graph';
+import {
+  GraphCanvas,
+  NodeDetailsPanel,
+  FilterPanel,
+  GraphControls,
+  GraphLegend,
+  LayoutSelector,
+  ExportDialog,
+  exportGraph,
+  generateFilename,
+  type LayoutType,
+  type GraphCanvasRef,
+} from '@features/graph';
 import { KQIPanel } from '@features/kqi';
 import { TimelineContainer } from '@features/timeline';
+import { KQIDashboard } from '@features/dashboard';
+import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsCountByLevelAtom } from '@features/inference';
+import { ImportWizard } from '@features/import';
+import { ScenarioSelector, ScenarioPlayer } from '@features/scenarios';
 import { Header } from '@/components/layout';
 import {
   allNodesAtom,
@@ -20,7 +36,6 @@ import { themeAtom } from '@shared/stores/themeAtom';
 import { loadAllData } from '@features/import/services/dataLoader';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import type { GraphNode } from '@data/types';
-import type Sigma from 'sigma';
 import './styles/globals.css';
 
 // Client React Query
@@ -83,12 +98,33 @@ function AppContent() {
   const [totalNodes, setTotalNodes] = useState(0);
   const [totalEdges, setTotalEdges] = useState(0);
   const [allNodesData, setAllNodesData] = useState<Map<string, GraphNode>>(new Map());
+  const [allEdgesData, setAllEdgesData] = useState<Map<string, any>>(new Map());
   const filteredNodes = useAtomValue(filteredNodesAtom);
   const selectedStudyId = useAtomValue(selectedStudyIdAtom);
   const [theme] = useAtom(themeAtom);
 
   // Ref pour les contrôles du graphe
-  const sigmaRef = useRef<Sigma | null>(null);
+  const graphCanvasRef = useRef<GraphCanvasRef>(null);
+
+  // État du dashboard KQI
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+
+  // État du dialogue d'export
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+
+  // État du wizard d'import
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
+
+  // État du sélecteur de scénarios
+  const [isScenarioSelectorOpen, setIsScenarioSelectorOpen] = useState(false);
+
+  // Layout actuel
+  const [currentLayout, setCurrentLayout] = useState<LayoutType>('forceAtlas2');
+
+  // Alertes
+  const setAlerts = useSetAtom(setAlertsAtom);
+  const [isAlertsPanelOpen, setIsAlertsPanelOpen] = useAtom(alertsPanelOpenAtom);
+  const alertsCounts = useAtomValue(alertsCountByLevelAtom);
 
   // Appliquer le thème au chargement
   useEffect(() => {
@@ -118,9 +154,16 @@ function AppContent() {
         setAllNodes(nodes);
         setAllEdges(edges);
         setAllNodesData(nodes);
+        setAllEdgesData(edges);
         setTotalNodes(nodes.size);
         setTotalEdges(edges.size);
         setIsLoaded(true);
+
+        // Exécuter le moteur de règles pour générer les alertes
+        const ruleEngine = getRuleEngine();
+        const result = ruleEngine.evaluateAll(nodes, edges);
+        setAlerts(result.alerts);
+        console.log(`[App] Rule engine: ${result.alerts.length} alerts generated in ${result.executionTimeMs}ms`);
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
         setLoadError(error instanceof Error ? error.message : 'Erreur inconnue');
@@ -128,28 +171,44 @@ function AppContent() {
     }
 
     loadData();
-  }, [setAllNodes, setAllEdges]);
+  }, [setAllNodes, setAllEdges, setAlerts]);
 
   // Callbacks pour les contrôles du graphe
   const handleZoomIn = useCallback(() => {
-    sigmaRef.current?.getCamera().animatedZoom({ duration: 300 });
+    graphCanvasRef.current?.getSigma()?.getCamera().animatedZoom({ duration: 300 });
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    sigmaRef.current?.getCamera().animatedUnzoom({ duration: 300 });
+    graphCanvasRef.current?.getSigma()?.getCamera().animatedUnzoom({ duration: 300 });
   }, []);
 
   const handleFitToView = useCallback(() => {
-    sigmaRef.current?.getCamera().animate(
+    graphCanvasRef.current?.getSigma()?.getCamera().animate(
       { x: 0.5, y: 0.5, ratio: 1 },
       { duration: 500 }
     );
   }, []);
 
   const handleResetLayout = useCallback(() => {
-    // Le layout est géré dans GraphCanvas via un event ou prop callback
-    // Pour l'instant on fait un refresh
-    sigmaRef.current?.refresh();
+    graphCanvasRef.current?.applyLayout(currentLayout);
+  }, [currentLayout]);
+
+  // Changement de layout
+  const handleLayoutChange = useCallback((layout: LayoutType) => {
+    setCurrentLayout(layout);
+    graphCanvasRef.current?.applyLayout(layout);
+  }, []);
+
+  // Export du graphe
+  const handleExport = useCallback(async (options: Parameters<typeof exportGraph>[2]) => {
+    const sigma = graphCanvasRef.current?.getSigma();
+    const graph = graphCanvasRef.current?.getGraph();
+    if (!sigma || !graph) return;
+
+    await exportGraph(sigma, graph, {
+      ...options,
+      filename: generateFilename('kg-oversight'),
+    });
   }, []);
 
   if (loadError) {
@@ -168,8 +227,12 @@ function AppContent() {
         filteredNodes={filteredNodes.size}
         totalEdges={totalEdges}
         stCount={stats.stCount}
-        alertCount={stats.alertCount}
-        criticalCount={stats.criticalCount}
+        alertCount={alertsCounts.total}
+        criticalCount={alertsCounts.haute}
+        onOpenDashboard={() => setIsDashboardOpen(true)}
+        onOpenAlerts={() => setIsAlertsPanelOpen(true)}
+        onOpenImport={() => setIsImportWizardOpen(true)}
+        onOpenScenarios={() => setIsScenarioSelectorOpen(true)}
       />
 
       {/* Contenu principal */}
@@ -181,7 +244,20 @@ function AppContent() {
 
         {/* Zone centrale du graphe */}
         <main className="app-main graph-pattern-bg">
-          <GraphCanvas key={theme} />
+          <GraphCanvas
+            ref={graphCanvasRef}
+            key={theme}
+            currentLayout={currentLayout}
+            onLayoutChange={handleLayoutChange}
+          />
+
+          {/* Sélecteur de layout flottant */}
+          <LayoutSelector
+            currentLayout={currentLayout}
+            onLayoutChange={handleLayoutChange}
+            isLayoutRunning={graphCanvasRef.current?.isLayoutRunning}
+            className="absolute top-4 left-4 z-20"
+          />
 
           {/* Légende flottante */}
           <GraphLegend
@@ -196,6 +272,7 @@ function AppContent() {
             onZoomOut={handleZoomOut}
             onFitToView={handleFitToView}
             onResetLayout={handleResetLayout}
+            onExportPNG={() => setIsExportDialogOpen(true)}
           />
         </main>
 
@@ -210,6 +287,65 @@ function AppContent() {
 
       {/* Panneau KQI (overlay) */}
       <KQIPanel />
+
+      {/* Dashboard KQI (modal) */}
+      <KQIDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
+
+      {/* Panneau des alertes (slide-over) */}
+      <AlertsPanel />
+
+      {/* Dialogue d'export */}
+      <ExportDialog
+        isOpen={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        onExport={handleExport}
+      />
+
+      {/* Wizard d'import */}
+      <ImportWizard
+        isOpen={isImportWizardOpen}
+        onClose={() => setIsImportWizardOpen(false)}
+      />
+
+      {/* Sélecteur de scénarios */}
+      <ScenarioSelector
+        isOpen={isScenarioSelectorOpen}
+        onClose={() => setIsScenarioSelectorOpen(false)}
+      />
+
+      {/* Player de scénario */}
+      <ScenarioPlayer
+        onCenterOnNodes={(nodeIds) => {
+          // Centrer la caméra sur les nœuds sélectionnés
+          const sigma = graphCanvasRef.current?.getSigma();
+          if (sigma && nodeIds.length > 0) {
+            const graph = graphCanvasRef.current?.getGraph();
+            if (graph) {
+              // Calculer le barycentre des nœuds
+              let sumX = 0, sumY = 0, count = 0;
+              for (const nodeId of nodeIds) {
+                if (graph.hasNode(nodeId)) {
+                  const attrs = graph.getNodeAttributes(nodeId);
+                  sumX += attrs.x || 0;
+                  sumY += attrs.y || 0;
+                  count++;
+                }
+              }
+              if (count > 0) {
+                const centerX = sumX / count;
+                const centerY = sumY / count;
+                // Convertir en coordonnées normalisées
+                const viewportPos = sigma.graphToViewport({ x: centerX, y: centerY });
+                const camera = sigma.getCamera();
+                camera.animate(
+                  { x: centerX, y: centerY, ratio: Math.min(1, camera.ratio) },
+                  { duration: 500 }
+                );
+              }
+            }
+          }
+        }}
+      />
     </div>
   );
 }
