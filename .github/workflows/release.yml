@@ -1,0 +1,197 @@
+# =============================================================================
+# KG-OVERSIGHT - Workflow de Release Multi-Plateforme
+# =============================================================================
+#
+# Ce workflow build et publie l'application Tauri pour Linux, macOS et Windows.
+#
+# DÉCLENCHEMENT :
+#   - Automatique : quand un tag v*.*.* est poussé (ex: v1.0.0, v2.1.3)
+#   - Manuel : via l'onglet "Actions" sur GitHub (workflow_dispatch)
+#
+# COMMENT CRÉER UNE RELEASE :
+#   1. Mettre à jour la version dans app/package.json et app/src-tauri/tauri.conf.json
+#   2. Commit : git commit -am "chore: bump version to 1.0.0"
+#   3. Tag : git tag v1.0.0
+#   4. Push : git push origin main --tags
+#   5. Le workflow se déclenche automatiquement
+#   6. Les exécutables apparaissent dans GitHub Releases
+#
+# ARTIFACTS GÉNÉRÉS :
+#   - Linux : .deb, .AppImage
+#   - macOS : .dmg, .app (Universal: Intel + Apple Silicon)
+#   - Windows : .msi, .exe (NSIS installer)
+#
+# =============================================================================
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (ex: 1.0.0)'
+        required: true
+        type: string
+
+# Permissions nécessaires pour créer des releases
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ===========================================================================
+  # Job 1 : Créer la release GitHub (draft)
+  # ===========================================================================
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release (draft)
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: KG-Oversight v${{ steps.get_version.outputs.version }}
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ===========================================================================
+  # Job 2 : Build pour chaque plateforme
+  # ===========================================================================
+  build:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux (Ubuntu)
+          - platform: linux
+            os: ubuntu-22.04
+            rust_target: x86_64-unknown-linux-gnu
+
+          # macOS Intel
+          - platform: macos
+            os: macos-latest
+            rust_target: x86_64-apple-darwin
+
+          # macOS Apple Silicon
+          - platform: macos
+            os: macos-latest
+            rust_target: aarch64-apple-darwin
+
+          # Windows
+          - platform: windows
+            os: windows-latest
+            rust_target: x86_64-pc-windows-msvc
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Installation des dépendances système (Linux uniquement)
+      # -----------------------------------------------------------------------
+      - name: Install Linux dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev
+
+      # -----------------------------------------------------------------------
+      # Setup Node.js
+      # -----------------------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      # -----------------------------------------------------------------------
+      # Setup Rust
+      # -----------------------------------------------------------------------
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri -> target
+          key: ${{ matrix.rust_target }}
+
+      # -----------------------------------------------------------------------
+      # Installation des dépendances Node.js
+      # -----------------------------------------------------------------------
+      - name: Install Node.js dependencies
+        working-directory: app
+        run: npm ci
+
+      # -----------------------------------------------------------------------
+      # Build Tauri
+      # -----------------------------------------------------------------------
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pour la signature macOS (optionnel, à configurer si besoin)
+          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          projectPath: app
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+          args: --target ${{ matrix.rust_target }}
+
+  # ===========================================================================
+  # Job 3 : Publier la release (retirer le draft)
+  # ===========================================================================
+  publish-release:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ needs.create-release.outputs.release_id }},
+              draft: false
+            })

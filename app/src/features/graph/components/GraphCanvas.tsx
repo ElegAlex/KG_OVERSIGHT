@@ -4,11 +4,11 @@
  * Améliorations UX : relations visibles, distinction N1/N2, hover highlight
  */
 
-import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo, forwardRef, useImperativeHandle } from 'react';
 import Graph from 'graphology';
 import Sigma from 'sigma';
-import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { applyLayout as applyLayoutService, type LayoutType } from '../services/layoutService';
 import { themeAtom } from '@shared/stores/themeAtom';
 import {
   filteredNodesAtom,
@@ -42,16 +42,28 @@ import type { SigmaNodeAttributes, SigmaEdgeAttributes, GraphNode, KQI } from '@
 
 interface GraphCanvasProps {
   className?: string;
+  currentLayout?: LayoutType;
+  onLayoutChange?: (layout: LayoutType) => void;
+}
+
+/** Ref exposée pour les contrôles du graphe */
+export interface GraphCanvasRef {
+  getSigma: () => Sigma | null;
+  getGraph: () => Graph | null;
+  applyLayout: (layout: LayoutType) => void;
+  isLayoutRunning: boolean;
 }
 
 // Extended attributes pour le hover et KQI
 interface ExtendedNodeAttributes extends SigmaNodeAttributes {
   originalColor?: string;
+  originalSize?: number;
   kqiStatus?: 'good' | 'warning' | 'critical' | null;
   kqiAlertCount?: number;
 }
 
-export function GraphCanvas({ className = '' }: GraphCanvasProps) {
+export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
+  function GraphCanvas({ className = '', currentLayout = 'forceAtlas2' }, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sigmaRef = useRef<Sigma | null>(null);
   const graphRef = useRef<Graph<ExtendedNodeAttributes, SigmaEdgeAttributes> | null>(null);
@@ -94,7 +106,15 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
     return aggregateAllSTsKQI(kqiData, stIds);
   }, [allNodes, kqiData]);
 
-  // Pré-positionner les études en cercle pour un meilleur layout
+  // Référence au layout actuel pour pouvoir le réappliquer
+  const currentLayoutRef = useRef<LayoutType>(currentLayout);
+
+  // Mettre à jour la référence quand le layout change
+  useEffect(() => {
+    currentLayoutRef.current = currentLayout;
+  }, [currentLayout]);
+
+  // Pré-positionner les études en cercle pour un meilleur layout (ForceAtlas2)
   const prePositionStudies = useCallback((graph: Graph) => {
     const studies = graph.filterNodes((_, attrs) => attrs.nodeType === 'EtudeClinique');
     const studyCount = studies.length;
@@ -108,35 +128,37 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
     });
   }, []);
 
-  // Appliquer le layout ForceAtlas2
-  const applyLayout = useCallback(() => {
+  // Appliquer un layout au graphe
+  const applyLayout = useCallback((layoutType?: LayoutType) => {
     const graph = graphRef.current;
     if (!graph || graph.order === 0) return;
 
+    const layout = layoutType ?? currentLayoutRef.current;
     setIsLayoutRunning(true);
 
-    // Pré-positionner les études
-    prePositionStudies(graph);
+    // Pré-positionner les études pour ForceAtlas2 (améliore la convergence)
+    if (layout === 'forceAtlas2') {
+      prePositionStudies(graph);
+    }
 
-    // Appliquer ForceAtlas2
-    forceAtlas2.assign(graph, {
-      iterations: 150,
-      settings: {
-        gravity: 0.5,
-        scalingRatio: 15,
-        strongGravityMode: false,
-        slowDown: 2,
-        barnesHutOptimize: graph.order > 50,
-        barnesHutTheta: 0.5,
-        adjustSizes: true,
-        linLogMode: false,
-        outboundAttractionDistribution: true,
-      },
+    // Utiliser le service de layout
+    applyLayoutService(graph, {
+      type: layout,
+      // Pour le layout radial, utiliser le nœud focusé ou la première étude
+      centerNodeId: focusedNodeId ?? undefined,
     });
 
     sigmaRef.current?.refresh();
     setIsLayoutRunning(false);
-  }, [prePositionStudies]);
+  }, [prePositionStudies, focusedNodeId]);
+
+  // Exposer les méthodes via la ref
+  useImperativeHandle(ref, () => ({
+    getSigma: () => sigmaRef.current,
+    getGraph: () => graphRef.current,
+    applyLayout,
+    isLayoutRunning,
+  }), [applyLayout, isLayoutRunning]);
 
   // Highlight des voisins au hover - simplifié : juste atténuation des non-voisins
   const highlightNeighbors = useCallback((nodeId: string | null) => {
@@ -705,7 +727,7 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
           <span className="text-sm">⟲</span>
         </button>
         <button
-          onClick={applyLayout}
+          onClick={() => applyLayout()}
           disabled={isLayoutRunning}
           className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors disabled:opacity-50"
           title="Recalculer le layout"
@@ -715,6 +737,6 @@ export function GraphCanvas({ className = '' }: GraphCanvasProps) {
       </div>
     </div>
   );
-}
+});
 
 export default GraphCanvas;
