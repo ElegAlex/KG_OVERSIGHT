@@ -315,38 +315,7 @@ function AppContent() {
       />
 
       {/* Player de scénario */}
-      <ScenarioPlayer
-        onCenterOnNodes={(nodeIds) => {
-          // Centrer la caméra sur les nœuds sélectionnés
-          const sigma = graphCanvasRef.current?.getSigma();
-          if (sigma && nodeIds.length > 0) {
-            const graph = graphCanvasRef.current?.getGraph();
-            if (graph) {
-              // Calculer le barycentre des nœuds
-              let sumX = 0, sumY = 0, count = 0;
-              for (const nodeId of nodeIds) {
-                if (graph.hasNode(nodeId)) {
-                  const attrs = graph.getNodeAttributes(nodeId);
-                  sumX += attrs.x || 0;
-                  sumY += attrs.y || 0;
-                  count++;
-                }
-              }
-              if (count > 0) {
-                const centerX = sumX / count;
-                const centerY = sumY / count;
-                // Convertir en coordonnées normalisées
-                const viewportPos = sigma.graphToViewport({ x: centerX, y: centerY });
-                const camera = sigma.getCamera();
-                camera.animate(
-                  { x: centerX, y: centerY, ratio: Math.min(1, camera.ratio) },
-                  { duration: 500 }
-                );
-              }
-            }
-          }
-        }}
-      />
+      <ScenarioPlayer />
 
       {/* Auto-updater Tauri */}
       <UpdateChecker autoCheck={true} checkInterval={60} />
