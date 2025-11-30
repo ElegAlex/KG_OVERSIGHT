@@ -56,6 +56,32 @@ export type EdgeType =
 export type Criticite = 'Critique' | 'Majeur' | 'Standard' | 'Mineur';
 export type StatutST = 'Approuvé' | 'Déclaré' | 'Sous surveillance' | 'En évaluation';
 export type NiveauAlerte = 'HAUTE' | 'MOYENNE' | 'BASSE';
+
+/** Statuts génériques pour le filtrage */
+export type StatutGenerique =
+  | 'Actif'
+  | 'Active'
+  | 'Clôturé'
+  | 'En cours'
+  | 'Planifié'
+  | 'Planifiée'
+  | 'Archivé'
+  | 'Réalisé'
+  | 'Appliquée'
+  | 'Résolue'
+  | 'Signé'
+  | 'Applicable'
+  | 'En démarrage'
+  | 'En évaluation'
+  | 'En révision'
+  | 'En réévaluation'
+  | 'Non évalué'
+  | 'Sous surveillance'
+  | 'Approuvé'
+  | 'Déclaré';
+
+/** Catégories de statuts pour le filtrage simplifié */
+export type CategorieStatut = 'actif' | 'cloture' | 'en_cours' | 'planifie' | 'archive';
 export type ScoreRisque = 'Low' | 'Medium' | 'High';
 export type Tendance = 'Amélioration' | 'Stable' | 'Dégradation';
 

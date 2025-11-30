@@ -80,5 +80,16 @@
     },
     "resources": []
   },
-  "plugins": {}
+  "plugins": {
+    "updater": {
+      "active": true,
+      "pubkey": "",
+      "endpoints": [
+        "https://github.com/YOUR_USERNAME/kg-oversight/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
 }

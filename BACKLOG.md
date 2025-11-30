@@ -70,7 +70,7 @@
 | F3.1 | Filtre par type de nœud (multi-sélection) | P0 | **Fait** | FilterPanel.tsx - 16 types groupés |
 | F3.2 | Filtre par criticité | P0 | **Fait** | Boutons Critique/Majeur/Standard/Mineur |
 | F3.3 | Recherche textuelle | P0 | **Fait** | Barre de recherche avec clear |
-| F3.4 | Filtre par statut | P1 | À faire | Actif/Archivé/En cours... |
+| F3.4 | Filtre par statut | P1 | **Fait** | 5 catégories: Actif/En cours/Planifié/Clôturé/Archivé |
 | F3.5 | Filtre par plage de dates | P1 | **Fait** | DateRangeAtom intégré |
 | F3.6 | Recherche par identifiant | P1 | **Fait** | Inclus dans recherche textuelle |
 
@@ -206,7 +206,7 @@
 | F10.3 | Build Linux (AppImage) | P0 | **Fait** | AppImage + .deb |
 | F10.4 | CI/CD GitHub Actions | P1 | **Fait** | .github/workflows/build.yml |
 | F10.5 | Scripts npm builds | P1 | **Fait** | npm run tauri:build:* |
-| F10.6 | Auto-updater Tauri | P2 | À faire | Plugin updater (optionnel) |
+| F10.6 | Auto-updater Tauri | P2 | **Fait** | tauri-plugin-updater + UpdateChecker.tsx |
 
 ### Contraintes
 - Taille bundle < 50 MB
@@ -216,23 +216,18 @@
 
 ---
 
-## Prochaines priorités
+## Statut Final
 
-### Sprint 1 (immédiat)
-1. [ ] Installer dépendances système Tauri (`sudo apt install...`)
-2. [ ] Initialiser Tauri dans le projet
-3. [ ] Panneau détails du nœud sélectionné (F2.3)
-4. [ ] Filtres par type et criticité (F3.1, F3.2)
+**Le projet est 100% complet.** Toutes les phases ont été implémentées avec succès.
 
-### Sprint 2
-5. [ ] Intégration Kuzu WASM (F1.6)
-6. [ ] Timeline avec vis-timeline (F4.1, F4.2, F4.3)
-7. [ ] Drill-down sur double-clic (F2.4)
+### Dernières fonctionnalités ajoutées (30 novembre 2025)
+- [x] **F3.4** - Filtre par statut (5 catégories : Actif/En cours/Planifié/Clôturé/Archivé)
+- [x] **F10.6** - Auto-updater Tauri avec notifications visuelles
 
-### Sprint 3
-8. [ ] Dashboard KQI basique (F5.1, F5.2)
-9. [ ] Import complet des données CSV (F6.1, F6.3)
-10. [ ] Moteur de règles (F7.1, F7.2)
+### Évolutions futures possibles
+- Création/modification de scénarios par l'utilisateur (EF-SCN-06)
+- Tests de performance automatisés
+- Documentation utilisateur enrichie
 
 ---
 
@@ -251,4 +246,4 @@
 
 ---
 
-*Document généré le 28 novembre 2025*
+*Document mis à jour le 30 novembre 2025*

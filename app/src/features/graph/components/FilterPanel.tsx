@@ -11,6 +11,7 @@ import {
   Filter,
   Layers,
   AlertTriangle,
+  Activity,
   X,
   RotateCcw,
   ChevronRight,
@@ -19,14 +20,15 @@ import {
 import {
   visibleNodeTypesAtom,
   visibleCriticitesAtom,
+  visibleStatutsAtom,
   searchQueryAtom,
   filteredNodesAtom,
   allNodesAtom,
 } from '@shared/stores/selectionAtoms';
-import { NODE_COLORS, NODE_LABELS, CRITICITE_COLORS } from '@shared/utils/nodeStyles';
+import { NODE_COLORS, NODE_LABELS, CRITICITE_COLORS, STATUT_COLORS, STATUT_LABELS } from '@shared/utils/nodeStyles';
 import { cn } from '@/lib/utils';
 import { collapseContent, rotateChevron, listItem, staggerContainer } from '@/lib/animations';
-import type { NodeType, Criticite } from '@data/types';
+import type { NodeType, Criticite, CategorieStatut } from '@data/types';
 
 // Catégories de types de noeuds avec icônes modernes
 const NODE_TYPE_CATEGORIES: Record<
@@ -74,6 +76,15 @@ const ALL_CRITICITES: (Criticite | '')[] = [
   'Majeur',
   'Standard',
   'Mineur',
+  '',
+];
+
+const ALL_STATUTS: (CategorieStatut | '')[] = [
+  'actif',
+  'en_cours',
+  'planifie',
+  'cloture',
+  'archive',
   '',
 ];
 
@@ -203,6 +214,7 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
   const [visibleCriticites, setVisibleCriticites] = useAtom(
     visibleCriticitesAtom
   );
+  const [visibleStatuts, setVisibleStatuts] = useAtom(visibleStatutsAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const filteredNodes = useAtomValue(filteredNodesAtom);
   const allNodes = useAtomValue(allNodesAtom);
@@ -246,6 +258,17 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
     setVisibleCriticites(newCrits);
   };
 
+  // Toggle un statut
+  const toggleStatut = (statut: CategorieStatut | '') => {
+    const newStatuts = new Set(visibleStatuts);
+    if (newStatuts.has(statut)) {
+      newStatuts.delete(statut);
+    } else {
+      newStatuts.add(statut);
+    }
+    setVisibleStatuts(newStatuts);
+  };
+
   // Toggle tous les types d'une catégorie
   const toggleCategory = (categoryTypes: NodeType[], allSelected: boolean) => {
     const newTypes = new Set(visibleTypes);
@@ -271,6 +294,7 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
     setSearchQuery('');
     setVisibleTypes(new Set(ALL_NODE_TYPES));
     setVisibleCriticites(new Set(ALL_CRITICITES));
+    setVisibleStatuts(new Set(ALL_STATUTS));
   };
 
   // Compter les noeuds par type
@@ -459,6 +483,43 @@ export function FilterPanel({ className = '' }: FilterPanelProps) {
                 <button
                   key={crit || 'none'}
                   onClick={() => toggleCriticite(crit)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200',
+                    isVisible
+                      ? 'text-white border-transparent shadow-sm'
+                      : 'bg-transparent border-current opacity-50 hover:opacity-75'
+                  )}
+                  style={{
+                    backgroundColor: isVisible ? color : 'transparent',
+                    color: isVisible ? 'white' : color,
+                    borderColor: isVisible ? 'transparent' : color,
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Filtres par statut */}
+        <div className="pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity className="w-4 h-4 text-slate-500" />
+            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              Statut
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {ALL_STATUTS.map((statut) => {
+              const isVisible = visibleStatuts.has(statut);
+              const label = statut ? STATUT_LABELS[statut] : 'N/A';
+              const color = statut ? STATUT_COLORS[statut] : '#6B7280';
+
+              return (
+                <button
+                  key={statut || 'none'}
+                  onClick={() => toggleStatut(statut)}
                   className={cn(
                     'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200',
                     isVisible

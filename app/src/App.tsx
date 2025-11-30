@@ -26,6 +26,7 @@ import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsC
 import { ImportWizard } from '@features/import';
 import { ScenarioSelector, ScenarioPlayer } from '@features/scenarios';
 import { Header } from '@/components/layout';
+import { UpdateChecker } from '@shared/components/UpdateChecker';
 import {
   allNodesAtom,
   allEdgesAtom,
@@ -346,6 +347,9 @@ function AppContent() {
           }
         }}
       />
+
+      {/* Auto-updater Tauri */}
+      <UpdateChecker autoCheck={true} checkInterval={60} />
     </div>
   );
 }

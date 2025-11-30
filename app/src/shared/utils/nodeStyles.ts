@@ -4,7 +4,7 @@
  * Palette harmonisée avec distinction N1/N2
  */
 
-import type { NodeType, Criticite, NiveauAlerte, ScoreRisque } from '@data/types';
+import type { NodeType, Criticite, NiveauAlerte, ScoreRisque, CategorieStatut } from '@data/types';
 
 // =============================================================================
 // Palette couleurs harmonisée (bg + border)
@@ -137,6 +137,26 @@ export const RISQUE_COLORS: Record<ScoreRisque, string> = {
   Low: '#22C55E',
   Medium: '#F59E0B',
   High: '#DC2626',
+};
+
+// =============================================================================
+// Couleurs et libellés des catégories de statuts
+// =============================================================================
+
+export const STATUT_COLORS: Record<CategorieStatut, string> = {
+  actif: '#22C55E',      // Vert - éléments actifs
+  en_cours: '#3B82F6',   // Bleu - en traitement
+  planifie: '#8B5CF6',   // Violet - futur
+  cloture: '#6B7280',    // Gris - terminé
+  archive: '#78716C',    // Gris foncé - archivé
+};
+
+export const STATUT_LABELS: Record<CategorieStatut, string> = {
+  actif: 'Actif',
+  en_cours: 'En cours',
+  planifie: 'Planifié',
+  cloture: 'Clôturé',
+  archive: 'Archivé',
 };
 
 // =============================================================================

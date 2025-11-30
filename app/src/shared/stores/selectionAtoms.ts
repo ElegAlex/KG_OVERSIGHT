@@ -4,7 +4,7 @@
  */
 
 import { atom } from 'jotai';
-import type { NodeType, Criticite, GraphNode, GraphEdge } from '@data/types';
+import type { NodeType, Criticite, GraphNode, GraphEdge, CategorieStatut } from '@data/types';
 
 // =============================================================================
 // Sélection de nœuds
@@ -63,6 +63,11 @@ export const visibleCriticitesAtom = atom<Set<Criticite | ''>>(
   new Set<Criticite | ''>(['Critique', 'Majeur', 'Standard', 'Mineur', ''])
 );
 
+/** Catégories de statuts à afficher */
+export const visibleStatutsAtom = atom<Set<CategorieStatut | ''>>(
+  new Set<CategorieStatut | ''>(['actif', 'cloture', 'en_cours', 'planifie', 'archive', ''])
+);
+
 /** Plage de dates pour le filtrage */
 export const dateRangeAtom = atom<[Date | null, Date | null]>([null, null]);
 
@@ -88,6 +93,7 @@ export const filteredNodesAtom = atom((get) => {
   const nodes = get(allNodesAtom);
   const visibleTypes = get(visibleNodeTypesAtom);
   const visibleCriticites = get(visibleCriticitesAtom);
+  const visibleStatuts = get(visibleStatutsAtom);
   const [startDate, endDate] = get(dateRangeAtom);
   const searchQuery = get(searchQueryAtom).toLowerCase();
 
@@ -103,6 +109,10 @@ export const filteredNodesAtom = atom((get) => {
     // Filtre par criticité
     const nodeCriticite = node.criticite ?? '';
     if (!visibleCriticites.has(nodeCriticite)) continue;
+
+    // Filtre par statut
+    const nodeStatutCategorie = getStatutCategorie(node.statut);
+    if (!visibleStatuts.has(nodeStatutCategorie)) continue;
 
     // Filtre par recherche textuelle
     if (searchQuery) {
@@ -216,4 +226,60 @@ function getNodeDate(node: GraphNode): Date | null {
   }
 
   return dateStr ? new Date(dateStr) : null;
+}
+
+/** Normalise un statut vers une catégorie de filtrage */
+function getStatutCategorie(statut: string | undefined): CategorieStatut | '' {
+  if (!statut) return '';
+
+  const s = statut.toLowerCase().trim();
+
+  // Catégorie "actif" - éléments actifs/en vigueur
+  if (
+    s === 'actif' ||
+    s === 'active' ||
+    s === 'signé' ||
+    s === 'applicable' ||
+    s === 'approuvé' ||
+    s === 'déclaré'
+  ) {
+    return 'actif';
+  }
+
+  // Catégorie "clôturé" - éléments terminés/fermés
+  if (
+    s === 'clôturé' ||
+    s === 'cloturé' ||
+    s === 'résolue' ||
+    s === 'réalisé' ||
+    s === 'appliquée'
+  ) {
+    return 'cloture';
+  }
+
+  // Catégorie "en cours" - éléments en traitement
+  if (
+    s === 'en cours' ||
+    s === 'en démarrage' ||
+    s === 'en évaluation' ||
+    s === 'en révision' ||
+    s === 'en réévaluation' ||
+    s === 'sous surveillance' ||
+    s === 'non évalué'
+  ) {
+    return 'en_cours';
+  }
+
+  // Catégorie "planifié" - éléments futurs
+  if (s === 'planifié' || s === 'planifiée') {
+    return 'planifie';
+  }
+
+  // Catégorie "archivé" - éléments historiques
+  if (s === 'archivé') {
+    return 'archive';
+  }
+
+  // Statut non reconnu → on le considère comme vide
+  return '';
 }
