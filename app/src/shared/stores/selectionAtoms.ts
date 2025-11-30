@@ -7,6 +7,13 @@ import { atom } from 'jotai';
 import type { NodeType, Criticite, GraphNode, GraphEdge, CategorieStatut } from '@data/types';
 
 // =============================================================================
+// État de la Timeline
+// =============================================================================
+
+export type TimelineSize = 'collapsed' | 'normal' | 'expanded';
+export const timelineSizeAtom = atom<TimelineSize>('normal');
+
+// =============================================================================
 // Sélection de nœuds
 // =============================================================================
 

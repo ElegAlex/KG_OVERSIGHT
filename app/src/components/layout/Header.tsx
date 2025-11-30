@@ -3,11 +3,12 @@
  * Design system inspiré Linear/Vercel
  */
 
-import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play } from 'lucide-react';
-import { useAtom } from 'jotai';
+import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar } from 'lucide-react';
+import { useAtom, useAtomValue } from 'jotai';
 import { cn } from '@/lib/utils';
 import { statPillColors, type StatPillColor } from '@/styles/colors';
 import { themeAtom, type Theme } from '@shared/stores/themeAtom';
+import { timelineSizeAtom } from '@shared/stores/selectionAtoms';
 import type { LucideIcon } from 'lucide-react';
 
 interface HeaderProps {
@@ -88,6 +89,12 @@ export function Header({
   onOpenImport,
   onOpenScenarios,
 }: HeaderProps) {
+  const [timelineSize, setTimelineSize] = useAtom(timelineSizeAtom);
+
+  const toggleTimeline = () => {
+    setTimelineSize((prev) => (prev === 'collapsed' ? 'normal' : 'collapsed'));
+  };
+
   return (
     <header className="app-header px-6 py-4">
       <div className="flex items-center justify-between">
@@ -160,6 +167,19 @@ export function Header({
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          <button
+            onClick={toggleTimeline}
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors",
+              timelineSize === 'collapsed'
+                ? "bg-slate-500/10 border-slate-500/20 text-slate-400 hover:bg-slate-500/20"
+                : "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20"
+            )}
+            title={timelineSize === 'collapsed' ? "Afficher la timeline" : "Masquer la timeline"}
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-medium">Timeline</span>
+          </button>
           {onOpenScenarios && (
             <button
               onClick={onOpenScenarios}

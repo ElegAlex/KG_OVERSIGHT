@@ -177,6 +177,11 @@ body {
   background: var(--bg-app);
 }
 
+/* Layout avec timeline expanded - la timeline prend plus de place */
+.app-layout-v2:has(.app-timeline.expanded) {
+  grid-template-rows: auto 1fr 60vh;
+}
+
 .app-content {
   grid-area: content;
   display: grid;
@@ -225,11 +230,26 @@ body {
 
 .app-timeline {
   grid-area: timeline;
-  height: 160px;
+  height: 280px;
+  min-height: 180px;
+  max-height: 50vh;
   position: relative;
   background: var(--bg-timeline);
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--color-border);
+}
+
+.app-timeline.collapsed {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-top: none;
+}
+
+.app-timeline.expanded {
+  height: 50vh;
+  max-height: none;
+  min-height: 400px;
 }
 
 /* Ligne de glow subtile en haut de la timeline */

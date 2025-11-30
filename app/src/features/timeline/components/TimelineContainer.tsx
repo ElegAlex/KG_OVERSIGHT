@@ -7,12 +7,15 @@ import { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Timeline, DataSet } from 'vis-timeline/standalone';
 import type { TimelineOptions, DataItem, TimelineEventPropertiesResult } from 'vis-timeline/types';
-import { Calendar, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { Calendar, ZoomIn, ZoomOut, Maximize2, ChevronUp, ChevronDown, Minimize2, X } from 'lucide-react';
 import {
   allNodesAtom,
+  allEdgesAtom,
   selectedNodeIdsAtom,
   highlightedNodeIdsAtom,
   filteredNodesAtom,
+  timelineSizeAtom,
+  type TimelineSize,
 } from '@shared/stores/selectionAtoms';
 import { getNodeColor, getCriticiteColor } from '@shared/utils/nodeStyles';
 import { cn } from '@/lib/utils';
@@ -144,14 +147,42 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<Timeline | null>(null);
   const itemsRef = useRef<DataSet<DataItem> | null>(null);
+  const isTimelineReady = useRef(false);
 
   const allNodes = useAtomValue(allNodesAtom);
+  const allEdges = useAtomValue(allEdgesAtom);
   const filteredNodes = useAtomValue(filteredNodesAtom);
   const [selectedNodeIds, setSelectedNodeIds] = useAtom(selectedNodeIdsAtom);
   const setHighlightedNodeIds = useSetAtom(highlightedNodeIdsAtom);
 
   const [timeScale, setTimeScale] = useState<TimeScale>('month');
   const [eventCount, setEventCount] = useState(0);
+  const [relatedEventCount, setRelatedEventCount] = useState<number | null>(null);
+  const [timelineSize, setTimelineSize] = useAtom(timelineSizeAtom);
+
+  // Calculer les nœuds liés au nœud sélectionné (voisins directs)
+  const relatedNodeIds = useMemo(() => {
+    if (selectedNodeIds.size === 0) return new Set<string>();
+
+    const related = new Set<string>();
+
+    // Ajouter les nœuds sélectionnés eux-mêmes
+    for (const nodeId of selectedNodeIds) {
+      related.add(nodeId);
+    }
+
+    // Parcourir les arêtes pour trouver les voisins
+    for (const [, edge] of allEdges) {
+      if (selectedNodeIds.has(edge.source)) {
+        related.add(edge.target);
+      }
+      if (selectedNodeIds.has(edge.target)) {
+        related.add(edge.source);
+      }
+    }
+
+    return related;
+  }, [selectedNodeIds, allEdges]);
 
   // Convertir les nœuds en items de timeline
   const timelineItems = useMemo(() => {
@@ -202,7 +233,7 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
     const groups = new DataSet(TIMELINE_GROUPS);
     itemsRef.current = items;
 
-    // Options de la timeline
+    // Options de la timeline - améliorées pour meilleure visibilité
     const options: TimelineOptions = {
       stack: true,
       stackSubgroups: true,
@@ -210,20 +241,27 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
       zoomable: true,
       moveable: true,
       selectable: true,
-      multiselect: false,
+      multiselect: true,
       orientation: { axis: 'top', item: 'top' },
-      margin: { item: { horizontal: 5, vertical: 5 } },
+      margin: {
+        item: { horizontal: 5, vertical: 8 },
+        axis: 5,
+      },
       min: new Date('2022-01-01'),
       max: new Date('2026-12-31'),
       start: new Date('2023-06-01'),
       end: new Date('2025-06-01'),
       groupOrder: 'order',
+      groupHeightMode: 'auto',
       tooltip: {
         followMouse: true,
         overflowMethod: 'cap',
       },
-      // Style adapté au thème sombre
+      verticalScroll: false,
+      horizontalScroll: true,
+      zoomKey: 'ctrlKey',
       height: '100%',
+      maxHeight: '100%',
     };
 
     // Créer la timeline
@@ -248,7 +286,13 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
 
     setEventCount(items.length);
 
+    // Marquer la timeline comme prête après un court délai
+    setTimeout(() => {
+      isTimelineReady.current = true;
+    }, 200);
+
     return () => {
+      isTimelineReady.current = false;
       timeline.destroy();
       timelineRef.current = null;
       itemsRef.current = null;
@@ -268,21 +312,113 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
     timelineRef.current.redraw();
   }, [timelineItems]);
 
-  // Synchroniser la sélection depuis le graphe
+  // Synchroniser la sélection depuis le graphe et mettre en évidence les items liés
   useEffect(() => {
-    if (!timelineRef.current) return;
+    if (!timelineRef.current || !itemsRef.current || !isTimelineReady.current) return;
 
     const selectedArray = Array.from(selectedNodeIds);
-    timelineRef.current.setSelection(selectedArray);
+    const hasSelection = selectedArray.length > 0;
 
-    // Centrer sur l'élément sélectionné si visible
-    if (selectedArray.length === 1) {
-      const itemId = selectedArray[0];
-      if (itemsRef.current?.get(itemId)) {
-        timelineRef.current.focus(itemId, { animation: { duration: 300 } });
+    // Si pas de sélection, restaurer tous les items à leur état normal
+    if (!hasSelection) {
+      setRelatedEventCount(null);
+      // Restaurer l'opacité de tous les items
+      const allItems = itemsRef.current.get();
+      const updates: DataItem[] = [];
+      for (const item of allItems) {
+        const node = filteredNodes.get(item.id as string);
+        if (!node) continue;
+
+        const bgColor = node.criticite
+          ? getCriticiteColor(node.criticite)
+          : getNodeColor(node._type);
+
+        updates.push({
+          ...item,
+          className: `timeline-item-${node._type.toLowerCase()}`,
+          style: `
+            background-color: ${bgColor};
+            border-color: ${bgColor};
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            padding: 2px 6px;
+            opacity: 1;
+          `,
+        });
+      }
+      if (updates.length > 0) {
+        itemsRef.current.update(updates);
+      }
+      return;
+    }
+
+    // Mettre en évidence les items liés, atténuer les autres
+    const allItems = itemsRef.current.get();
+    const updates: DataItem[] = [];
+    let relatedCount = 0;
+    const relatedItemIds: string[] = [];
+
+    for (const item of allItems) {
+      const itemId = item.id as string;
+      const isRelated = relatedNodeIds.has(itemId);
+      const node = filteredNodes.get(itemId);
+      if (!node) continue;
+
+      if (isRelated) {
+        relatedCount++;
+        relatedItemIds.push(itemId);
+      }
+
+      const bgColor = node.criticite
+        ? getCriticiteColor(node.criticite)
+        : getNodeColor(node._type);
+
+      updates.push({
+        ...item,
+        className: `timeline-item-${node._type.toLowerCase()} ${isRelated ? 'timeline-item-related' : 'timeline-item-dimmed'}`,
+        style: `
+          background-color: ${bgColor};
+          border-color: ${isRelated ? '#6366f1' : bgColor};
+          border-width: ${isRelated ? '2px' : '0'};
+          color: white;
+          border-radius: 4px;
+          font-size: 11px;
+          padding: 2px 6px;
+          opacity: ${isRelated ? 1 : 0.3};
+          ${isRelated ? 'box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);' : ''}
+        `,
+      });
+    }
+
+    if (updates.length > 0) {
+      itemsRef.current.update(updates);
+    }
+
+    setRelatedEventCount(relatedCount);
+
+    // Sélectionner et centrer sur les items liés (avec délai pour s'assurer que la timeline est prête)
+    if (relatedItemIds.length > 0) {
+      try {
+        timelineRef.current.setSelection(relatedItemIds);
+        // Vérifier que les items existent avant de faire focus
+        const existingItems = relatedItemIds.filter(id => itemsRef.current?.get(id) !== null);
+        if (existingItems.length > 0) {
+          setTimeout(() => {
+            if (timelineRef.current && existingItems.length > 0) {
+              try {
+                timelineRef.current.focus(existingItems, { animation: { duration: 400 } });
+              } catch (e) {
+                console.warn('[Timeline] Focus error:', e);
+              }
+            }
+          }, 100);
+        }
+      } catch (e) {
+        console.warn('[Timeline] Selection error:', e);
       }
     }
-  }, [selectedNodeIds]);
+  }, [selectedNodeIds, relatedNodeIds, filteredNodes]);
 
   // Changer l'échelle de temps
   const handleTimeScaleChange = useCallback((scale: TimeScale) => {
@@ -324,11 +460,59 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
     timelineRef.current?.fit({ animation: true });
   }, []);
 
+  // Contrôles de taille
+  const toggleSize = useCallback(() => {
+    setTimelineSize((prev) => {
+      if (prev === 'collapsed') return 'normal';
+      if (prev === 'normal') return 'expanded';
+      return 'normal';
+    });
+  }, []);
+
+  const collapseTimeline = useCallback(() => {
+    setTimelineSize('collapsed');
+  }, []);
+
+  const expandTimeline = useCallback(() => {
+    setTimelineSize('expanded');
+    // Ajuster la vue pour montrer tous les événements après l'expansion
+    setTimeout(() => {
+      timelineRef.current?.fit({ animation: true });
+    }, 400);
+  }, []);
+
+  // Redessiner la timeline après changement de taille (avec délai pour l'animation CSS)
+  useEffect(() => {
+    if (timelineSize !== 'collapsed' && timelineRef.current) {
+      setTimeout(() => {
+        timelineRef.current?.redraw();
+      }, 350);
+    }
+  }, [timelineSize]);
+
   return (
-    <div className={cn('app-timeline flex flex-col', className)}>
+    <div className={cn(
+      'app-timeline flex flex-col transition-all duration-300 ease-in-out',
+      timelineSize === 'collapsed' && 'collapsed',
+      timelineSize === 'expanded' && 'expanded',
+      className
+    )}>
       {/* Header timeline */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-slate-900/50">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-slate-900/50 flex-shrink-0">
         <div className="flex items-center gap-3">
+          {/* Bouton collapse/expand */}
+          <button
+            onClick={toggleSize}
+            className="p-1 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+            title={timelineSize === 'collapsed' ? 'Agrandir' : 'Réduire'}
+          >
+            {timelineSize === 'collapsed' ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </button>
+
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-slate-500" />
             <span className="text-sm font-medium text-slate-300">Timeline</span>
@@ -336,67 +520,113 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
           <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">
             {eventCount} événements
           </span>
+          {relatedEventCount !== null && (
+            <button
+              onClick={() => setSelectedNodeIds(new Set())}
+              className="flex items-center gap-1 text-xs text-indigo-400 bg-indigo-500/20 px-2 py-0.5 rounded-full hover:bg-indigo-500/30 transition-colors"
+              title="Cliquer pour désélectionner et voir tous les événements"
+            >
+              {relatedEventCount} liés
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Échelle de temps */}
-          <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-0.5">
-            <TimeScaleButton
-              label="Jour"
-              active={timeScale === 'day'}
-              onClick={() => handleTimeScaleChange('day')}
-            />
-            <TimeScaleButton
-              label="Mois"
-              active={timeScale === 'month'}
-              onClick={() => handleTimeScaleChange('month')}
-            />
-            <TimeScaleButton
-              label="Année"
-              active={timeScale === 'year'}
-              onClick={() => handleTimeScaleChange('year')}
-            />
-          </div>
+        {/* Contrôles (masqués si collapsed) */}
+        {timelineSize !== 'collapsed' && (
+          <div className="flex items-center gap-4">
+            {/* Échelle de temps */}
+            <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-0.5">
+              <TimeScaleButton
+                label="Jour"
+                active={timeScale === 'day'}
+                onClick={() => handleTimeScaleChange('day')}
+              />
+              <TimeScaleButton
+                label="Mois"
+                active={timeScale === 'month'}
+                onClick={() => handleTimeScaleChange('month')}
+              />
+              <TimeScaleButton
+                label="Année"
+                active={timeScale === 'year'}
+                onClick={() => handleTimeScaleChange('year')}
+              />
+            </div>
 
-          {/* Contrôles de zoom */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleZoomIn}
-              className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
-              title="Zoom avant"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleZoomOut}
-              className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
-              title="Zoom arrière"
-            >
-              <ZoomOut className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleFitAll}
-              className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
-              title="Ajuster à tous les événements"
-            >
-              <Maximize2 className="w-4 h-4" />
-            </button>
+            {/* Contrôles de zoom */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleZoomIn}
+                className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+                title="Zoom avant"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+                title="Zoom arrière"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleFitAll}
+                className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+                title="Ajuster à tous les événements"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+              <div className="w-px h-4 bg-white/10 mx-1" />
+              <button
+                onClick={collapseTimeline}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  timelineSize === 'collapsed'
+                    ? "text-indigo-400 bg-indigo-500/20"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                )}
+                title="Réduire"
+              >
+                <Minimize2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={expandTimeline}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  timelineSize === 'expanded'
+                    ? "text-indigo-400 bg-indigo-500/20"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                )}
+                title="Agrandir"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Zone timeline */}
+      {/* Zone timeline (masquée visuellement si collapsed, mais reste dans le DOM) */}
       <div
         ref={containerRef}
-        className="flex-1 timeline-dark-theme"
+        className={cn(
+          "flex-1 timeline-dark-theme overflow-hidden transition-all duration-300",
+          timelineSize === 'collapsed' && "hidden"
+        )}
       />
 
       {/* Styles personnalisés pour le thème sombre */}
       <style>{`
+        .timeline-dark-theme {
+          height: 100%;
+        }
+
         .timeline-dark-theme .vis-timeline {
           background: transparent;
           border: none;
           font-family: Inter, system-ui, sans-serif;
+          height: 100% !important;
         }
 
         .timeline-dark-theme .vis-panel.vis-center,
@@ -408,8 +638,14 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
         }
 
         .timeline-dark-theme .vis-time-axis .vis-text {
-          color: #64748b;
-          font-size: 10px;
+          color: #94a3b8;
+          font-size: 11px;
+          font-weight: 500;
+        }
+
+        .timeline-dark-theme .vis-time-axis .vis-text.vis-major {
+          font-weight: 600;
+          color: #cbd5e1;
         }
 
         .timeline-dark-theme .vis-time-axis .vis-grid.vis-minor {
@@ -417,41 +653,84 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
         }
 
         .timeline-dark-theme .vis-time-axis .vis-grid.vis-major {
-          border-color: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.1);
         }
 
+        /* Labels des groupes (colonne gauche) */
         .timeline-dark-theme .vis-labelset .vis-label {
-          background: rgba(30, 41, 59, 0.8);
-          color: #94a3b8;
-          font-size: 11px;
-          border-color: rgba(255, 255, 255, 0.05);
+          background: rgba(15, 23, 42, 0.95);
+          color: #e2e8f0;
+          font-size: 12px;
+          font-weight: 500;
+          border-color: rgba(255, 255, 255, 0.08);
+          padding: 8px 12px;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
         }
 
+        .timeline-dark-theme .vis-labelset {
+          min-width: 160px;
+        }
+
+        /* Lignes de groupes */
         .timeline-dark-theme .vis-foreground .vis-group {
           border-color: rgba(255, 255, 255, 0.05);
+          min-height: 44px;
         }
 
+        .timeline-dark-theme .vis-background .vis-group {
+          background: rgba(30, 41, 59, 0.3);
+        }
+
+        .timeline-dark-theme .vis-background .vis-group:nth-child(odd) {
+          background: rgba(30, 41, 59, 0.5);
+        }
+
+        /* Items de timeline */
         .timeline-dark-theme .vis-item {
-          border-radius: 4px;
+          border-radius: 6px;
           font-size: 11px;
+          font-weight: 500;
+          border-width: 0;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          min-height: 24px;
+          display: flex;
+          align-items: center;
+        }
+
+        .timeline-dark-theme .vis-item .vis-item-content {
+          padding: 4px 8px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .timeline-dark-theme .vis-item.vis-selected {
-          border-color: #6366f1 !important;
-          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+          border: 2px solid #6366f1 !important;
+          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 0 2px 8px rgba(0, 0, 0, 0.3);
+          z-index: 10;
         }
 
         .timeline-dark-theme .vis-item.vis-range {
-          border-radius: 4px;
+          border-radius: 6px;
         }
 
         .timeline-dark-theme .vis-item.vis-box {
-          border-radius: 4px;
+          border-radius: 6px;
         }
 
+        .timeline-dark-theme .vis-item.vis-point .vis-dot {
+          border-radius: 50%;
+          width: 12px;
+          height: 12px;
+        }
+
+        /* Ligne du temps actuel */
         .timeline-dark-theme .vis-current-time {
           background-color: #ef4444;
           width: 2px;
+          z-index: 5;
         }
 
         .timeline-dark-theme .vis-custom-time {
@@ -459,14 +738,43 @@ export function TimelineContainer({ className }: TimelineContainerProps) {
           width: 2px;
         }
 
+        /* Tooltip */
         .timeline-dark-theme .vis-tooltip {
-          background: #1e293b;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #e2e8f0;
-          border-radius: 6px;
-          padding: 8px 12px;
+          background: rgba(15, 23, 42, 0.98);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #f1f5f9;
+          border-radius: 8px;
+          padding: 10px 14px;
           font-size: 12px;
+          font-weight: 500;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+          max-width: 300px;
+        }
+
+        /* Scrollbar dans la timeline */
+        .timeline-dark-theme .vis-panel.vis-center {
+          overflow-y: auto;
+        }
+
+        .timeline-dark-theme .vis-panel.vis-center::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .timeline-dark-theme .vis-panel.vis-center::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .timeline-dark-theme .vis-panel.vis-center::-webkit-scrollbar-thumb {
+          background: rgba(100, 116, 139, 0.4);
+          border-radius: 3px;
+        }
+
+        /* Animation sur hover des items */
+        .timeline-dark-theme .vis-item:hover {
+          transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          z-index: 5;
         }
       `}</style>
     </div>
