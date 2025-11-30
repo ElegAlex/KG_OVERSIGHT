@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "KG-Oversight",
   "version": "1.0.0",
-  "identifier": "com.kg-oversight.app",
+  "identifier": "com.elegalex.kg-oversight",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -40,7 +40,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "category": "BusinessApplication",
+    "category": "Business",
     "shortDescription": "Knowledge Graph pour la supervision qualité des sous-traitants",
     "longDescription": "KG-Oversight est une application de visualisation de graphe de connaissances pour la supervision qualité des sous-traitants dans le domaine clinique. Elle permet de visualiser les relations entre sous-traitants, contrats, audits, findings et KQI.",
     "copyright": "2025 KG-Oversight",
@@ -85,7 +85,7 @@
       "active": true,
       "pubkey": "",
       "endpoints": [
-        "https://github.com/YOUR_USERNAME/kg-oversight/releases/latest/download/latest.json"
+        "https://github.com/ElegAlex/KG_OVERSIGHT/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"
