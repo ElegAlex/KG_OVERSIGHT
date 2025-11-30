@@ -76,6 +76,7 @@ const ALL_CRITICITES: (Criticite | '')[] = [
   'Majeur',
   'Standard',
   'Mineur',
+  'Observation',
   '',
 ];
 

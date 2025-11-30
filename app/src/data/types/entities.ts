@@ -53,7 +53,7 @@ export type EdgeType =
   | 'IMPLIQUE_ST'
   | 'KQI_MESURE_ST';
 
-export type Criticite = 'Critique' | 'Majeur' | 'Standard' | 'Mineur';
+export type Criticite = 'Critique' | 'Majeur' | 'Standard' | 'Mineur' | 'Observation';
 export type StatutST = 'Approuvé' | 'Déclaré' | 'Sous surveillance' | 'En évaluation';
 export type NiveauAlerte = 'HAUTE' | 'MOYENNE' | 'BASSE';
 

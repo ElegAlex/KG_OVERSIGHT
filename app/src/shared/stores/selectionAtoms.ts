@@ -43,7 +43,7 @@ export const selectedStudyIdAtom = atom<string | null>(null);
 // Filtres
 // =============================================================================
 
-/** Types de nœuds à afficher (multi-sélection) */
+/** Types de nœuds à afficher (multi-sélection) - KQI masqués par défaut car nombreux */
 export const visibleNodeTypesAtom = atom<Set<NodeType>>(
   new Set<NodeType>([
     'SousTraitant',
@@ -61,13 +61,13 @@ export const visibleNodeTypesAtom = atom<Set<NodeType>>(
     'ContexteReglementaire',
     'Alerte',
     'Evenement',
-    'KQI',
+    // 'KQI' - masqué par défaut, peut être activé via le filtre
   ])
 );
 
 /** Criticités à afficher */
 export const visibleCriticitesAtom = atom<Set<Criticite | ''>>(
-  new Set<Criticite | ''>(['Critique', 'Majeur', 'Standard', 'Mineur', ''])
+  new Set<Criticite | ''>(['Critique', 'Majeur', 'Standard', 'Mineur', 'Observation', ''])
 );
 
 /** Catégories de statuts à afficher */
@@ -95,7 +95,7 @@ export const allEdgesAtom = atom<Map<string, GraphEdge>>(new Map());
 // Atomes dérivés (lecture seule)
 // =============================================================================
 
-/** Nœuds filtrés selon les critères actifs (EXCLUT les KQI du graphe) */
+/** Nœuds filtrés selon les critères actifs */
 export const filteredNodesAtom = atom((get) => {
   const nodes = get(allNodesAtom);
   const visibleTypes = get(visibleNodeTypesAtom);
@@ -107,9 +107,6 @@ export const filteredNodesAtom = atom((get) => {
   const filtered = new Map<string, GraphNode>();
 
   for (const [id, node] of nodes) {
-    // EXCLURE les KQI du graphe - ils sont affichés dans un panneau dédié
-    if (node._type === 'KQI') continue;
-
     // Filtre par type
     if (!visibleTypes.has(node._type)) continue;
 
@@ -162,7 +159,7 @@ export const kqiDataAtom = atom((get) => {
   return kqiNodes;
 });
 
-/** Arêtes filtrées (connectant des nœuds visibles, EXCLUT KQI_MESURE_ST) */
+/** Arêtes filtrées (connectant des nœuds visibles) */
 export const filteredEdgesAtom = atom((get) => {
   const edges = get(allEdgesAtom);
   const filteredNodes = get(filteredNodesAtom);
@@ -170,9 +167,6 @@ export const filteredEdgesAtom = atom((get) => {
   const filtered = new Map<string, GraphEdge>();
 
   for (const [id, edge] of edges) {
-    // Exclure les relations KQI
-    if (edge._type === 'KQI_MESURE_ST') continue;
-
     if (filteredNodes.has(edge.source) && filteredNodes.has(edge.target)) {
       filtered.set(id, edge);
     }

@@ -85,6 +85,29 @@ async function fetchAndParseCsv(url: string): Promise<ParsedRow[]> {
   });
 }
 
+/**
+ * Normalise le statut KQI du CSV vers le format attendu par l'application
+ */
+function normalizeKQIStatut(statut: string): 'OK' | 'Attention' | 'Alerte' | 'Critique' {
+  const s = statut?.toLowerCase().trim() ?? '';
+  if (s === 'conforme' || s === 'ok') return 'OK';
+  if (s === 'à surveiller' || s === 'a surveiller' || s === 'attention') return 'Attention';
+  if (s === 'alerte') return 'Alerte';
+  if (s === 'critique') return 'Critique';
+  // Par défaut, considérer comme OK si non reconnu
+  return 'OK';
+}
+
+/**
+ * Normalise la tendance KQI du CSV vers le format attendu par l'application
+ */
+function normalizeKQITendance(tendance: string): 'Amélioration' | 'Stable' | 'Dégradation' {
+  const t = tendance?.toLowerCase().trim() ?? '';
+  if (t.includes('amélioration') || t.includes('amelioration') || t.includes('↑')) return 'Amélioration';
+  if (t.includes('dégradation') || t.includes('degradation') || t.includes('↓')) return 'Dégradation';
+  return 'Stable';
+}
+
 function parseNodeRow(row: ParsedRow, nodeType: NodeType): GraphNode {
   // Conversion des types selon le type de nœud
   const baseNode = {
@@ -112,6 +135,16 @@ function parseNodeRow(row: ParsedRow, nodeType: NodeType): GraphNode {
       } else {
         additionalProps[key] = value;
       }
+    }
+  }
+
+  // Normaliser les statuts et tendances pour les KQI
+  if (nodeType === 'KQI') {
+    if (row.statut) {
+      additionalProps.statut = normalizeKQIStatut(row.statut);
+    }
+    if (row.tendance) {
+      additionalProps.tendance = normalizeKQITendance(row.tendance);
     }
   }
 

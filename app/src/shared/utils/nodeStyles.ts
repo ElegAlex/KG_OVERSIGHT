@@ -60,6 +60,7 @@ export const FINDING_COLORS: Record<string, { bg: string; border: string }> = {
   Majeur: { bg: '#f97316', border: '#c2410c' },
   Standard: { bg: '#fbbf24', border: '#b45309' },
   Mineur: { bg: '#fde047', border: '#ca8a04' },
+  Observation: { bg: '#a3e635', border: '#65a30d' },
 };
 
 // =============================================================================
@@ -117,6 +118,7 @@ export const CRITICITE_COLORS: Record<Criticite, string> = {
   Majeur: '#F97316',
   Standard: '#3B82F6',
   Mineur: '#6B7280',
+  Observation: '#84CC16',
 };
 
 // =============================================================================

@@ -6,7 +6,7 @@
 import type { GraphNode, GraphEdge } from '@data/types';
 
 const DB_NAME = 'kg-oversight-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // v2: normalisation des statuts KQI
 const STORE_NODES = 'nodes';
 const STORE_EDGES = 'edges';
 const STORE_META = 'metadata';

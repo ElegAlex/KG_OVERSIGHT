@@ -227,15 +227,15 @@ function KQIOverviewGrid({ indicators }: { indicators: Record<string, KQI[]> }) 
             key={name}
             className={`p-4 rounded-lg border-2 transition-colors ${
               latest.statut === 'Alerte' || latest.statut === 'Critique'
-                ? 'border-red-500 bg-red-50'
+                ? 'border-red-500 bg-red-50 dark:bg-red-950'
                 : latest.statut === 'Attention'
-                  ? 'border-amber-500 bg-amber-50'
-                  : 'border-emerald-500 bg-emerald-50'
+                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-950'
+                  : 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950'
             }`}
           >
-            <div className="text-sm font-medium text-slate-700 truncate">{name}</div>
+            <div className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{name}</div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-bold">{formatKQIValue(latest.valeur, name)}</span>
+              <span className="text-2xl font-bold text-slate-900 dark:text-white">{formatKQIValue(latest.valeur, name)}</span>
               {trend === 'up' && (
                 <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -252,7 +252,7 @@ function KQIOverviewGrid({ indicators }: { indicators: Record<string, KQI[]> }) 
                 </svg>
               )}
             </div>
-            <div className="mt-2 text-xs text-slate-500">
+            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
               <span>Objectif : {latest.seuil_objectif}</span>
               <span className="mx-2">|</span>
               <span>Alerte : {latest.seuil_alerte}</span>
