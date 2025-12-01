@@ -272,12 +272,12 @@ function AppContent() {
             currentLayout={currentLayout}
             onLayoutChange={handleLayoutChange}
             isLayoutRunning={graphCanvasRef.current?.isLayoutRunning}
-            className="absolute top-16 left-4 z-20"
+            className="absolute top-3 left-4 z-20"
           />
 
           {/* Légende flottante */}
           <GraphLegend
-            className="absolute top-16 right-4 z-20"
+            className="absolute top-3 right-4 z-20"
             showStudyContext={!!selectedStudyId}
           />
 

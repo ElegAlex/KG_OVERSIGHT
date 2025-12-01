@@ -640,55 +640,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
         </div>
       )}
 
-      {/* Légende rapide - contextuelle */}
-      <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 max-w-xs">
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-          <span className="w-3 h-3 rounded-full bg-[#6366f1]" />
-          <span>Études</span>
-        </div>
-        {selectedStudyId ? (
-          <>
-            {/* Légende contextuelle N1/N2 quand une étude est sélectionnée */}
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-              <span className="w-3 h-3 rounded-full bg-[#10b981]" />
-              <span>ST N1</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-              <span className="w-3 h-3 rounded-full bg-[#6ee7b7]" />
-              <span>ST N2</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-              <span className="w-3 h-3 rounded-full bg-[#94a3b8] opacity-50" />
-              <span>Hors étude</span>
-            </div>
-          </>
-        ) : (
-          /* Légende KQI par défaut quand aucune étude sélectionnée */
-          <>
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-              <span className="w-3 h-3 rounded-full bg-[#10b981]" />
-              <span>ST OK</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-              <span className="w-3 h-3 rounded-full bg-[#f59e0b]" />
-              <span>ST Attention</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-              <span className="w-3 h-3 rounded-full bg-[#ef4444]" />
-              <span>ST Critique</span>
-            </div>
-          </>
-        )}
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-          <span className="w-3 h-3 rounded-full bg-[#f59e0b]" />
-          <span>Audits</span>
-        </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-card/90 border rounded text-xs">
-          <span className="w-3 h-3 rounded-full bg-[#ef4444]" />
-          <span>Alertes</span>
-        </div>
-      </div>
-
       {/* Contrôles du graphe */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2">
         <button
