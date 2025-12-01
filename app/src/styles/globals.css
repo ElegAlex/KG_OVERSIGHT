@@ -187,6 +187,39 @@ body {
   display: grid;
   grid-template-columns: 280px 1fr 320px;
   overflow: hidden;
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* Quand aucun nœud n'est sélectionné, la zone graphe prend tout l'espace */
+.app-content.no-details {
+  grid-template-columns: 280px 1fr;
+}
+
+/* Quand un sous-traitant est sélectionné avec le KQI ouvert */
+.app-content.with-kqi {
+  grid-template-columns: 280px 1fr 580px;
+}
+
+/* Conteneur combiné pour SousTraitant + KQI */
+.app-details-combined {
+  display: flex;
+  overflow: hidden;
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--color-border);
+}
+
+.app-details-combined .details-compact {
+  width: 200px;
+  min-width: 200px;
+  overflow-y: auto;
+  border-right: 1px solid var(--color-border);
+  background: var(--bg-sidebar);
+}
+
+.app-details-combined .kqi-integrated {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-card);
 }
 
 .app-filters {

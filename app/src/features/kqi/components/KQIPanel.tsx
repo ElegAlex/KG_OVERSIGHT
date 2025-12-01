@@ -3,7 +3,7 @@
  * Affiche les indicateurs qualité d'un sous-traitant
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import {
   kqiPanelOpenAtom,
@@ -23,7 +23,12 @@ import type { KQI, SousTraitant } from '@data/types';
 
 type TabId = 'overview' | 'details' | 'history';
 
-export function KQIPanel() {
+interface KQIPanelProps {
+  /** Mode intégré : le panneau est dans le flux, pas en position fixed */
+  integrated?: boolean;
+}
+
+export function KQIPanel({ integrated = false }: KQIPanelProps) {
   const [isOpen, setIsOpen] = useAtom(kqiPanelOpenAtom);
   const [selectedSTId, setSelectedSTId] = useAtom(selectedSTForKQIAtom);
   const kqiData = useAtomValue(kqiDataAtom) as KQI[];
@@ -74,93 +79,99 @@ export function KQIPanel() {
     if (hasNext && nextST) setSelectedSTId(nextST.id);
   };
 
-  if (!isOpen) return null;
+  // En mode intégré, on affiche toujours (pas de vérification isOpen)
+  // En mode overlay, on vérifie isOpen
+  if (!integrated && !isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[480px] bg-card border-l shadow-xl z-50 flex flex-col">
+    <div className={integrated
+      ? "h-full bg-card flex flex-col overflow-hidden"
+      : "fixed inset-y-0 right-0 w-[480px] bg-card border-l shadow-xl z-50 flex flex-col"
+    }>
       {/* Header */}
-      <div className="p-4 border-b bg-card sticky top-0 z-10">
+      <div className={`border-b bg-card sticky top-0 z-10 ${integrated ? 'p-3' : 'p-4'}`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {aggregation && (
               <div
-                className="w-4 h-4 rounded-full ring-2 ring-white shadow"
+                className="w-3 h-3 rounded-full ring-2 ring-white shadow"
                 style={{ backgroundColor: getKQIStatusColor(aggregation.status) }}
               />
             )}
-            <h2 className="text-lg font-semibold text-foreground">
-              {selectedST?.nom ?? 'Sélectionnez un ST'}
+            <h2 className={`font-semibold text-foreground ${integrated ? 'text-sm' : 'text-lg'}`}>
+              {integrated ? 'Indicateurs Qualité' : (selectedST?.nom ?? 'Sélectionnez un ST')}
             </h2>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {!integrated && (
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
-        {/* Navigation entre ST */}
-        <div className="flex items-center gap-2 mt-3">
-          <button
-            onClick={goToPrev}
-            disabled={!hasPrev}
-            className="p-1 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <select
-            value={selectedSTId ?? ''}
-            onChange={(e) => setSelectedSTId(e.target.value)}
-            className="flex-1 px-2 py-1 text-sm border rounded bg-background"
-          >
-            <option value="">Choisir un sous-traitant...</option>
-            {allSTs.map((st) => (
-              <option key={st.id} value={st.id}>
-                {st.nom}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={goToNext}
-            disabled={!hasNext}
-            className="p-1 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+        {/* Navigation entre ST - uniquement en mode overlay */}
+        {!integrated && (
+          <div className="flex items-center gap-2 mt-3">
+            <button
+              onClick={goToPrev}
+              disabled={!hasPrev}
+              className="p-1 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <select
+              value={selectedSTId ?? ''}
+              onChange={(e) => setSelectedSTId(e.target.value)}
+              className="flex-1 px-2 py-1 text-sm border rounded bg-background"
+            >
+              <option value="">Choisir un sous-traitant...</option>
+              {allSTs.map((st) => (
+                <option key={st.id} value={st.id}>
+                  {st.nom}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={goToNext}
+              disabled={!hasNext}
+              className="p-1 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Badges résumé */}
         {aggregation && aggregation.totalCount > 0 && (
-          <div className="flex flex-wrap gap-2 mt-3">
+          <div className={`flex flex-wrap gap-1.5 ${integrated ? 'mt-2' : 'mt-3'}`}>
             <span
-              className="px-2 py-0.5 text-xs font-medium rounded-md text-white"
+              className="px-1.5 py-0.5 text-[10px] font-medium rounded text-white"
               style={{ backgroundColor: getKQIStatusColor(aggregation.status) }}
             >
               {getKQIStatusLabel(aggregation.status)}
             </span>
-            <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-muted text-muted-foreground">
-              {aggregation.totalCount} indicateurs
+            <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-muted text-muted-foreground">
+              {aggregation.totalCount} ind.
             </span>
             {aggregation.alertCount > 0 && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-red-100 text-red-700">
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-red-100 text-red-700">
                 {aggregation.alertCount} alertes
               </span>
             )}
             {aggregation.degradingCount > 0 && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-amber-100 text-amber-700">
-                {aggregation.degradingCount} en dégradation
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-700">
+                {aggregation.degradingCount} dégr.
               </span>
             )}
-            <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-muted text-muted-foreground">
-              Période : {aggregation.latestPeriod}
-            </span>
           </div>
         )}
       </div>
@@ -362,73 +373,90 @@ function KQIDetailsList({ indicators }: { indicators: Record<string, KQI[]> }) {
   );
 }
 
-// Historique (graphique simplifié)
+// Historique - Affiche tous les indicateurs avec leur évolution
 function KQIHistory({ indicators }: { indicators: Record<string, KQI[]> }) {
-  const [selectedIndicator, setSelectedIndicator] = useState<string>(Object.keys(indicators)[0] ?? '');
-
-  const measures = indicators[selectedIndicator] || [];
-  const sortedMeasures = [...measures].sort((a, b) => a.periode.localeCompare(b.periode));
-
   if (Object.keys(indicators).length === 0) {
     return <p className="text-sm text-muted-foreground text-center">Aucun historique disponible</p>;
   }
 
-  const maxValue = Math.max(...sortedMeasures.map((m) => m.valeur), 1);
+  const BAR_MAX_HEIGHT = 48; // pixels
 
   return (
     <div className="space-y-4">
-      <select
-        value={selectedIndicator}
-        onChange={(e) => setSelectedIndicator(e.target.value)}
-        className="w-full px-3 py-2 border rounded-md bg-background"
-      >
-        {Object.keys(indicators).map((name) => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </select>
+      {Object.entries(indicators).map(([name, measures]) => {
+        if (!measures || measures.length === 0) return null;
 
-      {/* Graphique simplifié en barres */}
-      <div className="h-[200px] flex items-end gap-2">
-        {sortedMeasures.map((m) => {
-          const height = (m.valeur / maxValue) * 100;
-          return (
-            <div key={m.periode} className="flex-1 flex flex-col items-center">
-              <div
-                className={`w-full rounded-t transition-all ${
-                  m.statut === 'Alerte' || m.statut === 'Critique'
-                    ? 'bg-red-500'
-                    : m.statut === 'Attention'
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
-                }`}
-                style={{ height: `${height}%` }}
-                title={`${m.periode}: ${formatKQIValue(m.valeur, selectedIndicator)}`}
-              />
-              <span className="text-[10px] text-muted-foreground mt-1 rotate-45 origin-left">
-                {m.periode.slice(-7)}
-              </span>
+        // Trier par période croissante (ancien -> récent)
+        const sortedMeasures = [...measures].sort((a, b) => a.periode.localeCompare(b.periode));
+        const values = sortedMeasures.map((m) => m.valeur);
+        const maxValue = Math.max(...values, 1);
+        const latest = measures[0]; // Le plus récent (non trié)
+
+        return (
+          <div key={name} className="p-3 rounded-lg border bg-card shadow-sm">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-sm text-foreground">{name}</h4>
+              {latest && (
+                <span
+                  className={`px-2 py-0.5 text-[10px] font-medium rounded ${
+                    latest.statut === 'Alerte' || latest.statut === 'Critique'
+                      ? 'bg-red-100 text-red-700'
+                      : latest.statut === 'Attention'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                  }`}
+                >
+                  {latest.statut}
+                </span>
+              )}
             </div>
-          );
-        })}
-      </div>
 
-      {/* Légende */}
-      <div className="flex justify-center gap-6 text-sm border-t pt-4">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-emerald-500" />
-          <span className="text-slate-600">OK</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-amber-500" />
-          <span className="text-slate-600">Attention</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-red-500" />
-          <span className="text-slate-600">Alerte</span>
-        </div>
-      </div>
+            {/* Graphique en barres - hauteur en pixels */}
+            <div
+              className="flex items-end gap-1 border-b border-slate-200 dark:border-slate-700"
+              style={{ height: `${BAR_MAX_HEIGHT + 4}px` }}
+            >
+              {sortedMeasures.map((m, idx) => {
+                const barHeight = Math.max(Math.round((m.valeur / maxValue) * BAR_MAX_HEIGHT), 4);
+                const barColor = m.statut === 'Alerte' || m.statut === 'Critique'
+                  ? '#ef4444'
+                  : m.statut === 'Attention'
+                    ? '#f59e0b'
+                    : '#10b981';
+
+                return (
+                  <div
+                    key={m.periode}
+                    className="flex-1 relative group"
+                    style={{ height: `${BAR_MAX_HEIGHT}px` }}
+                  >
+                    <div
+                      className="absolute bottom-0 left-0 right-0 rounded-t"
+                      style={{
+                        height: `${barHeight}px`,
+                        backgroundColor: barColor,
+                      }}
+                    />
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-20 pointer-events-none">
+                      <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                        {m.periode}: <strong>{formatKQIValue(m.valeur, name)}</strong>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Périodes */}
+            <div className="flex justify-between mt-1 text-[9px] text-muted-foreground">
+              <span>{sortedMeasures[0]?.periode}</span>
+              <span>{sortedMeasures[sortedMeasures.length - 1]?.periode}</span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

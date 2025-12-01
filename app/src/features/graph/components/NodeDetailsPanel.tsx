@@ -15,11 +15,13 @@ import type { GraphNode, GraphEdge, SousTraitant, Audit, Finding, EtudeClinique,
 
 interface NodeDetailsPanelProps {
   className?: string;
+  /** Mode compact pour affichage côte à côte avec le panneau KQI */
+  compact?: boolean;
 }
 
 type TabId = 'info' | 'relations';
 
-export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
+export function NodeDetailsPanel({ className = '', compact = false }: NodeDetailsPanelProps) {
   const selectedNode = useAtomValue(selectedNodeAtom);
   const setSelectedNodeIds = useSetAtom(selectedNodeIdsAtom);
   const allEdges = useAtomValue(allEdgesAtom);
@@ -50,7 +52,9 @@ export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
     setSelectedNodeIds(new Set());
   };
 
+  // En mode compact, on n'affiche pas le message "aucune sélection"
   if (!selectedNode) {
+    if (compact) return null;
     return (
       <div className={cn('flex flex-col items-center justify-center h-full p-6', className)}>
         <div className="relative">
@@ -72,42 +76,44 @@ export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* En-tête avec type, nom et bouton fermer */}
-      <div className="p-4 border-b border-white/5 sticky top-0 z-10 bg-slate-900/80 backdrop-blur-xl">
+      <div className={`border-b border-white/5 sticky top-0 z-10 bg-slate-900/80 backdrop-blur-xl ${compact ? 'p-3' : 'p-4'}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <div
-              className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20 shadow-lg"
+              className={`rounded-full shrink-0 ring-2 ring-white/20 shadow-lg ${compact ? 'w-3 h-3' : 'w-4 h-4'}`}
               style={{ backgroundColor: getNodeColor(selectedNode._type) }}
             />
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <span className={`font-medium text-slate-500 uppercase tracking-wider ${compact ? 'text-[10px]' : 'text-xs'}`}>
               {getNodeLabel(selectedNode._type)}
             </span>
           </div>
           <button
             onClick={closePanel}
-            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors text-slate-500 hover:text-slate-300"
+            className="p-1 rounded-lg hover:bg-white/5 transition-colors text-slate-500 hover:text-slate-300"
             title="Fermer"
           >
-            <X className="w-4 h-4" />
+            <X className={compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
           </button>
         </div>
-        <h2 className="text-base font-semibold text-white mt-2 leading-tight">
+        <h2 className={`font-semibold text-white mt-1.5 leading-tight ${compact ? 'text-sm' : 'text-base mt-2'}`}>
           {getNodeDisplayName(selectedNode)}
         </h2>
-        <p className="text-xs text-slate-600 mt-1 font-mono truncate">
-          {selectedNode.id}
-        </p>
+        {!compact && (
+          <p className="text-xs text-slate-600 mt-1 font-mono truncate">
+            {selectedNode.id}
+          </p>
+        )}
 
         {/* Badges statut et criticité */}
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className={`flex flex-wrap gap-1 ${compact ? 'mt-2' : 'mt-3 gap-1.5'}`}>
           {selectedNode.statut && (
-            <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-slate-700/50 text-slate-400 border border-white/5">
+            <span className={`font-medium rounded-md bg-slate-700/50 text-slate-400 border border-white/5 ${compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'}`}>
               {selectedNode.statut}
             </span>
           )}
           {selectedNode.criticite && (
             <span
-              className="px-2 py-0.5 text-xs font-medium rounded-md text-white shadow-sm"
+              className={`font-medium rounded-md text-white shadow-sm ${compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'}`}
               style={{ backgroundColor: getCriticiteColor(selectedNode.criticite) }}
             >
               {selectedNode.criticite}
@@ -116,57 +122,59 @@ export function NodeDetailsPanel({ className = '' }: NodeDetailsPanelProps) {
         </div>
       </div>
 
-      {/* Onglets modernes */}
-      <div className="flex border-b border-white/5 bg-slate-800/30">
-        <button
-          onClick={() => setActiveTab('info')}
-          className={cn(
-            'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
-            activeTab === 'info'
-              ? 'text-indigo-400'
-              : 'text-slate-500 hover:text-slate-300'
-          )}
-        >
-          <span className="flex items-center justify-center gap-1.5">
-            <Info className="w-3.5 h-3.5" />
-            Informations
-          </span>
-          {activeTab === 'info' && (
-            <motion.div
-              layoutId="activeTab"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
-            />
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('relations')}
-          className={cn(
-            'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
-            activeTab === 'relations'
-              ? 'text-indigo-400'
-              : 'text-slate-500 hover:text-slate-300'
-          )}
-        >
-          <span className="flex items-center justify-center gap-1.5">
-            <GitBranch className="w-3.5 h-3.5" />
-            Relations
-            {totalRelations > 0 && (
-              <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-700 text-slate-400">
-                {totalRelations}
-              </span>
+      {/* Onglets modernes - masqués en mode compact */}
+      {!compact && (
+        <div className="flex border-b border-white/5 bg-slate-800/30">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={cn(
+              'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
+              activeTab === 'info'
+                ? 'text-indigo-400'
+                : 'text-slate-500 hover:text-slate-300'
             )}
-          </span>
-          {activeTab === 'relations' && (
-            <motion.div
-              layoutId="activeTab"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
-            />
-          )}
-        </button>
-      </div>
+          >
+            <span className="flex items-center justify-center gap-1.5">
+              <Info className="w-3.5 h-3.5" />
+              Informations
+            </span>
+            {activeTab === 'info' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('relations')}
+            className={cn(
+              'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
+              activeTab === 'relations'
+                ? 'text-indigo-400'
+                : 'text-slate-500 hover:text-slate-300'
+            )}
+          >
+            <span className="flex items-center justify-center gap-1.5">
+              <GitBranch className="w-3.5 h-3.5" />
+              Relations
+              {totalRelations > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-700 text-slate-400">
+                  {totalRelations}
+                </span>
+              )}
+            </span>
+            {activeTab === 'relations' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
+              />
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Contenu selon l'onglet actif */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className={`flex-1 overflow-y-auto ${compact ? 'p-3' : 'p-4'}`}>
         <AnimatePresence mode="wait">
           {activeTab === 'info' ? (
             <motion.div

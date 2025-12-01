@@ -23,6 +23,7 @@ import { KQIPanel } from '@features/kqi';
 import { TimelineContainer } from '@features/timeline';
 import { KQIDashboard } from '@features/dashboard';
 import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsCountByLevelAtom } from '@features/inference';
+import { kqiPanelOpenAtom, closeKQIPanelAtom } from '@features/kqi';
 import { ImportWizard } from '@features/import';
 import { ScenarioSelector, ScenarioPlayer, ScenarioEditor, ERDScenarioEditor } from '@features/scenarios';
 import { Header } from '@/components/layout';
@@ -32,6 +33,7 @@ import {
   allEdgesAtom,
   filteredNodesAtom,
   selectedStudyIdAtom,
+  selectedNodeAtom,
 } from '@shared/stores/selectionAtoms';
 import { themeAtom } from '@shared/stores/themeAtom';
 import { loadAllData } from '@features/import/services/dataLoader';
@@ -102,7 +104,20 @@ function AppContent() {
   const [allEdgesData, setAllEdgesData] = useState<Map<string, any>>(new Map());
   const filteredNodes = useAtomValue(filteredNodesAtom);
   const selectedStudyId = useAtomValue(selectedStudyIdAtom);
+  const selectedNode = useAtomValue(selectedNodeAtom);
+  const isKQIPanelOpen = useAtomValue(kqiPanelOpenAtom);
+  const closeKQIPanel = useSetAtom(closeKQIPanelAtom);
   const [theme] = useAtom(themeAtom);
+
+  // Déterminer si un sous-traitant est sélectionné avec le KQI ouvert
+  const isSousTraitantWithKQI = selectedNode?._type === 'SousTraitant' && isKQIPanelOpen;
+
+  // Fermer le panneau KQI automatiquement quand on sélectionne un nœud non-SousTraitant
+  useEffect(() => {
+    if (selectedNode && selectedNode._type !== 'SousTraitant' && isKQIPanelOpen) {
+      closeKQIPanel();
+    }
+  }, [selectedNode, isKQIPanelOpen, closeKQIPanel]);
 
   // Ref pour les contrôles du graphe
   const graphCanvasRef = useRef<GraphCanvasRef>(null);
@@ -237,7 +252,7 @@ function AppContent() {
       />
 
       {/* Contenu principal */}
-      <div className="app-content">
+      <div className={`app-content ${selectedNode ? (isSousTraitantWithKQI ? 'with-kqi' : '') : 'no-details'}`}>
         {/* Sidebar gauche - Filtres */}
         <aside className="app-filters">
           <FilterPanel />
@@ -277,17 +292,30 @@ function AppContent() {
           />
         </main>
 
-        {/* Sidebar droite - Détails */}
-        <aside className="app-details">
-          <NodeDetailsPanel />
-        </aside>
+        {/* Sidebar droite - Détails ou combo SousTraitant+KQI */}
+        {selectedNode && (
+          isSousTraitantWithKQI ? (
+            <aside className="app-details-combined">
+              <div className="details-compact">
+                <NodeDetailsPanel compact />
+              </div>
+              <div className="kqi-integrated">
+                <KQIPanel integrated />
+              </div>
+            </aside>
+          ) : (
+            <aside className="app-details">
+              <NodeDetailsPanel />
+            </aside>
+          )
+        )}
       </div>
 
       {/* Timeline */}
       <TimelineContainer />
 
-      {/* Panneau KQI (overlay) */}
-      <KQIPanel />
+      {/* Panneau KQI (overlay) - masqué quand intégré dans le panneau combiné */}
+      {!isSousTraitantWithKQI && <KQIPanel />}
 
       {/* Dashboard KQI (modal) */}
       <KQIDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
