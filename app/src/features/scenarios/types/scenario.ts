@@ -128,6 +128,16 @@ export interface ScenarioMetadata {
 }
 
 /**
+ * Étape ERD pour la visualisation
+ */
+export interface ERDPathStepForViewer {
+  id: string;
+  entityType: NodeType;
+  relationToNext?: EdgeType;
+  description?: string;
+}
+
+/**
  * Scénario complet
  */
 export interface Scenario {
@@ -145,6 +155,9 @@ export interface Scenario {
 
   // Étapes du scénario
   steps: ScenarioStep[];
+
+  // Parcours ERD original (pour visualisation ERD)
+  erdPath?: ERDPathStepForViewer[];
 }
 
 // =============================================================================

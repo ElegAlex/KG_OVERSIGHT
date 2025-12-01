@@ -4,7 +4,7 @@
  * Navigation étape par étape avec highlight et centrage automatique
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,7 +24,11 @@ import {
   Circle,
   Clock,
   Tag,
+  Network,
+  BarChart3,
 } from 'lucide-react';
+import { ERDPathViewer } from './ERDPathViewer';
+import type { ERDPathStep } from '../stores/erdEditorStore';
 import {
   currentScenarioAtom,
   currentStepAtom,
@@ -190,6 +194,46 @@ export function ScenarioPlayer({ onCenterOnNodes }: ScenarioPlayerProps) {
   const allEdges = useAtomValue(allEdgesAtom);
   const setHighlightedNodes = useSetAtom(highlightedNodeIdsAtom);
   const setSelectedNodes = useSetAtom(selectedNodeIdsAtom);
+
+  // Mode de visualisation: 'info' (panneau infos) ou 'erd' (diagramme ERD)
+  const [viewMode, setViewMode] = useState<'info' | 'erd'>('info');
+
+  // Détecter si c'est un scénario ERD (via erdPath OU via tag 'ERD')
+  const isERDScenario = useMemo(() => {
+    if (!scenario) return false;
+    // Via erdPath explicite
+    if (scenario.erdPath && scenario.erdPath.length > 0) return true;
+    // Via tags (pour les anciens scénarios)
+    if (scenario.metadata.tags?.includes('ERD')) return true;
+    return false;
+  }, [scenario]);
+
+  // Convertir erdPath pour ERDPathViewer (ajouter selectionMode requis)
+  // Si pas de erdPath mais c'est un scénario ERD, reconstruire depuis les steps
+  const erdPathForViewer = useMemo(() => {
+    if (!scenario) return [];
+
+    // Si erdPath existe, l'utiliser
+    if (scenario.erdPath && scenario.erdPath.length > 0) {
+      return scenario.erdPath.map((step) => ({
+        ...step,
+        selectionMode: 'all' as const,
+      }));
+    }
+
+    // Sinon, reconstruire depuis les steps (pour anciens scénarios ERD)
+    if (scenario.metadata.tags?.includes('ERD')) {
+      return scenario.steps.map((step, index) => ({
+        id: step.id,
+        entityType: step.nodeSelector.types?.[0] || 'SubContractor',
+        relationToNext: index < scenario.steps.length - 1 ? undefined : undefined,
+        description: step.description,
+        selectionMode: 'all' as const,
+      }));
+    }
+
+    return [];
+  }, [scenario]);
 
   // Résoudre les nœuds de l'étape courante
   const currentNodeIds = useMemo(() => {
@@ -381,8 +425,40 @@ export function ScenarioPlayer({ onCenterOnNodes }: ScenarioPlayerProps) {
           />
         </div>
 
+        {/* Toggle vue Info/ERD (seulement pour scénarios ERD) */}
+        {isERDScenario && (
+          <div className="flex gap-1 p-2 border-b border-slate-700/50">
+            <button
+              onClick={() => setViewMode('info')}
+              className={`
+                flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors
+                ${viewMode === 'info'
+                  ? 'bg-indigo-500/20 text-indigo-400'
+                  : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                }
+              `}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              Infos
+            </button>
+            <button
+              onClick={() => setViewMode('erd')}
+              className={`
+                flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors
+                ${viewMode === 'erd'
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                }
+              `}
+            >
+              <Network className="w-3.5 h-3.5" />
+              Diagramme ERD
+            </button>
+          </div>
+        )}
+
         {/* Content - flex-1 pour prendre l'espace restant */}
-        <div className={`flex-1 overflow-y-auto p-3 ${isFullscreen ? '' : ''}`}>
+        <div className={`flex-1 overflow-y-auto ${viewMode === 'erd' ? 'p-0' : 'p-3'} ${isFullscreen ? '' : ''}`}>
           {isCompleted ? (
             <div className="text-center py-6">
               <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -408,6 +484,30 @@ export function ScenarioPlayer({ onCenterOnNodes }: ScenarioPlayerProps) {
                 >
                   Terminer
                 </button>
+              </div>
+            </div>
+          ) : viewMode === 'erd' && isERDScenario ? (
+            /* Vue diagramme ERD */
+            <div className="h-full flex flex-col">
+              {/* Description de l'étape courante */}
+              {currentStep && (
+                <div className="p-3 bg-slate-800/70 border-b border-slate-700/50">
+                  <h4 className="text-sm font-semibold text-slate-200 mb-1">
+                    {currentStepIndex + 1}. {currentStep.title}
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    {currentStep.description}
+                  </p>
+                </div>
+              )}
+              {/* Diagramme ERD */}
+              <div className="flex-1 min-h-0">
+                <ERDPathViewer
+                  path={erdPathForViewer}
+                  currentStepIndex={currentStepIndex}
+                  onStepClick={handleGoToStep}
+                  showControls={false}
+                />
               </div>
             </div>
           ) : currentStep ? (

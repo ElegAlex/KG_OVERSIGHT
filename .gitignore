@@ -21,3 +21,8 @@ yarn-debug.log*
 # Environment
 *.local
 .env
+
+# Tauri signing keys (NEVER commit these!)
+*.key
+*.key.pub
+.tauri/

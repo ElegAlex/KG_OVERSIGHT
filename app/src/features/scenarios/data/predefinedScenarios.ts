@@ -3,7 +3,7 @@
  * 4 scénarios de navigation pour les cas d'usage métier
  */
 
-import type { Scenario } from '../types/scenario';
+import type { Scenario, ERDPathStepForViewer } from '../types/scenario';
 
 // =============================================================================
 // Scénario 1 : Préparation inspection par étude
@@ -19,13 +19,20 @@ export const inspectionPreparationScenario: Scenario = {
     icon: 'ClipboardCheck',
     color: '#6366f1',
     estimatedDuration: 15,
-    tags: ['inspection', 'étude', 'audit', 'préparation'],
+    tags: ['inspection', 'étude', 'audit', 'préparation', 'ERD'],
     version: '1.0',
   },
   prerequisites: {
     requiredTypes: ['EtudeClinique', 'SousTraitant', 'Audit'],
     description: 'Ce scénario nécessite au moins une étude clinique avec des sous-traitants associés.',
   },
+  erdPath: [
+    { id: 'erd-1', entityType: 'EtudeClinique', relationToNext: 'IMPLIQUE_ST', description: 'Étude clinique à inspecter' },
+    { id: 'erd-2', entityType: 'SousTraitant', relationToNext: 'EST_SOUS_TRAITANT_DE', description: 'Sous-traitants N1 et N2' },
+    { id: 'erd-3', entityType: 'Audit', relationToNext: 'GENERE_FINDING', description: 'Historique des audits' },
+    { id: 'erd-4', entityType: 'Finding', relationToNext: undefined, description: 'Findings ouverts' },
+    { id: 'erd-5', entityType: 'EvenementQualite', description: 'Événements qualité liés' },
+  ],
   steps: [
     {
       id: 'step-1-select-study',
@@ -188,13 +195,23 @@ export const subcontractorAnalysisScenario: Scenario = {
     icon: 'Building2',
     color: '#8b5cf6',
     estimatedDuration: 10,
-    tags: ['sous-traitant', 'analyse', '360', 'évaluation'],
+    tags: ['sous-traitant', 'analyse', '360', 'évaluation', 'ERD'],
     version: '1.0',
   },
   prerequisites: {
     requiredTypes: ['SousTraitant'],
     description: 'Sélectionnez un sous-traitant pour démarrer l\'analyse.',
   },
+  erdPath: [
+    { id: 'erd-1', entityType: 'SousTraitant', relationToNext: 'EST_LIE_AU_CONTRAT', description: 'Sous-traitant à analyser' },
+    { id: 'erd-2', entityType: 'Contrat', relationToNext: 'EST_COUVERT_PAR_QA', description: 'Contrats actifs' },
+    { id: 'erd-3', entityType: 'AccordQualite', description: 'Accords Qualité' },
+    { id: 'erd-4', entityType: 'DomaineService', description: 'Domaines de service' },
+    { id: 'erd-5', entityType: 'Audit', relationToNext: 'AUDIT_DECLENCHE_ALERTE', description: 'Historique des audits' },
+    { id: 'erd-6', entityType: 'KQI', description: 'Indicateurs qualité' },
+    { id: 'erd-7', entityType: 'EvaluationRisque', relationToNext: 'RESULTE_DE_EVALUATION', description: 'Évaluation des risques' },
+    { id: 'erd-8', entityType: 'Decision', description: 'Décisions et actions' },
+  ],
   steps: [
     {
       id: 'step-1-select-st',
@@ -361,13 +378,20 @@ export const annualRiskEvaluationScenario: Scenario = {
     icon: 'TrendingUp',
     color: '#ef4444',
     estimatedDuration: 20,
-    tags: ['risque', 'évaluation', 'annuel', 'KQI'],
+    tags: ['risque', 'évaluation', 'annuel', 'KQI', 'ERD'],
     version: '1.0',
   },
   prerequisites: {
     requiredTypes: ['SousTraitant', 'KQI', 'EvaluationRisque'],
     description: 'Ce scénario nécessite des données KQI et des évaluations de risque.',
   },
+  erdPath: [
+    { id: 'erd-1', entityType: 'SousTraitant', relationToNext: 'A_FAIT_OBJET_EVALUATION', description: 'Sous-traitants critiques' },
+    { id: 'erd-2', entityType: 'KQI', description: 'KQI en alerte et tendances' },
+    { id: 'erd-3', entityType: 'EvaluationRisque', relationToNext: 'RESULTE_DE_EVALUATION', description: 'Évaluations à haut risque' },
+    { id: 'erd-4', entityType: 'EvenementQualite', description: 'Événements qualité récents' },
+    { id: 'erd-5', entityType: 'Decision', description: 'Décisions à prendre' },
+  ],
   steps: [
     {
       id: 'step-1-critical-st',
@@ -504,13 +528,20 @@ export const undeclaredN2DetectionScenario: Scenario = {
     icon: 'Search',
     color: '#f59e0b',
     estimatedDuration: 12,
-    tags: ['N2', 'sous-traitance', 'détection', 'conformité'],
+    tags: ['N2', 'sous-traitance', 'détection', 'conformité', 'ERD'],
     version: '1.0',
   },
   prerequisites: {
     requiredTypes: ['SousTraitant', 'Alerte'],
     description: 'Ce scénario analyse les alertes liées aux sous-traitants non déclarés.',
   },
+  erdPath: [
+    { id: 'erd-1', entityType: 'Alerte', description: 'Alertes ST2 non déclarés' },
+    { id: 'erd-2', entityType: 'SousTraitant', relationToNext: 'EST_SOUS_TRAITANT_DE', description: 'Chaîne de sous-traitance N1/N2' },
+    { id: 'erd-3', entityType: 'Contrat', relationToNext: 'EST_COUVERT_PAR_QA', description: 'Contrats et clauses ST' },
+    { id: 'erd-4', entityType: 'AccordQualite', description: 'Accords qualité à vérifier' },
+    { id: 'erd-5', entityType: 'Decision', description: 'Actions correctives' },
+  ],
   steps: [
     {
       id: 'step-1-n2-alerts',

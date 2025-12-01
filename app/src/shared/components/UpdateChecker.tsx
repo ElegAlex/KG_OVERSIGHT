@@ -38,19 +38,33 @@ export function UpdateChecker({
   // Vérification de la disponibilité de Tauri
   const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
 
+  // Détection du mode développement
+  const isDev = import.meta.env.DEV;
+
   const checkForUpdates = useCallback(async () => {
     if (!isTauri) {
       console.log('[Updater] Mode navigateur - mises à jour non disponibles');
       return;
     }
 
+    // En mode dev, ne pas vérifier les mises à jour (pas de serveur configuré)
+    if (isDev) {
+      console.log('[Updater] Mode développement - vérification des mises à jour désactivée');
+      return;
+    }
+
     try {
+      // Import dynamique du plugin updater - peut échouer si plugin non configuré
+      const updaterModule = await import('@tauri-apps/plugin-updater').catch(() => null);
+      if (!updaterModule) {
+        console.log('[Updater] Plugin updater non disponible');
+        return;
+      }
+
       setStatus('checking');
       setError(null);
 
-      // Import dynamique du plugin updater
-      const { check } = await import('@tauri-apps/plugin-updater');
-      const updateResult = await check();
+      const updateResult = await updaterModule.check();
 
       if (updateResult) {
         setUpdate({
@@ -65,12 +79,13 @@ export function UpdateChecker({
         setStatus('up-to-date');
         setTimeout(() => setStatus('idle'), 3000);
       }
-    } catch (err) {
-      console.error('[Updater] Erreur lors de la vérification:', err);
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-      setStatus('error');
+    } catch {
+      // Ignorer silencieusement toute erreur - la mise à jour n'est pas critique
+      // Ne jamais afficher d'erreur à l'utilisateur pour cette fonctionnalité
+      console.log('[Updater] Vérification désactivée (serveur non configuré ou inaccessible)');
+      setStatus('idle');
     }
-  }, [isTauri]);
+  }, [isTauri, isDev]);
 
   const downloadAndInstall = useCallback(async () => {
     if (!isTauri || !update) return;

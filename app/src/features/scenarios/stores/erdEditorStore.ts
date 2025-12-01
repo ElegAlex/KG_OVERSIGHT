@@ -10,19 +10,38 @@ import type { Scenario, ScenarioStep, ScenarioMetadata } from '../types/scenario
 import { schemaEntities, schemaRelations, getEntityByType } from '../data/schemaDefinition';
 
 // =============================================================================
+// Helpers (déclarés en premier pour utilisation dans initialState)
+// =============================================================================
+
+function generateId(): string {
+  return `erd-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// =============================================================================
 // Types pour l'éditeur ERD
 // =============================================================================
+
+/** Filtre pour une étape ERD */
+export interface ERDStepFilter {
+  field: string;
+  operator: 'eq' | 'neq' | 'contains' | 'gt' | 'lt' | 'in';
+  value: string | number | boolean | string[];
+}
+
+/** Mode de sélection pour une étape */
+export type ERDSelectionMode = 'all' | 'specific' | 'filtered';
 
 /** Étape du parcours ERD */
 export interface ERDPathStep {
   id: string;
   entityType: NodeType;
   relationToNext?: EdgeType;
-  filters?: {
-    field: string;
-    operator: 'eq' | 'neq' | 'contains' | 'gt' | 'lt' | 'in';
-    value: string | number | boolean | string[];
-  }[];
+  /** Mode de sélection: tous, spécifiques, ou filtrés */
+  selectionMode: ERDSelectionMode;
+  /** IDs des nœuds spécifiquement sélectionnés (mode 'specific') */
+  selectedNodeIds?: string[];
+  /** Filtres à appliquer (mode 'filtered') */
+  filters?: ERDStepFilter[];
   description?: string;
 }
 
@@ -66,7 +85,7 @@ const initialState: ERDEditorState = {
   selectedRelationType: null,
   editingStepId: null,
   metadata: {
-    id: '',
+    id: generateId(), // Générer un ID dès l'initialisation
     title: '',
     description: '',
     category: 'custom',
@@ -159,14 +178,6 @@ export const isERDScenarioValidAtom = atom((get) => {
 });
 
 // =============================================================================
-// Helpers
-// =============================================================================
-
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-// =============================================================================
 // Actions
 // =============================================================================
 
@@ -200,6 +211,7 @@ export const addEntityToPathAtom = atom(null, (get, set, entityType: NodeType) =
   const newStep: ERDPathStep = {
     id: generateId(),
     entityType,
+    selectionMode: 'all',
     description: entity?.description || '',
   };
 
@@ -337,13 +349,18 @@ export const exportERDScenarioAtom = atom((get) => {
     const isFirst = index === 0;
     const isLast = index === state.path.length - 1;
 
-    // Construire le NodeSelector
+    // Construire le NodeSelector selon le mode de sélection
     const nodeSelector: ScenarioStep['nodeSelector'] = {
       types: [pathStep.entityType],
     };
 
-    // Ajouter les filtres si présents
-    if (pathStep.filters && pathStep.filters.length > 0) {
+    // Ajouter les IDs spécifiques si mode 'specific'
+    if (pathStep.selectionMode === 'specific' && pathStep.selectedNodeIds && pathStep.selectedNodeIds.length > 0) {
+      nodeSelector.ids = pathStep.selectedNodeIds;
+    }
+
+    // Ajouter les filtres si mode 'filtered'
+    if (pathStep.selectionMode === 'filtered' && pathStep.filters && pathStep.filters.length > 0) {
       nodeSelector.where = pathStep.filters;
     }
 
@@ -369,6 +386,14 @@ export const exportERDScenarioAtom = atom((get) => {
     };
   });
 
+  // Convertir le path en format pour visualisation ERD
+  const erdPath = state.path.map((step) => ({
+    id: step.id,
+    entityType: step.entityType,
+    relationToNext: step.relationToNext,
+    description: step.description,
+  }));
+
   const scenario: Scenario = {
     metadata: {
       id: state.metadata.id || generateId(),
@@ -383,33 +408,80 @@ export const exportERDScenarioAtom = atom((get) => {
       updatedAt: new Date().toISOString(),
     },
     steps,
+    erdPath, // Inclure le parcours ERD pour la visualisation
   };
 
   return scenario;
 });
 
+/** Résultat de sauvegarde */
+export interface SaveResult {
+  success: boolean;
+  isNew: boolean;
+  scenario: Scenario;
+  message: string;
+}
+
 /** Sauvegarder le scénario ERD */
-export const saveERDScenarioAtom = atom(null, (get, set) => {
+export const saveERDScenarioAtom = atom(null, (get, set): SaveResult => {
   const scenario = get(exportERDScenarioAtom);
   const customScenarios = get(erdCustomScenariosAtom);
   const state = get(erdEditorStateAtom);
+
+  // Validation
+  if (!scenario.metadata.title?.trim()) {
+    return {
+      success: false,
+      isNew: false,
+      scenario,
+      message: 'Le titre du scénario est requis',
+    };
+  }
+
+  if (scenario.steps.length < 2) {
+    return {
+      success: false,
+      isNew: false,
+      scenario,
+      message: 'Le scénario doit contenir au moins 2 étapes',
+    };
+  }
 
   const existingIndex = customScenarios.findIndex(
     (s) => s.metadata.id === scenario.metadata.id
   );
 
+  const isNew = existingIndex < 0;
   let newScenarios: Scenario[];
+
   if (existingIndex >= 0) {
     newScenarios = [...customScenarios];
-    newScenarios[existingIndex] = scenario;
+    newScenarios[existingIndex] = {
+      ...scenario,
+      metadata: {
+        ...scenario.metadata,
+        updatedAt: new Date().toISOString(),
+      },
+    };
   } else {
     newScenarios = [...customScenarios, scenario];
   }
 
   set(erdCustomScenariosAtom, newScenarios);
-  set(erdEditorStateAtom, { ...state, isDirty: false });
+  set(erdEditorStateAtom, {
+    ...state,
+    isDirty: false,
+    editingScenarioId: scenario.metadata.id,
+  });
 
-  return scenario;
+  return {
+    success: true,
+    isNew,
+    scenario,
+    message: isNew
+      ? `Scénario "${scenario.metadata.title}" créé avec succès`
+      : `Scénario "${scenario.metadata.title}" mis à jour`,
+  };
 });
 
 /** Charger un scénario ERD existant pour édition */
@@ -434,6 +506,10 @@ export const loadERDScenarioForEditAtom = atom(null, (get, set, scenario: Scenar
       id: step.id,
       entityType,
       relationToNext,
+      selectionMode: (step.nodeSelector.ids && step.nodeSelector.ids.length > 0) ? 'specific' as const
+        : (step.nodeSelector.where && step.nodeSelector.where.length > 0) ? 'filtered' as const
+        : 'all' as const,
+      selectedNodeIds: step.nodeSelector.ids,
       filters: step.nodeSelector.where,
       description: step.description,
     };

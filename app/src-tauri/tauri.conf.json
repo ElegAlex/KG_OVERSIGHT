@@ -83,7 +83,7 @@
   "plugins": {
     "updater": {
       "active": true,
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJBRkY1ODVGRjFBRUM4RTgKUldUb3lLN3hYMWovdWoyd1dqNDBKMS9LN2N6MWFMYjc3aUxGaHh0aUdWaE56SFBTWHBDdVdCNHEK",
       "endpoints": [
         "https://github.com/ElegAlex/KG_OVERSIGHT/releases/latest/download/latest.json"
       ],
