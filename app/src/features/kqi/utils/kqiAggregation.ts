@@ -4,6 +4,12 @@
  */
 
 import type { KQI } from '@data/types';
+import {
+  normalizeKQIStatut,
+  normalizeKQITendance,
+  type KQIStatutNormalized,
+  type KQITendanceNormalized,
+} from './kqiNormalization';
 
 export type KQIStatus = 'good' | 'warning' | 'critical';
 
@@ -19,8 +25,12 @@ export interface KQIAggregation {
 }
 
 /**
- * Agrège les KQI pour un sous-traitant donné
- * Prend uniquement la dernière période pour chaque indicateur
+ * Agrège les KQI pour un sous-traitant donné.
+ * Prend uniquement la dernière période pour chaque indicateur.
+ *
+ * IMPORTANT: Cette fonction applique une normalisation défensive des statuts
+ * et tendances pour garantir la cohérence des données, même si elles
+ * proviennent de sources non normalisées (CSV legacy, cache ancien).
  */
 export function aggregateKQIForST(kqiData: KQI[], stId: string): KQIAggregation {
   const stKQIs = kqiData.filter((k) => k.sous_traitant_id === stId);
@@ -49,11 +59,39 @@ export function aggregateKQIForST(kqiData: KQI[], stId: string): KQIAggregation 
 
   const latestKQIs = Array.from(latestByIndicator.values());
 
-  const alertCount = latestKQIs.filter((k) => k.statut === 'Alerte' || k.statut === 'Critique').length;
-  const warningCount = latestKQIs.filter((k) => k.statut === 'Attention').length;
-  const okCount = latestKQIs.filter((k) => k.statut === 'OK').length;
-  const degradingCount = latestKQIs.filter((k) => k.tendance === 'Dégradation').length;
+  // Comptage avec normalisation défensive des statuts et tendances
+  // Ceci garantit un comptage correct même si les données ne sont pas normalisées
+  let alertCount = 0;
+  let warningCount = 0;
+  let okCount = 0;
+  let degradingCount = 0;
 
+  for (const kqi of latestKQIs) {
+    // Normaliser le statut pour le comptage
+    const normalizedStatut: KQIStatutNormalized = normalizeKQIStatut(kqi.statut);
+    const normalizedTendance: KQITendanceNormalized = normalizeKQITendance(kqi.tendance);
+
+    // Comptage par statut normalisé
+    switch (normalizedStatut) {
+      case 'Alerte':
+      case 'Critique':
+        alertCount++;
+        break;
+      case 'Attention':
+        warningCount++;
+        break;
+      case 'OK':
+        okCount++;
+        break;
+    }
+
+    // Comptage des dégradations
+    if (normalizedTendance === 'Dégradation') {
+      degradingCount++;
+    }
+  }
+
+  // Déterminer le statut global
   let status: KQIStatus;
   if (alertCount > 0) {
     status = 'critical';

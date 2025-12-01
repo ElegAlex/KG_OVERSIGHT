@@ -3,10 +3,11 @@
  * Utilise IndexedDB pour stocker les données du graphe entre les sessions
  */
 
-import type { GraphNode, GraphEdge } from '@data/types';
+import type { GraphNode, GraphEdge, KQI } from '@data/types';
+import { normalizeKQI, isStatutNormalized } from '@features/kqi/utils/kqiNormalization';
 
 const DB_NAME = 'kg-oversight-db';
-const DB_VERSION = 2; // v2: normalisation des statuts KQI
+const DB_VERSION = 3; // v3: normalisation robuste des statuts KQI avec module centralisé
 const STORE_NODES = 'nodes';
 const STORE_EDGES = 'edges';
 const STORE_META = 'metadata';
@@ -179,7 +180,9 @@ export async function saveAll(
 }
 
 /**
- * Charge tous les nœuds depuis IndexedDB
+ * Charge tous les nœuds depuis IndexedDB.
+ * Les nœuds KQI sont automatiquement normalisés pour garantir
+ * la cohérence des statuts et tendances avec les types TypeScript.
  */
 export async function loadNodes(): Promise<Map<string, GraphNode>> {
   const database = await openDatabase();
@@ -191,8 +194,25 @@ export async function loadNodes(): Promise<Map<string, GraphNode>> {
 
     request.onsuccess = () => {
       const nodes = new Map<string, GraphNode>();
+      let normalizedCount = 0;
+
       for (const node of request.result) {
-        nodes.set(node.id, node as GraphNode);
+        // Normaliser les KQI pour garantir la cohérence des données
+        // même si elles proviennent d'une version antérieure du cache
+        if (node._type === 'KQI') {
+          const kqi = node as KQI;
+          // Vérifier si la normalisation est nécessaire
+          if (!isStatutNormalized(kqi.statut)) {
+            normalizedCount++;
+          }
+          nodes.set(node.id, normalizeKQI(kqi) as GraphNode);
+        } else {
+          nodes.set(node.id, node as GraphNode);
+        }
+      }
+
+      if (normalizedCount > 0) {
+        console.log(`[Persistence] Normalized ${normalizedCount} KQI nodes from legacy format`);
       }
       console.log(`[Persistence] Loaded ${nodes.size} nodes`);
       resolve(nodes);

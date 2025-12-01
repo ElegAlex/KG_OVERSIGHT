@@ -7,6 +7,7 @@
 import Papa from 'papaparse';
 import type { GraphNode, GraphEdge, NodeType } from '@data/types';
 import { loadAll, saveAll, hasPersistedData } from '@data/database/persistence';
+import { normalizeKQIStatut, normalizeKQITendance } from '@features/kqi/utils/kqiNormalization';
 
 // Liste des types de nœuds à charger
 const NODE_TYPES: NodeType[] = [
@@ -85,70 +86,38 @@ async function fetchAndParseCsv(url: string): Promise<ParsedRow[]> {
   });
 }
 
-/**
- * Normalise le statut KQI du CSV vers le format attendu par l'application
- */
-function normalizeKQIStatut(statut: string): 'OK' | 'Attention' | 'Alerte' | 'Critique' {
-  const s = statut?.toLowerCase().trim() ?? '';
-  if (s === 'conforme' || s === 'ok') return 'OK';
-  if (s === 'à surveiller' || s === 'a surveiller' || s === 'attention') return 'Attention';
-  if (s === 'alerte') return 'Alerte';
-  if (s === 'critique') return 'Critique';
-  // Par défaut, considérer comme OK si non reconnu
-  return 'OK';
-}
-
-/**
- * Normalise la tendance KQI du CSV vers le format attendu par l'application
- */
-function normalizeKQITendance(tendance: string): 'Amélioration' | 'Stable' | 'Dégradation' {
-  const t = tendance?.toLowerCase().trim() ?? '';
-  if (t.includes('amélioration') || t.includes('amelioration') || t.includes('↑')) return 'Amélioration';
-  if (t.includes('dégradation') || t.includes('degradation') || t.includes('↓')) return 'Dégradation';
-  return 'Stable';
-}
-
 function parseNodeRow(row: ParsedRow, nodeType: NodeType): GraphNode {
-  // Conversion des types selon le type de nœud
-  const baseNode = {
+  // Ajouter les propriétés spécifiques selon le type
+  const props: Record<string, unknown> = {
     _type: nodeType,
     id: row.id,
-    nom: row.nom,
-    description: row.description,
-    statut: row.statut,
-    criticite: row.criticite as GraphNode['criticite'],
-    source_donnees: row.source_donnees,
   };
 
-  // Ajouter les propriétés spécifiques selon le type
-  const additionalProps: Record<string, unknown> = {};
-
+  // Parser toutes les propriétés du CSV
   for (const [key, value] of Object.entries(row)) {
-    if (value && !['id', 'nom', 'description', 'statut', 'criticite', 'source_donnees'].includes(key)) {
-      // Convertir les nombres
-      if (/^\d+$/.test(value)) {
-        additionalProps[key] = parseInt(value, 10);
-      } else if (/^\d+\.\d+$/.test(value)) {
-        additionalProps[key] = parseFloat(value);
-      } else if (value === 'true' || value === 'false') {
-        additionalProps[key] = value === 'true';
-      } else {
-        additionalProps[key] = value;
-      }
+    if (!value || key === 'id') continue;
+
+    // Convertir les types selon le format de la valeur
+    if (/^-?\d+$/.test(value)) {
+      props[key] = parseInt(value, 10);
+    } else if (/^-?\d+\.\d+$/.test(value)) {
+      props[key] = parseFloat(value);
+    } else if (value === 'true' || value === 'false') {
+      props[key] = value === 'true';
+    } else {
+      props[key] = value;
     }
   }
 
-  // Normaliser les statuts et tendances pour les KQI
+  // Normalisation spécifique pour les KQI
+  // IMPORTANT: Cette normalisation doit être appliquée APRÈS le parsing
+  // pour garantir la cohérence avec les types TypeScript
   if (nodeType === 'KQI') {
-    if (row.statut) {
-      additionalProps.statut = normalizeKQIStatut(row.statut);
-    }
-    if (row.tendance) {
-      additionalProps.tendance = normalizeKQITendance(row.tendance);
-    }
+    props.statut = normalizeKQIStatut(row.statut ?? '');
+    props.tendance = normalizeKQITendance(row.tendance ?? '');
   }
 
-  return { ...baseNode, ...additionalProps } as GraphNode;
+  return props as GraphNode;
 }
 
 function parseEdgeRow(row: ParsedRow, relationType: string, index: number): GraphEdge {
