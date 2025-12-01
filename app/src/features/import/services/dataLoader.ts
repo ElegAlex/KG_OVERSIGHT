@@ -196,6 +196,14 @@ export async function loadAllData(forceReload = false): Promise<{
         const cached = await loadAll();
         if (cached && cached.nodes.size > 0) {
           console.log(`[DataLoader] Loaded ${cached.nodes.size} nodes and ${cached.edges.size} edges from cache`);
+          // Normaliser les KQI depuis le cache (données potentiellement anciennes)
+          for (const [id, node] of cached.nodes) {
+            if (node._type === 'KQI') {
+              const kqi = node as any;
+              kqi.statut = normalizeKQIStatut(kqi.statut);
+              kqi.tendance = normalizeKQITendance(kqi.tendance);
+            }
+          }
           return { ...cached, source: 'cache' };
         }
       }
