@@ -1,7 +1,7 @@
 # KG-OVERSIGHT - Backlog
 
-**Version** : 1.0
-**Date** : 30 novembre 2025
+**Version** : 1.1
+**Date** : 1er décembre 2025
 **Statut** : En cours de développement
 
 ---
@@ -20,6 +20,9 @@
 | Phase 8 | Scénarios guidés | **100%** |
 | Phase 9 | UX et finitions | **100%** |
 | Phase 10 | Packaging et distribution | **100%** |
+| **Phase 11** | **Data Management (CRUD)** | **55%** |
+
+> 📋 **Phase 11 détaillée** : Voir [BACKLOG_DATA_MANAGEMENT.md](./BACKLOG_DATA_MANAGEMENT.md)
 
 ---
 
@@ -218,11 +221,47 @@
 
 ## Statut Final
 
-**Le projet est 100% complet.** Toutes les phases ont été implémentées avec succès.
+**Phases 1-10 complétées à 100%.** Phase 11 (Data Management) en cours d'implémentation (55%).
 
-### Dernières fonctionnalités ajoutées (30 novembre 2025)
-- [x] **F3.4** - Filtre par statut (5 catégories : Actif/En cours/Planifié/Clôturé/Archivé)
-- [x] **F10.6** - Auto-updater Tauri avec notifications visuelles
+### Dernières fonctionnalités ajoutées (1er décembre 2025)
+- [x] **F11.1.1-6** - Infrastructure Data Service complète (Phase 11.1)
+  - DataService avec opérations CRUD
+  - Validation Service (12 règles de validation)
+  - ID Generator (format PREFIX-YYYYMMDD-SEQ)
+  - Schema Service (16 types d'entités)
+  - Extension persistence.ts (opérations unitaires)
+  - Hook useDataMutations (intégration React/Jotai)
+- [x] **F11.2.1-6** - Édition d'entités complète (Phase 11.2)
+  - EntityEditor avec formulaires dynamiques
+  - Composants de champs (Input, Select, Date, Number, Boolean)
+  - Intégration dans NodeDetailsPanel (onglet "Éditer")
+  - Validation en temps réel par champ
+  - Notifications toast success/error
+  - Confirmation modifications non sauvegardées
+- [x] **F11.3.1-5** - Suppression d'entités (Phase 11.3)
+  - DeleteConfirmDialog avec confirmation
+  - Détection et affichage des relations impactées
+  - Prévisualisation avant suppression
+  - Bouton supprimer dans NodeDetailsPanel
+  - Notifications toast de succès/erreur
+- [x] **F11.4.1-6** - Création d'entités (Phase 11.4)
+  - EntityCreatorDialog avec workflow en 2 étapes
+  - TypeSelector avec 16 types groupés par catégorie
+  - Formulaires dynamiques réutilisés de l'édition
+  - Génération automatique d'ID (régénérable)
+  - Bouton "Ajouter" dans le Header
+
+### Phase 11 : Data Management (CRUD) - En cours (55%)
+La Phase 11 introduit la gestion complète des données directement dans l'application :
+- [x] **Infrastructure** Data Service et hooks React
+- [x] **Création** d'entités sans passer par Excel
+- [x] **Édition** des entités existantes
+- [x] **Suppression** avec gestion des relations
+- [ ] **Import intelligent** (modes Replace, Merge, Add only)
+- [ ] **Copier/Coller** et duplication
+- [ ] **Vue DataTable** pour édition en masse
+
+> 📋 Spécifications complètes : [BACKLOG_DATA_MANAGEMENT.md](./BACKLOG_DATA_MANAGEMENT.md)
 
 ### Évolutions futures possibles
 - Création/modification de scénarios par l'utilisateur (EF-SCN-06)

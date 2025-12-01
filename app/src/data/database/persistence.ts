@@ -358,6 +358,619 @@ export function closeDatabase(): void {
   }
 }
 
+// =============================================================================
+// Opérations unitaires sur les nœuds (CRUD)
+// =============================================================================
+
+/**
+ * Récupère un nœud par son ID
+ */
+export async function getNode(nodeId: string): Promise<GraphNode | null> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES], 'readonly');
+    const store = transaction.objectStore(STORE_NODES);
+    const request = store.get(nodeId);
+
+    request.onsuccess = () => {
+      if (request.result) {
+        // Normaliser les KQI si nécessaire
+        if (request.result._type === 'KQI') {
+          resolve(normalizeKQI(request.result as KQI) as GraphNode);
+        } else {
+          resolve(request.result as GraphNode);
+        }
+      } else {
+        resolve(null);
+      }
+    };
+
+    request.onerror = () => {
+      console.error('[Persistence] Failed to get node:', request.error);
+      reject(request.error);
+    };
+  });
+}
+
+/**
+ * Sauvegarde ou met à jour un seul nœud
+ */
+export async function putNode(node: GraphNode): Promise<void> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_NODES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    store.put(node);
+
+    // Mettre à jour les métadonnées
+    const countRequest = store.count();
+    countRequest.onsuccess = () => {
+      metaStore.put({
+        key: 'lastSave',
+        timestamp: new Date().toISOString(),
+        nodeCount: countRequest.result,
+        edgeCount: -1, // Sera mis à jour séparément si nécessaire
+      });
+    };
+
+    transaction.oncomplete = () => {
+      console.log(`[Persistence] Saved node: ${node.id}`);
+      resolve();
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to save node:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Met à jour un nœud existant (merge partiel)
+ */
+export async function updateNode(
+  nodeId: string,
+  updates: Partial<GraphNode>
+): Promise<GraphNode | null> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_NODES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    const getRequest = store.get(nodeId);
+
+    getRequest.onsuccess = () => {
+      if (!getRequest.result) {
+        resolve(null);
+        return;
+      }
+
+      // Fusionner les mises à jour avec le nœud existant
+      const updatedNode = { ...getRequest.result, ...updates, id: nodeId };
+      store.put(updatedNode);
+
+      // Mettre à jour le timestamp
+      metaStore.put({
+        key: 'lastSave',
+        timestamp: new Date().toISOString(),
+        nodeCount: -1,
+        edgeCount: -1,
+      });
+
+      transaction.oncomplete = () => {
+        console.log(`[Persistence] Updated node: ${nodeId}`);
+        resolve(updatedNode as GraphNode);
+      };
+    };
+
+    getRequest.onerror = () => {
+      console.error('[Persistence] Failed to get node for update:', getRequest.error);
+      reject(getRequest.error);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to update node:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Supprime un nœud par son ID
+ */
+export async function deleteNode(nodeId: string): Promise<boolean> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_NODES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    // Vérifier si le nœud existe
+    const getRequest = store.get(nodeId);
+
+    getRequest.onsuccess = () => {
+      if (!getRequest.result) {
+        resolve(false);
+        return;
+      }
+
+      store.delete(nodeId);
+
+      // Mettre à jour les métadonnées
+      const countRequest = store.count();
+      countRequest.onsuccess = () => {
+        metaStore.put({
+          key: 'lastSave',
+          timestamp: new Date().toISOString(),
+          nodeCount: countRequest.result,
+          edgeCount: -1,
+        });
+      };
+    };
+
+    transaction.oncomplete = () => {
+      console.log(`[Persistence] Deleted node: ${nodeId}`);
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to delete node:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Supprime plusieurs nœuds en une transaction
+ */
+export async function deleteNodes(nodeIds: string[]): Promise<number> {
+  if (nodeIds.length === 0) return 0;
+
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_NODES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    let deletedCount = 0;
+
+    for (const nodeId of nodeIds) {
+      const request = store.delete(nodeId);
+      request.onsuccess = () => {
+        deletedCount++;
+      };
+    }
+
+    transaction.oncomplete = () => {
+      // Mettre à jour les métadonnées
+      const countTransaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+      const countStore = countTransaction.objectStore(STORE_NODES);
+      const countMetaStore = countTransaction.objectStore(STORE_META);
+
+      const countRequest = countStore.count();
+      countRequest.onsuccess = () => {
+        countMetaStore.put({
+          key: 'lastSave',
+          timestamp: new Date().toISOString(),
+          nodeCount: countRequest.result,
+          edgeCount: -1,
+        });
+      };
+
+      console.log(`[Persistence] Deleted ${deletedCount} nodes`);
+      resolve(deletedCount);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to delete nodes:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+// =============================================================================
+// Opérations unitaires sur les arêtes (CRUD)
+// =============================================================================
+
+/**
+ * Récupère une arête par son ID
+ */
+export async function getEdge(edgeId: string): Promise<GraphEdge | null> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES], 'readonly');
+    const store = transaction.objectStore(STORE_EDGES);
+    const request = store.get(edgeId);
+
+    request.onsuccess = () => {
+      resolve(request.result ? (request.result as GraphEdge) : null);
+    };
+
+    request.onerror = () => {
+      console.error('[Persistence] Failed to get edge:', request.error);
+      reject(request.error);
+    };
+  });
+}
+
+/**
+ * Sauvegarde ou met à jour une seule arête
+ */
+export async function putEdge(edge: GraphEdge): Promise<void> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_EDGES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    store.put(edge);
+
+    // Mettre à jour les métadonnées
+    const countRequest = store.count();
+    countRequest.onsuccess = () => {
+      metaStore.put({
+        key: 'lastSave',
+        timestamp: new Date().toISOString(),
+        nodeCount: -1,
+        edgeCount: countRequest.result,
+      });
+    };
+
+    transaction.oncomplete = () => {
+      console.log(`[Persistence] Saved edge: ${edge.id}`);
+      resolve();
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to save edge:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Met à jour une arête existante (merge partiel)
+ */
+export async function updateEdge(
+  edgeId: string,
+  updates: Partial<GraphEdge>
+): Promise<GraphEdge | null> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_EDGES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    const getRequest = store.get(edgeId);
+
+    getRequest.onsuccess = () => {
+      if (!getRequest.result) {
+        resolve(null);
+        return;
+      }
+
+      // Fusionner les mises à jour avec l'arête existante
+      const updatedEdge = { ...getRequest.result, ...updates, id: edgeId };
+      store.put(updatedEdge);
+
+      // Mettre à jour le timestamp
+      metaStore.put({
+        key: 'lastSave',
+        timestamp: new Date().toISOString(),
+        nodeCount: -1,
+        edgeCount: -1,
+      });
+
+      transaction.oncomplete = () => {
+        console.log(`[Persistence] Updated edge: ${edgeId}`);
+        resolve(updatedEdge as GraphEdge);
+      };
+    };
+
+    getRequest.onerror = () => {
+      console.error('[Persistence] Failed to get edge for update:', getRequest.error);
+      reject(getRequest.error);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to update edge:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Supprime une arête par son ID
+ */
+export async function deleteEdge(edgeId: string): Promise<boolean> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_EDGES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    // Vérifier si l'arête existe
+    const getRequest = store.get(edgeId);
+
+    getRequest.onsuccess = () => {
+      if (!getRequest.result) {
+        resolve(false);
+        return;
+      }
+
+      store.delete(edgeId);
+
+      // Mettre à jour les métadonnées
+      const countRequest = store.count();
+      countRequest.onsuccess = () => {
+        metaStore.put({
+          key: 'lastSave',
+          timestamp: new Date().toISOString(),
+          nodeCount: -1,
+          edgeCount: countRequest.result,
+        });
+      };
+    };
+
+    transaction.oncomplete = () => {
+      console.log(`[Persistence] Deleted edge: ${edgeId}`);
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to delete edge:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Supprime plusieurs arêtes en une transaction
+ */
+export async function deleteEdges(edgeIds: string[]): Promise<number> {
+  if (edgeIds.length === 0) return 0;
+
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_EDGES);
+
+    let deletedCount = 0;
+
+    for (const edgeId of edgeIds) {
+      const request = store.delete(edgeId);
+      request.onsuccess = () => {
+        deletedCount++;
+      };
+    }
+
+    transaction.oncomplete = () => {
+      // Mettre à jour les métadonnées
+      const countTransaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+      const countStore = countTransaction.objectStore(STORE_EDGES);
+      const countMetaStore = countTransaction.objectStore(STORE_META);
+
+      const countRequest = countStore.count();
+      countRequest.onsuccess = () => {
+        countMetaStore.put({
+          key: 'lastSave',
+          timestamp: new Date().toISOString(),
+          nodeCount: -1,
+          edgeCount: countRequest.result,
+        });
+      };
+
+      console.log(`[Persistence] Deleted ${deletedCount} edges`);
+      resolve(deletedCount);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to delete edges:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Récupère toutes les arêtes connectées à un nœud
+ */
+export async function getEdgesByNode(nodeId: string): Promise<GraphEdge[]> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES], 'readonly');
+    const store = transaction.objectStore(STORE_EDGES);
+
+    const edges: GraphEdge[] = [];
+
+    // Utiliser l'index source
+    const sourceIndex = store.index('source');
+    const sourceRequest = sourceIndex.getAll(nodeId);
+
+    sourceRequest.onsuccess = () => {
+      edges.push(...(sourceRequest.result as GraphEdge[]));
+
+      // Utiliser l'index target
+      const targetIndex = store.index('target');
+      const targetRequest = targetIndex.getAll(nodeId);
+
+      targetRequest.onsuccess = () => {
+        edges.push(...(targetRequest.result as GraphEdge[]));
+        // Dédupliquer (au cas où une arête serait source ET target du même nœud)
+        const uniqueEdges = Array.from(
+          new Map(edges.map((e) => [e.id, e])).values()
+        );
+        resolve(uniqueEdges);
+      };
+
+      targetRequest.onerror = () => {
+        reject(targetRequest.error);
+      };
+    };
+
+    sourceRequest.onerror = () => {
+      reject(sourceRequest.error);
+    };
+  });
+}
+
+/**
+ * Supprime toutes les arêtes connectées à un nœud
+ */
+export async function deleteEdgesByNode(nodeId: string): Promise<string[]> {
+  const edges = await getEdgesByNode(nodeId);
+  const edgeIds = edges.map((e) => e.id);
+
+  if (edgeIds.length > 0) {
+    await deleteEdges(edgeIds);
+  }
+
+  return edgeIds;
+}
+
+/**
+ * Sauvegarde plusieurs nœuds en une transaction (sans vider le store)
+ */
+export async function putNodes(nodes: GraphNode[]): Promise<number> {
+  if (nodes.length === 0) return 0;
+
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_NODES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    for (const node of nodes) {
+      store.put(node);
+    }
+
+    transaction.oncomplete = () => {
+      // Mettre à jour les métadonnées
+      const countTransaction = database.transaction([STORE_NODES, STORE_META], 'readwrite');
+      const countStore = countTransaction.objectStore(STORE_NODES);
+      const countMetaStore = countTransaction.objectStore(STORE_META);
+
+      const countRequest = countStore.count();
+      countRequest.onsuccess = () => {
+        countMetaStore.put({
+          key: 'lastSave',
+          timestamp: new Date().toISOString(),
+          nodeCount: countRequest.result,
+          edgeCount: -1,
+        });
+      };
+
+      console.log(`[Persistence] Put ${nodes.length} nodes`);
+      resolve(nodes.length);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to put nodes:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Sauvegarde plusieurs arêtes en une transaction (sans vider le store)
+ */
+export async function putEdges(edges: GraphEdge[]): Promise<number> {
+  if (edges.length === 0) return 0;
+
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+    const store = transaction.objectStore(STORE_EDGES);
+    const metaStore = transaction.objectStore(STORE_META);
+
+    for (const edge of edges) {
+      store.put(edge);
+    }
+
+    transaction.oncomplete = () => {
+      // Mettre à jour les métadonnées
+      const countTransaction = database.transaction([STORE_EDGES, STORE_META], 'readwrite');
+      const countStore = countTransaction.objectStore(STORE_EDGES);
+      const countMetaStore = countTransaction.objectStore(STORE_META);
+
+      const countRequest = countStore.count();
+      countRequest.onsuccess = () => {
+        countMetaStore.put({
+          key: 'lastSave',
+          timestamp: new Date().toISOString(),
+          nodeCount: -1,
+          edgeCount: countRequest.result,
+        });
+      };
+
+      console.log(`[Persistence] Put ${edges.length} edges`);
+      resolve(edges.length);
+    };
+
+    transaction.onerror = () => {
+      console.error('[Persistence] Failed to put edges:', transaction.error);
+      reject(transaction.error);
+    };
+  });
+}
+
+/**
+ * Vérifie si un nœud existe
+ */
+export async function nodeExists(nodeId: string): Promise<boolean> {
+  const node = await getNode(nodeId);
+  return node !== null;
+}
+
+/**
+ * Vérifie si une arête existe
+ */
+export async function edgeExists(edgeId: string): Promise<boolean> {
+  const edge = await getEdge(edgeId);
+  return edge !== null;
+}
+
+/**
+ * Compte le nombre de nœuds par type
+ */
+export async function countNodesByType(): Promise<Map<string, number>> {
+  const database = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NODES], 'readonly');
+    const store = transaction.objectStore(STORE_NODES);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const counts = new Map<string, number>();
+      for (const node of request.result) {
+        const type = node._type || 'unknown';
+        counts.set(type, (counts.get(type) || 0) + 1);
+      }
+      resolve(counts);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
 export default {
   openDatabase,
   saveNodes,
@@ -370,4 +983,24 @@ export default {
   hasPersistedData,
   clearAll,
   closeDatabase,
+  // Opérations unitaires sur les nœuds
+  getNode,
+  putNode,
+  updateNode,
+  deleteNode,
+  deleteNodes,
+  putNodes,
+  nodeExists,
+  // Opérations unitaires sur les arêtes
+  getEdge,
+  putEdge,
+  updateEdge,
+  deleteEdge,
+  deleteEdges,
+  putEdges,
+  edgeExists,
+  getEdgesByNode,
+  deleteEdgesByNode,
+  // Statistiques
+  countNodesByType,
 };

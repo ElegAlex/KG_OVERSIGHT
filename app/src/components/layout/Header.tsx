@@ -3,7 +3,7 @@
  * Design system inspiré Linear/Vercel
  */
 
-import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar } from 'lucide-react';
+import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar, Plus } from 'lucide-react';
 import { useAtom, useAtomValue } from 'jotai';
 import { cn } from '@/lib/utils';
 import { statPillColors, type StatPillColor } from '@/styles/colors';
@@ -22,6 +22,7 @@ interface HeaderProps {
   onOpenAlerts?: () => void;
   onOpenImport?: () => void;
   onOpenScenarios?: () => void;
+  onOpenCreate?: () => void;
 }
 
 interface StatPillProps {
@@ -88,6 +89,7 @@ export function Header({
   onOpenAlerts,
   onOpenImport,
   onOpenScenarios,
+  onOpenCreate,
 }: HeaderProps) {
   const [timelineSize, setTimelineSize] = useAtom(timelineSizeAtom);
 
@@ -167,6 +169,16 @@ export function Header({
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          {onOpenCreate && (
+            <button
+              onClick={onOpenCreate}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-sm"
+              title="Créer une entité (Ctrl+N)"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm font-medium">Ajouter</span>
+            </button>
+          )}
           <button
             onClick={toggleTimeline}
             className={cn(

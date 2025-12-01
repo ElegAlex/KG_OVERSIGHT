@@ -26,8 +26,10 @@ import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsC
 import { kqiPanelOpenAtom, closeKQIPanelAtom } from '@features/kqi';
 import { ImportWizard } from '@features/import';
 import { ScenarioSelector, ScenarioPlayer, ScenarioEditor, ERDScenarioEditor } from '@features/scenarios';
+import { EntityCreatorDialog } from '@features/dataManagement';
 import { Header } from '@/components/layout';
 import { UpdateChecker } from '@shared/components/UpdateChecker';
+import { NotificationContainer } from '@shared/components/NotificationContainer';
 import {
   allNodesAtom,
   allEdgesAtom,
@@ -133,6 +135,9 @@ function AppContent() {
 
   // État du sélecteur de scénarios
   const [isScenarioSelectorOpen, setIsScenarioSelectorOpen] = useState(false);
+
+  // État du créateur d'entités
+  const [isEntityCreatorOpen, setIsEntityCreatorOpen] = useState(false);
 
   // Layout actuel
   const [currentLayout, setCurrentLayout] = useState<LayoutType>('forceAtlas2');
@@ -249,6 +254,7 @@ function AppContent() {
         onOpenAlerts={() => setIsAlertsPanelOpen(true)}
         onOpenImport={() => setIsImportWizardOpen(true)}
         onOpenScenarios={() => setIsScenarioSelectorOpen(true)}
+        onOpenCreate={() => setIsEntityCreatorOpen(true)}
       />
 
       {/* Contenu principal */}
@@ -336,6 +342,12 @@ function AppContent() {
         onClose={() => setIsImportWizardOpen(false)}
       />
 
+      {/* Créateur d'entités */}
+      <EntityCreatorDialog
+        isOpen={isEntityCreatorOpen}
+        onClose={() => setIsEntityCreatorOpen(false)}
+      />
+
       {/* Sélecteur de scénarios */}
       <ScenarioSelector
         isOpen={isScenarioSelectorOpen}
@@ -353,6 +365,9 @@ function AppContent() {
 
       {/* Auto-updater Tauri */}
       <UpdateChecker autoCheck={true} checkInterval={60} />
+
+      {/* Notifications globales */}
+      <NotificationContainer />
     </div>
   );
 }

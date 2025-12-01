@@ -1,17 +1,20 @@
 /**
  * KG-Oversight - Panneau de détails du noeud sélectionné
  * Design moderne avec glassmorphism
+ * Supporte le mode édition via EntityEditor
  */
 
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, GitBranch, ChevronRight, ArrowLeftCircle, ArrowRightCircle } from 'lucide-react';
+import { X, Info, GitBranch, ChevronRight, ArrowLeftCircle, ArrowRightCircle, Pencil, Eye, Trash2 } from 'lucide-react';
 import { selectedNodeAtom, selectedNodeIdsAtom, allEdgesAtom, allNodesAtom } from '@shared/stores/selectionAtoms';
 import { getNodeColor, getNodeLabel, getCriticiteColor, getRisqueColor } from '@shared/utils/nodeStyles';
 import { cn } from '@/lib/utils';
 import { slideInRight } from '@/lib/animations';
 import type { GraphNode, GraphEdge, SousTraitant, Audit, Finding, EtudeClinique, Alerte, EvaluationRisque } from '@data/types';
+import { EntityEditor } from '@features/dataManagement/components/EntityEditor';
+import { DeleteConfirmDialog } from '@features/dataManagement/components/DeleteConfirmDialog';
 
 interface NodeDetailsPanelProps {
   className?: string;
@@ -19,7 +22,7 @@ interface NodeDetailsPanelProps {
   compact?: boolean;
 }
 
-type TabId = 'info' | 'relations';
+type TabId = 'info' | 'relations' | 'edit';
 
 export function NodeDetailsPanel({ className = '', compact = false }: NodeDetailsPanelProps) {
   const selectedNode = useAtomValue(selectedNodeAtom);
@@ -27,6 +30,8 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
   const allEdges = useAtomValue(allEdgesAtom);
   const allNodes = useAtomValue(allNodesAtom);
   const [activeTab, setActiveTab] = useState<TabId>('info');
+  const [isEditDirty, setIsEditDirty] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Calculer les relations du noeud
   const { incomingEdges, outgoingEdges } = useMemo(() => {
@@ -48,9 +53,32 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
   const totalRelations = incomingEdges.length + outgoingEdges.length;
 
   // Fermer le panel
-  const closePanel = () => {
+  const closePanel = useCallback(() => {
+    if (isEditDirty) {
+      const confirm = window.confirm('Vous avez des modifications non sauvegardées. Voulez-vous vraiment fermer ?');
+      if (!confirm) return;
+    }
+    setActiveTab('info');
+    setIsEditDirty(false);
     setSelectedNodeIds(new Set());
-  };
+  }, [isEditDirty, setSelectedNodeIds]);
+
+  // Gérer la fin d'édition
+  const handleEditSave = useCallback(() => {
+    setActiveTab('info');
+    setIsEditDirty(false);
+  }, []);
+
+  const handleEditCancel = useCallback(() => {
+    setActiveTab('info');
+    setIsEditDirty(false);
+  }, []);
+
+  // Gérer la suppression réussie
+  const handleDeleteSuccess = useCallback(() => {
+    setIsDeleteDialogOpen(false);
+    setSelectedNodeIds(new Set());
+  }, [setSelectedNodeIds]);
 
   // En mode compact, on n'affiche pas le message "aucune sélection"
   if (!selectedNode) {
@@ -87,13 +115,24 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
               {getNodeLabel(selectedNode._type)}
             </span>
           </div>
-          <button
-            onClick={closePanel}
-            className="p-1 rounded-lg hover:bg-white/5 transition-colors text-slate-500 hover:text-slate-300"
-            title="Fermer"
-          >
-            <X className={compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
-          </button>
+          <div className="flex items-center gap-1">
+            {!compact && (
+              <button
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="p-1 rounded-lg hover:bg-red-500/10 transition-colors text-slate-500 hover:text-red-400"
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={closePanel}
+              className="p-1 rounded-lg hover:bg-white/5 transition-colors text-slate-500 hover:text-slate-300"
+              title="Fermer"
+            >
+              <X className={compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+            </button>
+          </div>
         </div>
         <h2 className={`font-semibold text-white mt-1.5 leading-tight ${compact ? 'text-sm' : 'text-base mt-2'}`}>
           {getNodeDisplayName(selectedNode)}
@@ -128,15 +167,15 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
           <button
             onClick={() => setActiveTab('info')}
             className={cn(
-              'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
+              'flex-1 px-3 py-2.5 text-xs font-medium transition-all relative',
               activeTab === 'info'
                 ? 'text-indigo-400'
                 : 'text-slate-500 hover:text-slate-300'
             )}
           >
             <span className="flex items-center justify-center gap-1.5">
-              <Info className="w-3.5 h-3.5" />
-              Informations
+              <Eye className="w-3.5 h-3.5" />
+              Détails
             </span>
             {activeTab === 'info' && (
               <motion.div
@@ -146,9 +185,33 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
             )}
           </button>
           <button
+            onClick={() => setActiveTab('edit')}
+            className={cn(
+              'flex-1 px-3 py-2.5 text-xs font-medium transition-all relative',
+              activeTab === 'edit'
+                ? 'text-amber-400'
+                : 'text-slate-500 hover:text-slate-300',
+              isEditDirty && activeTab !== 'edit' && 'text-amber-500'
+            )}
+          >
+            <span className="flex items-center justify-center gap-1.5">
+              <Pencil className="w-3.5 h-3.5" />
+              Éditer
+              {isEditDirty && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              )}
+            </span>
+            {activeTab === 'edit' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500"
+              />
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab('relations')}
             className={cn(
-              'flex-1 px-4 py-2.5 text-xs font-medium transition-all relative',
+              'flex-1 px-3 py-2.5 text-xs font-medium transition-all relative',
               activeTab === 'relations'
                 ? 'text-indigo-400'
                 : 'text-slate-500 hover:text-slate-300'
@@ -174,27 +237,50 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
       )}
 
       {/* Contenu selon l'onglet actif */}
-      <div className={`flex-1 overflow-y-auto ${compact ? 'p-3' : 'p-4'}`}>
+      <div className={cn(
+        'flex-1 overflow-hidden flex flex-col',
+        activeTab !== 'edit' && (compact ? 'p-3' : 'p-4')
+      )}>
         <AnimatePresence mode="wait">
-          {activeTab === 'info' ? (
+          {activeTab === 'info' && (
             <motion.div
               key="info"
               variants={slideInRight}
               initial="initial"
               animate="animate"
               exit="exit"
-              className="space-y-4"
+              className="space-y-4 overflow-y-auto flex-1"
             >
               <NodeSpecificDetails node={selectedNode} />
             </motion.div>
-          ) : (
+          )}
+
+          {activeTab === 'edit' && (
+            <motion.div
+              key="edit"
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex-1 overflow-hidden flex flex-col"
+            >
+              <EntityEditor
+                node={selectedNode}
+                onSave={handleEditSave}
+                onCancel={handleEditCancel}
+                onDirtyChange={setIsEditDirty}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'relations' && (
             <motion.div
               key="relations"
               variants={slideInRight}
               initial="initial"
               animate="animate"
               exit="exit"
-              className="space-y-4"
+              className="space-y-4 overflow-y-auto flex-1"
             >
               {/* Relations entrantes */}
               {incomingEdges.length > 0 && (
@@ -264,6 +350,14 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
           )}
         </AnimatePresence>
       </div>
+
+      {/* Dialog de confirmation de suppression */}
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        node={selectedNode}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onDeleted={handleDeleteSuccess}
+      />
     </div>
   );
 }
