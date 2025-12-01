@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { useSetAtom } from 'jotai';
+import { useSetAtom, useAtomValue } from 'jotai';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -17,8 +17,26 @@ import {
   Tag,
   ChevronRight,
   Sparkles,
+  Plus,
+  Edit3,
+  Trash2,
+  Network,
 } from 'lucide-react';
 import { startScenarioAtom } from '../stores/scenarioStore';
+import {
+  openEditorAtom,
+  resetEditorAtom,
+  loadScenarioForEditAtom,
+  customScenariosAtom,
+  deleteCustomScenarioAtom,
+} from '../stores/editorStore';
+import {
+  openERDEditorAtom,
+  resetERDEditorAtom,
+  erdCustomScenariosAtom,
+  loadERDScenarioForEditAtom,
+  deleteERDScenarioAtom,
+} from '../stores/erdEditorStore';
 import { predefinedScenarios } from '../data/predefinedScenarios';
 import type { Scenario } from '../types/scenario';
 
@@ -49,17 +67,21 @@ const categoryLabels: Record<string, string> = {
 function ScenarioCard({
   scenario,
   onSelect,
+  onEdit,
+  onDelete,
+  isCustom = false,
 }: {
   scenario: Scenario;
   onSelect: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  isCustom?: boolean;
 }) {
   const { metadata } = scenario;
 
   return (
-    <motion.button
-      onClick={onSelect}
+    <motion.div
       whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
       className="w-full text-left p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-xl transition-colors group"
     >
       <div className="flex items-start gap-4">
@@ -88,6 +110,11 @@ function ScenarioCard({
             >
               {categoryLabels[metadata.category]}
             </span>
+            {isCustom && (
+              <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-500/20 text-emerald-400">
+                Personnalisé
+              </span>
+            )}
           </div>
 
           <p className="text-sm text-slate-400 line-clamp-2 mb-3">
@@ -111,10 +138,36 @@ function ScenarioCard({
           </div>
         </div>
 
-        {/* Arrow */}
-        <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-1 transition-all flex-shrink-0" />
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          {isCustom && onEdit && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              className="p-2 rounded-lg text-slate-500 hover:text-indigo-400 hover:bg-slate-700/50 transition-colors"
+              title="Modifier"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          )}
+          {isCustom && onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-700/50 transition-colors"
+              title="Supprimer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={onSelect}
+            className="p-2 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-slate-700/50 transition-colors"
+            title="Lancer"
+          >
+            <Play className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
@@ -129,8 +182,22 @@ interface ScenarioSelectorProps {
 
 export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
   const startScenario = useSetAtom(startScenarioAtom);
+  const openEditor = useSetAtom(openEditorAtom);
+  const resetEditor = useSetAtom(resetEditorAtom);
+  const loadScenarioForEdit = useSetAtom(loadScenarioForEditAtom);
+  const customScenarios = useAtomValue(customScenariosAtom);
+  const deleteCustomScenario = useSetAtom(deleteCustomScenarioAtom);
+
+  // ERD Editor
+  const openERDEditor = useSetAtom(openERDEditorAtom);
+  const resetERDEditor = useSetAtom(resetERDEditorAtom);
+  const erdCustomScenarios = useAtomValue(erdCustomScenariosAtom);
+  const loadERDScenarioForEdit = useSetAtom(loadERDScenarioForEditAtom);
+  const deleteERDScenario = useSetAtom(deleteERDScenarioAtom);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'predefined' | 'custom' | 'erd'>('predefined');
 
   const handleSelectScenario = useCallback(
     (scenario: Scenario) => {
@@ -140,8 +207,61 @@ export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
     [startScenario, onClose]
   );
 
+  const handleCreateNew = useCallback(() => {
+    resetEditor();
+    openEditor();
+    onClose();
+  }, [resetEditor, openEditor, onClose]);
+
+  const handleCreateERD = useCallback(() => {
+    resetERDEditor();
+    openERDEditor();
+    onClose();
+  }, [resetERDEditor, openERDEditor, onClose]);
+
+  const handleEditERDScenario = useCallback(
+    (scenario: Scenario) => {
+      loadERDScenarioForEdit(scenario);
+      onClose();
+    },
+    [loadERDScenarioForEdit, onClose]
+  );
+
+  const handleDeleteERDScenario = useCallback(
+    (scenarioId: string) => {
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce scénario ERD ?')) {
+        deleteERDScenario(scenarioId);
+      }
+    },
+    [deleteERDScenario]
+  );
+
+  const handleEditScenario = useCallback(
+    (scenario: Scenario) => {
+      loadScenarioForEdit(scenario);
+      onClose();
+    },
+    [loadScenarioForEdit, onClose]
+  );
+
+  const handleDeleteScenario = useCallback(
+    (scenarioId: string) => {
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce scénario ?')) {
+        deleteCustomScenario(scenarioId);
+      }
+    },
+    [deleteCustomScenario]
+  );
+
+  // Combiner les scénarios
+  const allScenarios = activeTab === 'erd'
+    ? erdCustomScenarios
+    : activeTab === 'custom'
+      ? customScenarios
+      : predefinedScenarios;
+
   // Filtrer les scénarios
-  const filteredScenarios = predefinedScenarios.filter((scenario) => {
+  const filteredScenarios = allScenarios.filter((scenario) => {
     const matchesSearch =
       searchQuery === '' ||
       scenario.metadata.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -156,8 +276,8 @@ export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
     return matchesSearch && matchesCategory;
   });
 
-  // Catégories uniques
-  const categories = [...new Set(predefinedScenarios.map((s) => s.metadata.category))];
+  // Catégories uniques (depuis tous les scénarios)
+  const categories = [...new Set([...predefinedScenarios, ...customScenarios, ...erdCustomScenarios].map((s) => s.metadata.category))];
 
   if (!isOpen) return null;
 
@@ -191,11 +311,70 @@ export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCreateERD}
+                className="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                title="Créer un scénario basé sur le modèle ERD"
+              >
+                <Network className="w-4 h-4" />
+                <span className="text-sm">Modéliser</span>
+              </button>
+              <button
+                onClick={handleCreateNew}
+                className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                title="Créer un scénario d'exploration"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-sm">Créer</span>
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 p-2 border-b border-slate-700/50">
             <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              onClick={() => setActiveTab('predefined')}
+              className={`
+                flex-1 px-4 py-2 text-sm rounded-lg transition-colors
+                ${activeTab === 'predefined'
+                  ? 'bg-indigo-500/20 text-indigo-400'
+                  : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                }
+              `}
             >
-              <X className="w-5 h-5 text-slate-400" />
+              Prédéfinis ({predefinedScenarios.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('custom')}
+              className={`
+                flex-1 px-4 py-2 text-sm rounded-lg transition-colors
+                ${activeTab === 'custom'
+                  ? 'bg-indigo-500/20 text-indigo-400'
+                  : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                }
+              `}
+            >
+              Personnalisés ({customScenarios.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('erd')}
+              className={`
+                flex-1 px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-1
+                ${activeTab === 'erd'
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                }
+              `}
+            >
+              <Network className="w-3.5 h-3.5" />
+              ERD ({erdCustomScenarios.length})
             </button>
           </div>
 
@@ -250,11 +429,43 @@ export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
           <div className="p-4 overflow-y-auto max-h-[calc(85vh-200px)] space-y-3">
             {filteredScenarios.length === 0 ? (
               <div className="text-center py-12">
-                <Search className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">Aucun scénario trouvé</p>
-                <p className="text-sm text-slate-500">
-                  Essayez avec d'autres termes de recherche
-                </p>
+                {activeTab === 'custom' ? (
+                  <>
+                    <Plus className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">Aucun scénario personnalisé</p>
+                    <p className="text-sm text-slate-500 mb-4">
+                      Créez votre premier scénario avec l'éditeur visuel
+                    </p>
+                    <button
+                      onClick={handleCreateNew}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                    >
+                      Créer un scénario
+                    </button>
+                  </>
+                ) : activeTab === 'erd' ? (
+                  <>
+                    <Network className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">Aucun scénario ERD</p>
+                    <p className="text-sm text-slate-500 mb-4">
+                      Modélisez un scénario à partir du modèle entités-relations
+                    </p>
+                    <button
+                      onClick={handleCreateERD}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                    >
+                      Modéliser un scénario
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">Aucun scénario trouvé</p>
+                    <p className="text-sm text-slate-500">
+                      Essayez avec d'autres termes de recherche
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               filteredScenarios.map((scenario) => (
@@ -262,6 +473,21 @@ export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
                   key={scenario.metadata.id}
                   scenario={scenario}
                   onSelect={() => handleSelectScenario(scenario)}
+                  onEdit={
+                    activeTab === 'custom'
+                      ? () => handleEditScenario(scenario)
+                      : activeTab === 'erd'
+                        ? () => handleEditERDScenario(scenario)
+                        : undefined
+                  }
+                  onDelete={
+                    activeTab === 'custom'
+                      ? () => handleDeleteScenario(scenario.metadata.id)
+                      : activeTab === 'erd'
+                        ? () => handleDeleteERDScenario(scenario.metadata.id)
+                        : undefined
+                  }
+                  isCustom={activeTab === 'custom' || activeTab === 'erd'}
                 />
               ))
             )}
@@ -270,8 +496,7 @@ export function ScenarioSelector({ isOpen, onClose }: ScenarioSelectorProps) {
           {/* Footer */}
           <div className="p-4 border-t border-slate-700 bg-slate-800/30">
             <p className="text-xs text-slate-500 text-center">
-              {predefinedScenarios.length} scénarios disponibles • Utilisez les
-              flèches pour naviguer dans un scénario
+              {predefinedScenarios.length + customScenarios.length + erdCustomScenarios.length} scénarios disponibles • "Créer" pour exploration, "Modéliser" pour ERD
             </p>
           </div>
         </motion.div>

@@ -24,7 +24,7 @@ import { TimelineContainer } from '@features/timeline';
 import { KQIDashboard } from '@features/dashboard';
 import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsCountByLevelAtom } from '@features/inference';
 import { ImportWizard } from '@features/import';
-import { ScenarioSelector, ScenarioPlayer } from '@features/scenarios';
+import { ScenarioSelector, ScenarioPlayer, ScenarioEditor, ERDScenarioEditor } from '@features/scenarios';
 import { Header } from '@/components/layout';
 import { UpdateChecker } from '@shared/components/UpdateChecker';
 import {
@@ -257,12 +257,12 @@ function AppContent() {
             currentLayout={currentLayout}
             onLayoutChange={handleLayoutChange}
             isLayoutRunning={graphCanvasRef.current?.isLayoutRunning}
-            className="absolute top-4 left-4 z-20"
+            className="absolute top-16 left-4 z-20"
           />
 
           {/* Légende flottante */}
           <GraphLegend
-            className="absolute top-4 right-4 z-20"
+            className="absolute top-16 right-4 z-20"
             showStudyContext={!!selectedStudyId}
           />
 
@@ -316,6 +316,12 @@ function AppContent() {
 
       {/* Player de scénario */}
       <ScenarioPlayer />
+
+      {/* Éditeur de scénarios */}
+      <ScenarioEditor />
+
+      {/* Éditeur de scénarios ERD */}
+      <ERDScenarioEditor />
 
       {/* Auto-updater Tauri */}
       <UpdateChecker autoCheck={true} checkInterval={60} />
