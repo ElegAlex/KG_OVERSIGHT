@@ -254,9 +254,13 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
       defaultEdgeColor: '#475569', // Sera mis à jour par l'effet thème
       defaultNodeType: 'circle',
 
-      // Camera
+      // Camera - zoom plus fin pour une navigation précise
       minCameraRatio: 0.1,
       maxCameraRatio: 10,
+      zoomingRatio: 1.2,              // 20% par cran molette (défaut ~1.5)
+      zoomDuration: 150,              // Animation fluide
+      doubleClickZoomingRatio: 1.5,   // Double-clic reste plus rapide
+      doubleClickZoomingDuration: 200,
       stagePadding: 80,
       allowInvalidContainer: true,
 
@@ -643,16 +647,16 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
       {/* Contrôles du graphe */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2">
         <button
-          onClick={() => sigmaRef.current?.getCamera().animatedZoom({ duration: 300 })}
+          onClick={() => sigmaRef.current?.getCamera().animatedZoom({ factor: 1.25, duration: 200 })}
           className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors"
-          title="Zoom avant"
+          title="Zoom avant (+25%)"
         >
           <span className="text-lg">+</span>
         </button>
         <button
-          onClick={() => sigmaRef.current?.getCamera().animatedUnzoom({ duration: 300 })}
+          onClick={() => sigmaRef.current?.getCamera().animatedUnzoom({ factor: 1.25, duration: 200 })}
           className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors"
-          title="Zoom arrière"
+          title="Zoom arrière (-20%)"
         >
           <span className="text-lg">−</span>
         </button>

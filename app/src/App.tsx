@@ -216,13 +216,13 @@ function AppContent() {
     loadData();
   }, [setAllNodes, setAllEdges, setAlerts]);
 
-  // Callbacks pour les contrôles du graphe
+  // Callbacks pour les contrôles du graphe (zoom fin : 25% par action)
   const handleZoomIn = useCallback(() => {
-    graphCanvasRef.current?.getSigma()?.getCamera().animatedZoom({ duration: 300 });
+    graphCanvasRef.current?.getSigma()?.getCamera().animatedZoom({ factor: 1.25, duration: 200 });
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    graphCanvasRef.current?.getSigma()?.getCamera().animatedUnzoom({ duration: 300 });
+    graphCanvasRef.current?.getSigma()?.getCamera().animatedUnzoom({ factor: 1.25, duration: 200 });
   }, []);
 
   const handleFitToView = useCallback(() => {
