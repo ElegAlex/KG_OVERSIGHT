@@ -32,6 +32,9 @@ export const focusedNodeIdAtom = atom<string | null>(null);
 /** Mode d'affichage du graphe */
 export const graphViewModeAtom = atom<'all' | 'focus'>('all');
 
+/** Niveau de visibilité des labels (0=min, 1=auto, 2=max) */
+export const labelVisibilityAtom = atom<number>(1);
+
 /**
  * Étude sélectionnée pour le contexte N1/N2
  * Quand une étude est sélectionnée, les sous-traitants sont colorés

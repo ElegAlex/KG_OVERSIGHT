@@ -22,6 +22,7 @@ import {
   allEdgesAtom,
   selectedStudyIdAtom,
   kqiDataAtom,
+  labelVisibilityAtom,
 } from '@shared/stores/selectionAtoms';
 import {
   getNodeColor,
@@ -83,6 +84,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
   const [selectedStudyId, setSelectedStudyId] = useAtom(selectedStudyIdAtom);
   const kqiData = useAtomValue(kqiDataAtom) as KQI[];
   const openKQIPanelForST = useSetAtom(openKQIPanelForSTAtom);
+  const labelVisibility = useAtomValue(labelVisibilityAtom);
 
   // État local
   const [isLayoutRunning, setIsLayoutRunning] = useState(false);
@@ -400,7 +402,13 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
     sigmaRef.current?.refresh();
   }, [selectedNodeIds, hoveredNodeId]);
 
-  // Ajuster dynamiquement l'affichage des labels selon le zoom
+  // Référence au niveau de visibilité pour l'utiliser dans le listener caméra
+  const labelVisibilityRef = useRef(labelVisibility);
+  useEffect(() => {
+    labelVisibilityRef.current = labelVisibility;
+  }, [labelVisibility]);
+
+  // Ajuster dynamiquement l'affichage des labels selon le zoom et le niveau de visibilité
   useEffect(() => {
     const sigma = sigmaRef.current;
     if (!sigma) return;
@@ -409,21 +417,22 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
 
     const updateLabelSettings = () => {
       const ratio = camera.ratio;
+      const visibility = labelVisibilityRef.current;
 
-      // Plus on zoom (ratio petit), plus on affiche de labels
-      // ratio ~1 = vue normale, ratio < 0.5 = zoomé, ratio > 2 = dézoomé
+      // Facteur basé sur le niveau de visibilité (0=min, 1=auto, 2=max)
+      // visibility 0 → multiplicateur seuil x2, densité /3 (moins de labels)
+      // visibility 1 → normal (auto)
+      // visibility 2 → multiplicateur seuil /2, densité x2 (plus de labels)
+      const thresholdMultiplier = visibility === 0 ? 2 : visibility === 2 ? 0.5 : 1;
+      const densityMultiplier = visibility === 0 ? 0.33 : visibility === 2 ? 2 : 1;
 
       // Seuil de taille : plus restrictif à faible zoom
-      // ratio 1.0 → threshold 12 (seuls les gros nœuds)
-      // ratio 0.5 → threshold 6 (nœuds moyens)
-      // ratio 0.2 → threshold 2 (presque tous)
-      const threshold = Math.max(2, Math.min(15, ratio * 12));
+      const baseThreshold = Math.max(2, Math.min(15, ratio * 12));
+      const threshold = Math.max(0, baseThreshold * thresholdMultiplier);
 
       // Densité : très restrictive à faible zoom pour éviter le chevauchement
-      // ratio 1.0 → density 0.15 (très peu de labels)
-      // ratio 0.5 → density 0.4 (quelques labels)
-      // ratio 0.2 → density 0.8 (beaucoup de labels)
-      const density = Math.max(0.1, Math.min(0.9, 1.0 - ratio * 0.7));
+      const baseDensity = Math.max(0.1, Math.min(0.9, 1.0 - ratio * 0.7));
+      const density = Math.min(1.0, baseDensity * densityMultiplier);
 
       sigma.setSetting('labelRenderedSizeThreshold', threshold);
       sigma.setSetting('labelDensity', density);
@@ -438,7 +447,7 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
     return () => {
       camera.off('updated', updateLabelSettings);
     };
-  }, [sigmaInstance]); // Dépend de sigmaInstance pour se réenregistrer après init
+  }, [sigmaInstance, labelVisibility]); // Re-calculer quand la visibilité change
 
   // Mettre à jour les couleurs Sigma quand le thème change
   useEffect(() => {
@@ -702,38 +711,6 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
         </div>
       )}
 
-      {/* Contrôles du graphe */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-        <button
-          onClick={() => sigmaRef.current?.getCamera().animatedZoom({ factor: 1.25, duration: 200 })}
-          className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors"
-          title="Zoom avant (+25%)"
-        >
-          <span className="text-lg">+</span>
-        </button>
-        <button
-          onClick={() => sigmaRef.current?.getCamera().animatedUnzoom({ factor: 1.25, duration: 200 })}
-          className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors"
-          title="Zoom arrière (-20%)"
-        >
-          <span className="text-lg">−</span>
-        </button>
-        <button
-          onClick={resetCamera}
-          className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors"
-          title="Réinitialiser la vue"
-        >
-          <span className="text-sm">⟲</span>
-        </button>
-        <button
-          onClick={() => applyLayout()}
-          disabled={isLayoutRunning}
-          className="p-2 bg-card border rounded-md shadow-sm hover:bg-accent transition-colors disabled:opacity-50"
-          title="Recalculer le layout"
-        >
-          <span className="text-sm">◉</span>
-        </button>
-      </div>
     </div>
   );
 });
