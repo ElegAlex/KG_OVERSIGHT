@@ -307,6 +307,12 @@ body {
 
 .sigma-container canvas {
   outline: none;
+  cursor: grab;
+}
+
+/* Curseur pendant le drag d'un nœud */
+.sigma-container.dragging canvas {
+  cursor: grabbing;
 }
 
 /* Pattern dots subtil pour le fond du graphe */

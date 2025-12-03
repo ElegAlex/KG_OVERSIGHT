@@ -38,6 +38,7 @@ import {
 import { openKQIPanelForSTAtom } from '@features/kqi';
 import { aggregateAllSTsKQI, getKQIStatusColor } from '@features/kqi';
 import { GraphTooltip } from './GraphTooltip';
+import { useNodeDrag } from '../hooks/useNodeDrag';
 import type { SigmaNodeAttributes, SigmaEdgeAttributes, GraphNode, KQI } from '@data/types';
 
 interface GraphCanvasProps {
@@ -86,7 +87,19 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
   // État local
   const [isLayoutRunning, setIsLayoutRunning] = useState(false);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [sigmaInstance, setSigmaInstance] = useState<Sigma | null>(null);
+  const [graphInstance, setGraphInstance] = useState<Graph | null>(null);
   const theme = useAtomValue(themeAtom);
+
+  // Hook pour le drag & drop des nœuds (style Obsidian avec effet élastique)
+  useNodeDrag({
+    sigma: sigmaInstance,
+    graph: graphInstance,
+    selectedNodeIds,
+    elasticStrength: 0.4,  // Force de l'effet élastique (0-1)
+    elasticRadius: 2,      // Profondeur d'influence (niveaux de voisins)
+    enabled: true,
+  });
 
   // Couleurs selon le thème
   const themeColors = useMemo(() => ({
@@ -236,12 +249,12 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
 
     // Créer l'instance Sigma avec settings améliorés
     const sigma = new Sigma(graph, containerRef.current, {
-      // Rendu des labels - seuil dynamique selon zoom
+      // Rendu des labels - seuils optimisés pour affichage progressif au zoom
       renderLabels: true,
-      labelRenderedSizeThreshold: 8,
-      labelDensity: 0.5,
+      labelRenderedSizeThreshold: 4,   // Seuil bas pour voir plus de labels au zoom
+      labelDensity: 0.8,               // 80% des labels affichés (anti-chevauchement)
       labelFont: 'Inter, system-ui, sans-serif',
-      labelSize: 11,
+      labelSize: 12,
       labelWeight: '500',
       labelColor: { color: '#f1f5f9' }, // Sera mis à jour par l'effet thème
 
@@ -269,20 +282,19 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
         const res = { ...data };
         const nodeType = data.nodeType;
 
-        // Forcer le label pour les nœuds sélectionnés, études et highlights
+        // Forcer le label pour les nœuds sélectionnés, études, highlights et types critiques
+        const alwaysShowLabel = new Set(['SousTraitant', 'Audit', 'Inspection', 'Alerte', 'EtudeClinique']);
+
         if (
           selectedNodeIdsRef.current.has(node) ||
-          nodeType === 'EtudeClinique' ||
+          alwaysShowLabel.has(nodeType) ||
           data.highlighted
         ) {
           res.forceLabel = true;
         }
 
-        // Masquer le label pour les petits nœuds sauf si importants
-        const importantTypes = new Set(['SousTraitant', 'Audit', 'Inspection', 'Alerte', 'EtudeClinique']);
-        if (!importantTypes.has(nodeType) && !res.forceLabel) {
-          res.label = '';
-        }
+        // NE PAS masquer les labels - laisser Sigma gérer via labelRenderedSizeThreshold
+        // Les labels s'afficheront progressivement au zoom grâce aux settings dynamiques
 
         return res;
       },
@@ -294,6 +306,10 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
     });
 
     sigmaRef.current = sigma as unknown as Sigma;
+
+    // Exposer les instances pour le hook useNodeDrag
+    setSigmaInstance(sigma as unknown as Sigma);
+    setGraphInstance(graph);
 
     // Événements de sélection
     sigma.on('clickNode', ({ node }) => {
@@ -353,6 +369,8 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
       sigma.kill();
       sigmaRef.current = null;
       graphRef.current = null;
+      setSigmaInstance(null);
+      setGraphInstance(null);
     };
   }, [setSelectedNodeIds, setHoveredNodeId, setFocusedNodeId, setGraphViewMode, setSelectedStudyId, highlightNeighbors]);
 
@@ -381,6 +399,46 @@ export const GraphCanvas = forwardRef<GraphCanvasRef, GraphCanvasProps>(
   useEffect(() => {
     sigmaRef.current?.refresh();
   }, [selectedNodeIds, hoveredNodeId]);
+
+  // Ajuster dynamiquement l'affichage des labels selon le zoom
+  useEffect(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+
+    const camera = sigma.getCamera();
+
+    const updateLabelSettings = () => {
+      const ratio = camera.ratio;
+
+      // Plus on zoom (ratio petit), plus on affiche de labels
+      // ratio ~1 = vue normale, ratio < 0.5 = zoomé, ratio > 2 = dézoomé
+
+      // Seuil de taille : plus restrictif à faible zoom
+      // ratio 1.0 → threshold 12 (seuls les gros nœuds)
+      // ratio 0.5 → threshold 6 (nœuds moyens)
+      // ratio 0.2 → threshold 2 (presque tous)
+      const threshold = Math.max(2, Math.min(15, ratio * 12));
+
+      // Densité : très restrictive à faible zoom pour éviter le chevauchement
+      // ratio 1.0 → density 0.15 (très peu de labels)
+      // ratio 0.5 → density 0.4 (quelques labels)
+      // ratio 0.2 → density 0.8 (beaucoup de labels)
+      const density = Math.max(0.1, Math.min(0.9, 1.0 - ratio * 0.7));
+
+      sigma.setSetting('labelRenderedSizeThreshold', threshold);
+      sigma.setSetting('labelDensity', density);
+    };
+
+    // Appliquer au démarrage
+    updateLabelSettings();
+
+    // Écouter les changements de caméra
+    camera.on('updated', updateLabelSettings);
+
+    return () => {
+      camera.off('updated', updateLabelSettings);
+    };
+  }, [sigmaInstance]); // Dépend de sigmaInstance pour se réenregistrer après init
 
   // Mettre à jour les couleurs Sigma quand le thème change
   useEffect(() => {
