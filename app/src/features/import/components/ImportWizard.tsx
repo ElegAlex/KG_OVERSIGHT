@@ -2,10 +2,11 @@
  * KG-Oversight - Wizard d'import de données
  * Interface de mapping colonnes pour CSV/Excel
  * Validation avant import avec rapport d'erreurs
+ * Support des stratégies de merge (Replace, Merge, AddOnly)
  */
 
 import { useState, useCallback, useMemo, useRef } from 'react';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -24,6 +25,7 @@ import {
   ArrowRight,
   Loader2,
   CheckCircle2,
+  GitMerge,
 } from 'lucide-react';
 import {
   parseExcelFile,
@@ -41,14 +43,26 @@ import {
   type ValidationResult,
   type ValidationSeverity,
 } from '../services/validationService';
+import {
+  detectConflicts,
+  executeMerge,
+  type MergeStrategy,
+  type MergeOptions,
+  type ConflictResolution,
+  type ConflictDetectionResult,
+  type MergeReport,
+} from '../services/mergeService';
+import { MergeStrategySelector } from './MergeStrategySelector';
+import { ConflictResolver } from './ConflictResolver';
+import { MergeReportPanel } from './MergeReportPanel';
 import { allNodesAtom, allEdgesAtom } from '@shared/stores/selectionAtoms';
-import type { NodeType, EdgeType } from '@data/types';
+import type { NodeType, EdgeType, GraphNode, GraphEdge } from '@data/types';
 
 // =============================================================================
 // Types
 // =============================================================================
 
-type WizardStep = 'upload' | 'mapping' | 'validation' | 'import' | 'complete';
+type WizardStep = 'upload' | 'mapping' | 'strategy' | 'validation' | 'conflicts' | 'import' | 'complete';
 
 interface ImportWizardProps {
   isOpen: boolean;
@@ -101,7 +115,9 @@ const EDGE_TYPES: EdgeType[] = [
 const STEP_LABELS: Record<WizardStep, string> = {
   upload: 'Sélection du fichier',
   mapping: 'Configuration du mapping',
+  strategy: 'Stratégie d\'import',
   validation: 'Validation des données',
+  conflicts: 'Résolution des conflits',
   import: 'Import en cours',
   complete: 'Import terminé',
 };
@@ -475,6 +491,8 @@ function ValidationResultPanel({ result }: { result: ValidationResult }) {
 // =============================================================================
 
 export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
+  const existingNodes = useAtomValue(allNodesAtom);
+  const existingEdges = useAtomValue(allEdgesAtom);
   const setAllNodes = useSetAtom(allNodesAtom);
   const setAllEdges = useSetAtom(allEdgesAtom);
 
@@ -488,16 +506,31 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
   const [parseResult, setParseResult] = useState<ExcelParseResult | null>(null);
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([]);
 
-  // Résultats
+  // Résultats de validation
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
-  const [importStats, setImportStats] = useState<{
-    nodes: number;
-    edges: number;
-    errors: number;
-  } | null>(null);
 
-  // Steps à afficher
-  const steps: WizardStep[] = ['upload', 'mapping', 'validation', 'complete'];
+  // Données importées (avant merge)
+  const [importedNodes, setImportedNodes] = useState<Map<string, GraphNode>>(new Map());
+  const [importedEdges, setImportedEdges] = useState<Map<string, GraphEdge>>(new Map());
+
+  // États pour le merge
+  const [mergeStrategy, setMergeStrategy] = useState<MergeStrategy>('merge');
+  const [conflictDetectionResult, setConflictDetectionResult] = useState<ConflictDetectionResult | null>(null);
+  const [conflictResolutions, setConflictResolutions] = useState<Map<string, ConflictResolution>>(new Map());
+  const [mergeReport, setMergeReport] = useState<MergeReport | null>(null);
+
+  // Calculer les steps dynamiquement basé sur l'existence de conflits
+  const steps = useMemo((): WizardStep[] => {
+    const baseSteps: WizardStep[] = ['upload', 'mapping', 'strategy', 'validation'];
+
+    // Ajouter l'étape de résolution des conflits si nécessaire
+    if (conflictDetectionResult && conflictDetectionResult.nodeConflicts.length > 0) {
+      baseSteps.push('conflicts');
+    }
+
+    baseSteps.push('complete');
+    return baseSteps;
+  }, [conflictDetectionResult]);
 
   // Reset
   const reset = useCallback(() => {
@@ -506,7 +539,12 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
     setParseResult(null);
     setSheetConfigs([]);
     setValidationResult(null);
-    setImportStats(null);
+    setImportedNodes(new Map());
+    setImportedEdges(new Map());
+    setMergeStrategy('merge');
+    setConflictDetectionResult(null);
+    setConflictResolutions(new Map());
+    setMergeReport(null);
     setError(null);
   }, []);
 
@@ -556,7 +594,12 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
     }
   }, []);
 
-  // Validation
+  // Aller à l'étape stratégie après le mapping
+  const handleGoToStrategy = useCallback(() => {
+    setStep('strategy');
+  }, []);
+
+  // Validation et détection des conflits
   const handleValidate = useCallback(async () => {
     if (!file) return;
     setIsLoading(true);
@@ -573,49 +616,100 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
           columnMappings: c.columnMappings,
         }));
 
-      // Importer les données
+      // Importer les données du fichier
       const importResult = await importFromExcel(file, mappings);
 
-      // Valider
+      // Sauvegarder les données importées
+      setImportedNodes(importResult.nodes);
+      setImportedEdges(importResult.edges);
+
+      // Valider les données
       const validation = validateData(importResult.nodes, importResult.edges);
       setValidationResult(validation);
+
+      // Si stratégie merge, détecter les conflits
+      if (mergeStrategy === 'merge') {
+        const conflicts = detectConflicts(
+          existingNodes,
+          importResult.nodes,
+          existingEdges,
+          importResult.edges
+        );
+        setConflictDetectionResult(conflicts);
+
+        // Réinitialiser les résolutions si nouveaux conflits
+        setConflictResolutions(new Map());
+      } else {
+        setConflictDetectionResult(null);
+      }
+
       setStep('validation');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de la validation');
     } finally {
       setIsLoading(false);
     }
-  }, [file, sheetConfigs]);
+  }, [file, sheetConfigs, mergeStrategy, existingNodes, existingEdges]);
 
-  // Import final
+  // Gestion de la résolution d'un conflit
+  const handleResolveConflict = useCallback((nodeId: string, resolution: ConflictResolution) => {
+    setConflictResolutions((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(nodeId, resolution);
+      return newMap;
+    });
+  }, []);
+
+  // Résoudre tous les conflits d'un coup
+  const handleResolveAllConflicts = useCallback((action: 'keepAll' | 'replaceAll') => {
+    if (!conflictDetectionResult) return;
+
+    const newResolutions = new Map<string, ConflictResolution>();
+    const resolutionAction = action === 'keepAll' ? 'keep' : 'replace';
+
+    for (const conflict of conflictDetectionResult.nodeConflicts) {
+      newResolutions.set(conflict.nodeId, { action: resolutionAction });
+    }
+
+    setConflictResolutions(newResolutions);
+  }, [conflictDetectionResult]);
+
+  // Vérifier si tous les conflits sont résolus
+  const allConflictsResolved = useMemo(() => {
+    if (!conflictDetectionResult) return true;
+    return conflictDetectionResult.nodeConflicts.every(
+      (conflict) => conflictResolutions.has(conflict.nodeId)
+    );
+  }, [conflictDetectionResult, conflictResolutions]);
+
+  // Import final avec merge
   const handleImport = useCallback(async () => {
-    if (!file || !validationResult) return;
+    if (!validationResult) return;
     setIsLoading(true);
     setStep('import');
 
     try {
-      // Convertir les configs en mappings
-      const mappings: SheetMapping[] = sheetConfigs
-        .filter((c) => c.enabled && c.targetType)
-        .map((c) => ({
-          sheetName: c.sheet.name,
-          targetType: c.targetType!,
-          isRelation: c.isRelation,
-          columnMappings: c.columnMappings,
-        }));
+      // Préparer les options de merge
+      const mergeOptions: MergeOptions = {
+        strategy: mergeStrategy,
+        conflictResolutions,
+      };
 
-      // Importer les données
-      const result = await importFromExcel(file, mappings);
+      // Exécuter le merge
+      const result = executeMerge(
+        existingNodes,
+        importedNodes,
+        existingEdges,
+        importedEdges,
+        mergeOptions
+      );
 
-      // Mettre à jour le store
-      setAllNodes(result.nodes);
-      setAllEdges(result.edges);
+      // Mettre à jour le store avec les données fusionnées
+      setAllNodes(result.finalNodes);
+      setAllEdges(result.finalEdges);
 
-      setImportStats({
-        nodes: result.nodes.size,
-        edges: result.edges.size,
-        errors: result.errors.length,
-      });
+      // Sauvegarder le rapport
+      setMergeReport(result.report);
       setStep('complete');
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'import");
@@ -623,7 +717,17 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [file, validationResult, sheetConfigs, setAllNodes, setAllEdges]);
+  }, [
+    validationResult,
+    mergeStrategy,
+    conflictResolutions,
+    existingNodes,
+    existingEdges,
+    importedNodes,
+    importedEdges,
+    setAllNodes,
+    setAllEdges,
+  ]);
 
   // Télécharger le rapport
   const handleDownloadReport = useCallback(() => {
@@ -732,9 +836,29 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
               </div>
             )}
 
+            {/* Step: Strategy */}
+            {step === 'strategy' && (
+              <MergeStrategySelector
+                value={mergeStrategy}
+                onChange={setMergeStrategy}
+                existingNodesCount={existingNodes.size}
+                existingEdgesCount={existingEdges.size}
+              />
+            )}
+
             {/* Step: Validation */}
             {step === 'validation' && validationResult && (
               <ValidationResultPanel result={validationResult} />
+            )}
+
+            {/* Step: Conflicts */}
+            {step === 'conflicts' && conflictDetectionResult && (
+              <ConflictResolver
+                conflicts={conflictDetectionResult}
+                resolutions={conflictResolutions}
+                onResolve={handleResolveConflict}
+                onResolveAll={handleResolveAllConflicts}
+              />
             )}
 
             {/* Step: Import */}
@@ -746,26 +870,17 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
             )}
 
             {/* Step: Complete */}
-            {step === 'complete' && importStats && (
-              <div className="flex flex-col items-center justify-center py-8">
-                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+            {step === 'complete' && mergeReport && (
+              <div className="space-y-6">
+                <MergeReportPanel report={mergeReport} />
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleClose}
+                    className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
+                  >
+                    Fermer
+                  </button>
                 </div>
-                <h3 className="text-xl font-semibold text-slate-200 mb-2">Import terminé !</h3>
-                <p className="text-slate-400 mb-6">
-                  {importStats.nodes} noeuds et {importStats.edges} relations importés
-                </p>
-                {importStats.errors > 0 && (
-                  <p className="text-amber-400 text-sm mb-4">
-                    {importStats.errors} erreur(s) rencontrée(s)
-                  </p>
-                )}
-                <button
-                  onClick={handleClose}
-                  className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
-                >
-                  Fermer
-                </button>
               </div>
             )}
           </div>
@@ -786,11 +901,14 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
               </div>
 
               <div className="flex gap-3">
+                {/* Bouton Retour */}
                 {step !== 'upload' && (
                   <button
                     onClick={() => {
                       if (step === 'mapping') setStep('upload');
-                      if (step === 'validation') setStep('mapping');
+                      if (step === 'strategy') setStep('mapping');
+                      if (step === 'validation') setStep('strategy');
+                      if (step === 'conflicts') setStep('validation');
                     }}
                     disabled={isLoading}
                     className="px-4 py-2 text-slate-300 hover:text-white flex items-center gap-2 disabled:opacity-50"
@@ -800,10 +918,23 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
                   </button>
                 )}
 
+                {/* Bouton: Mapping -> Strategy */}
                 {step === 'mapping' && (
                   <button
-                    onClick={handleValidate}
+                    onClick={handleGoToStrategy}
                     disabled={isLoading || enabledSheets === 0}
+                    className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 transition-colors"
+                  >
+                    Suivant
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Bouton: Strategy -> Validation */}
+                {step === 'strategy' && (
+                  <button
+                    onClick={handleValidate}
+                    disabled={isLoading}
                     className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 transition-colors"
                   >
                     {isLoading ? (
@@ -817,10 +948,45 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
                   </button>
                 )}
 
+                {/* Bouton: Validation -> Import ou Conflicts */}
                 {step === 'validation' && validationResult && (
                   <button
-                    onClick={handleImport}
+                    onClick={() => {
+                      // Si merge avec conflits, aller à l'étape conflicts
+                      if (
+                        mergeStrategy === 'merge' &&
+                        conflictDetectionResult &&
+                        conflictDetectionResult.nodeConflicts.length > 0
+                      ) {
+                        setStep('conflicts');
+                      } else {
+                        handleImport();
+                      }
+                    }}
                     disabled={isLoading || !validationResult.isValid}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 transition-colors"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : conflictDetectionResult?.nodeConflicts.length ? (
+                      <>
+                        Résoudre les conflits
+                        <GitMerge className="w-4 h-4" />
+                      </>
+                    ) : (
+                      <>
+                        Importer
+                        <Check className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Bouton: Conflicts -> Import */}
+                {step === 'conflicts' && (
+                  <button
+                    onClick={handleImport}
+                    disabled={isLoading || !allConflictsResolved}
                     className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 transition-colors"
                   >
                     {isLoading ? (

@@ -50,8 +50,10 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
       { key: 'Z', ctrl: true, description: 'Annuler (Undo)', category: 'edition' },
       { key: 'Z', ctrl: true, shift: true, description: 'Rétablir (Redo)', category: 'edition' },
       { key: 'Y', ctrl: true, description: 'Rétablir (Redo)', category: 'edition' },
+      { key: 'C', ctrl: true, description: 'Copier l\'entité sélectionnée', category: 'edition' },
+      { key: 'V', ctrl: true, description: 'Coller l\'entité copiée', category: 'edition' },
+      { key: 'D', ctrl: true, description: 'Dupliquer l\'entité sélectionnée', category: 'edition' },
       { key: 'A', ctrl: true, description: 'Tout sélectionner', category: 'edition' },
-      { key: 'D', ctrl: true, description: 'Désélectionner tout', category: 'edition' },
     ],
   },
   {
@@ -86,7 +88,6 @@ interface UseKeyboardShortcutsOptions {
   onZoomOut?: () => void;
   onFitToView?: () => void;
   onSelectAll?: () => void;
-  onDeselectAll?: () => void;
   onToggleLegend?: () => void;
   onToggleTimeline?: () => void;
   onOpenExport?: () => void;
@@ -94,6 +95,10 @@ interface UseKeyboardShortcutsOptions {
   onOpenScenarios?: () => void;
   onOpenHelp?: () => void;
   onLayoutChange?: (layout: string) => void;
+  // Clipboard (Phase 11.7)
+  onCopy?: () => void;
+  onPaste?: () => void;
+  onDuplicate?: () => void;
   enabled?: boolean;
 }
 
@@ -103,7 +108,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     onZoomOut,
     onFitToView,
     onSelectAll,
-    onDeselectAll,
     onToggleLegend,
     onToggleTimeline,
     onOpenExport,
@@ -111,6 +115,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     onOpenScenarios,
     onOpenHelp,
     onLayoutChange,
+    onCopy,
+    onPaste,
+    onDuplicate,
     enabled = true,
   } = options;
 
@@ -178,9 +185,21 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         onSelectAll?.();
         return;
       }
+
+      // Clipboard (Phase 11.7)
+      if (modKey && key.toLowerCase() === 'c') {
+        event.preventDefault();
+        onCopy?.();
+        return;
+      }
+      if (modKey && key.toLowerCase() === 'v') {
+        event.preventDefault();
+        onPaste?.();
+        return;
+      }
       if (modKey && key.toLowerCase() === 'd') {
         event.preventDefault();
-        onDeselectAll?.();
+        onDuplicate?.();
         return;
       }
 
@@ -238,7 +257,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       onZoomOut,
       onFitToView,
       onSelectAll,
-      onDeselectAll,
       onToggleLegend,
       onToggleTimeline,
       onOpenExport,
@@ -246,6 +264,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       onOpenScenarios,
       onOpenHelp,
       onLayoutChange,
+      onCopy,
+      onPaste,
+      onDuplicate,
     ]
   );
 

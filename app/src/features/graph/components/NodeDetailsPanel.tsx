@@ -7,7 +7,7 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, GitBranch, ChevronRight, ArrowLeftCircle, ArrowRightCircle, Pencil, Eye, Trash2 } from 'lucide-react';
+import { X, Info, GitBranch, Pencil, Eye, Trash2 } from 'lucide-react';
 import { selectedNodeAtom, selectedNodeIdsAtom, allEdgesAtom, allNodesAtom } from '@shared/stores/selectionAtoms';
 import { getNodeColor, getNodeLabel, getCriticiteColor, getRisqueColor } from '@shared/utils/nodeStyles';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,8 @@ import { slideInRight } from '@/lib/animations';
 import type { GraphNode, GraphEdge, SousTraitant, Audit, Finding, EtudeClinique, Alerte, EvaluationRisque } from '@data/types';
 import { EntityEditor } from '@features/dataManagement/components/EntityEditor';
 import { DeleteConfirmDialog } from '@features/dataManagement/components/DeleteConfirmDialog';
+import { RelationList } from '@features/dataManagement/components/RelationList';
+import { RelationCreatorDialog } from '@features/dataManagement/components/RelationCreatorDialog';
 
 interface NodeDetailsPanelProps {
   className?: string;
@@ -32,6 +34,7 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const [isEditDirty, setIsEditDirty] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRelationCreatorOpen, setIsRelationCreatorOpen] = useState(false);
 
   // Calculer les relations du noeud
   const { incomingEdges, outgoingEdges } = useMemo(() => {
@@ -280,72 +283,13 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
               initial="initial"
               animate="animate"
               exit="exit"
-              className="space-y-4 overflow-y-auto flex-1"
+              className="overflow-y-auto flex-1"
             >
-              {/* Relations entrantes */}
-              {incomingEdges.length > 0 && (
-                <div>
-                  <h3 className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase mb-2">
-                    <ArrowLeftCircle className="w-3.5 h-3.5 text-emerald-500" />
-                    Entrantes ({incomingEdges.length})
-                  </h3>
-                  <div className="space-y-1.5">
-                    {incomingEdges.slice(0, 15).map((edge) => {
-                      const sourceNode = allNodes.get(edge.source);
-                      return (
-                        <RelationItem
-                          key={edge.id}
-                          edge={edge}
-                          relatedNode={sourceNode}
-                          onSelect={() => setSelectedNodeIds(new Set([edge.source]))}
-                        />
-                      );
-                    })}
-                    {incomingEdges.length > 15 && (
-                      <p className="text-xs text-slate-600 py-1">
-                        ... et {incomingEdges.length - 15} autres
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Relations sortantes */}
-              {outgoingEdges.length > 0 && (
-                <div>
-                  <h3 className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase mb-2">
-                    <ArrowRightCircle className="w-3.5 h-3.5 text-amber-500" />
-                    Sortantes ({outgoingEdges.length})
-                  </h3>
-                  <div className="space-y-1.5">
-                    {outgoingEdges.slice(0, 15).map((edge) => {
-                      const targetNode = allNodes.get(edge.target);
-                      return (
-                        <RelationItem
-                          key={edge.id}
-                          edge={edge}
-                          relatedNode={targetNode}
-                          onSelect={() => setSelectedNodeIds(new Set([edge.target]))}
-                        />
-                      );
-                    })}
-                    {outgoingEdges.length > 15 && (
-                      <p className="text-xs text-slate-600 py-1">
-                        ... et {outgoingEdges.length - 15} autres
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {totalRelations === 0 && (
-                <div className="text-center py-8">
-                  <GitBranch className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">
-                    Aucune relation pour ce noeud.
-                  </p>
-                </div>
-              )}
+              <RelationList
+                node={selectedNode}
+                onSelectNode={(nodeId) => setSelectedNodeIds(new Set([nodeId]))}
+                onAddRelation={() => setIsRelationCreatorOpen(true)}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -357,6 +301,16 @@ export function NodeDetailsPanel({ className = '', compact = false }: NodeDetail
         node={selectedNode}
         onClose={() => setIsDeleteDialogOpen(false)}
         onDeleted={handleDeleteSuccess}
+      />
+
+      {/* Dialog de création de relation */}
+      <RelationCreatorDialog
+        isOpen={isRelationCreatorOpen}
+        sourceNode={selectedNode}
+        onClose={() => setIsRelationCreatorOpen(false)}
+        onCreated={() => {
+          setIsRelationCreatorOpen(false);
+        }}
       />
     </div>
   );
@@ -512,44 +466,6 @@ function DetailRow({ label, value, multiline = false }: { label: string; value?:
   );
 }
 
-// Composant pour afficher une relation
-function RelationItem({
-  edge,
-  relatedNode,
-  onSelect,
-}: {
-  edge: GraphEdge;
-  relatedNode?: GraphNode;
-  onSelect?: () => void;
-}) {
-  const relationLabel = formatRelationType(edge._type);
-  const nodeName = relatedNode ? getNodeDisplayName(relatedNode) : edge.source;
-  const nodeType = relatedNode?._type;
-
-  return (
-    <button
-      onClick={onSelect}
-      className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 border border-white/5 hover:bg-slate-700/30 hover:border-white/10 transition-all text-left group"
-    >
-      {nodeType && (
-        <div
-          className="w-3 h-3 rounded-full shrink-0 ring-2 ring-white/10"
-          style={{ backgroundColor: getNodeColor(nodeType) }}
-        />
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-slate-500 truncate uppercase tracking-wider">
-          {relationLabel}
-        </p>
-        <p className="text-sm text-slate-300 truncate group-hover:text-white transition-colors">
-          {nodeName}
-        </p>
-      </div>
-      <ChevronRight className="w-4 h-4 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-    </button>
-  );
-}
-
 // Utilitaires
 function getNodeDisplayName(node: GraphNode): string {
   if ('nom' in node && node.nom) return node.nom;
@@ -569,27 +485,6 @@ function formatDate(dateStr?: string): string | undefined {
   } catch {
     return dateStr;
   }
-}
-
-function formatRelationType(type: string): string {
-  const labels: Record<string, string> = {
-    EST_LIE_AU_CONTRAT: 'Lié au contrat',
-    EST_COUVERT_PAR_QA: 'Couvert par QA',
-    EST_SOUS_TRAITANT_DE: 'Sous-traitant de',
-    A_ETE_AUDITE_PAR: 'Audité par',
-    A_ETE_INSPECTE_PAR: 'Inspecté par',
-    GENERE_FINDING: 'Génère finding',
-    INSPECTION_GENERE_FINDING: 'Génère finding',
-    QE_CONCERNE_ST: 'Concerne ST',
-    SURVENU_DANS_ETUDE: 'Survenu dans étude',
-    IMPLIQUE_ST: 'Implique ST',
-    A_FAIT_OBJET_EVALUATION: 'Évalué par',
-    DECISION_JUSTIFIEE_PAR_AUDIT: 'Justifié par audit',
-    DECISION_JUSTIFIEE_PAR_QE: 'Justifié par QE',
-    QE_DECLENCHE_ALERTE: 'Déclenche alerte',
-    AUDIT_DECLENCHE_ALERTE: 'Déclenche alerte',
-  };
-  return labels[type] ?? type.replace(/_/g, ' ').toLowerCase();
 }
 
 export default NodeDetailsPanel;

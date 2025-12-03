@@ -6,6 +6,7 @@ export { GraphControls } from './components/GraphControls';
 export { GraphLegend } from './components/GraphLegend';
 export { LayoutSelector } from './components/LayoutSelector';
 export { ExportDialog } from './components/ExportDialog';
+export { GraphContextMenu } from './components/GraphContextMenu';
 
 // Services
 export * from './services/layoutService';

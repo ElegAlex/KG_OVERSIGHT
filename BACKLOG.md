@@ -1,8 +1,8 @@
 # KG-OVERSIGHT - Backlog
 
-**Version** : 1.1
-**Date** : 1er décembre 2025
-**Statut** : En cours de développement
+**Version** : 1.3
+**Date** : 3 décembre 2025
+**Statut** : Développement terminé (Phase 11 : Data Management - 100%)
 
 ---
 
@@ -20,7 +20,7 @@
 | Phase 8 | Scénarios guidés | **100%** |
 | Phase 9 | UX et finitions | **100%** |
 | Phase 10 | Packaging et distribution | **100%** |
-| **Phase 11** | **Data Management (CRUD)** | **55%** |
+| **Phase 11** | **Data Management (CRUD)** | **100%** |
 
 > 📋 **Phase 11 détaillée** : Voir [BACKLOG_DATA_MANAGEMENT.md](./BACKLOG_DATA_MANAGEMENT.md)
 
@@ -39,10 +39,10 @@
 | F1.7 | Persistance données locale | P0 | **Fait** | persistence.ts - IndexedDB avec cache automatique |
 
 ### Critères de validation MVP
-- [ ] Visualisation fluide de 1000 nœuds
-- [ ] Import CSV fonctionnel
-- [ ] Zoom/pan/sélection opérationnels
-- [ ] Données persistées entre sessions
+- [x] Visualisation fluide de 1000 nœuds
+- [x] Import CSV fonctionnel
+- [x] Zoom/pan/sélection opérationnels
+- [x] Données persistées entre sessions
 
 ---
 
@@ -221,9 +221,9 @@
 
 ## Statut Final
 
-**Phases 1-10 complétées à 100%.** Phase 11 (Data Management) en cours d'implémentation (55%).
+**Phases 1-11 complétées à 100%.** Toutes les fonctionnalités prévues sont implémentées.
 
-### Dernières fonctionnalités ajoutées (1er décembre 2025)
+### Dernières fonctionnalités ajoutées (3 décembre 2025)
 - [x] **F11.1.1-6** - Infrastructure Data Service complète (Phase 11.1)
   - DataService avec opérations CRUD
   - Validation Service (12 règles de validation)
@@ -250,16 +250,44 @@
   - Formulaires dynamiques réutilisés de l'édition
   - Génération automatique d'ID (régénérable)
   - Bouton "Ajouter" dans le Header
+- [x] **F11.5.1-4** - Gestion des relations (Phase 11.5)
+  - RelationList avec suppression inline
+  - RelationCreatorDialog avec wizard 3 étapes
+  - Validation des types source/cible compatibles
+  - Schémas complets des 26 types de relations
+- [x] **F11.6.1-7** - Import intelligent/Merge (Phase 11.6)
+  - MergeStrategySelector (Replace, Merge, Add Only)
+  - MergeService avec détection de conflits
+  - ConflictResolver UI avec résolution individuelle/en masse
+  - MergeReportPanel avec statistiques détaillées
+  - Intégration complète dans ImportWizard
+- [x] **F11.7.1-5** - Copier/Coller (Phase 11.7)
+  - ClipboardService avec copie/collage/duplication
+  - Store Jotai avec historique presse-papiers
+  - Hook useClipboard pour intégration React
+  - Raccourcis clavier Ctrl+C/V/D
+  - Support copie avec/sans relations
+- [x] **F11.8.1-9** - Vue DataTable (Phase 11.8)
+  - Composant DataTable natif (sans dépendance externe)
+  - Tri multi-colonnes configurable
+  - Filtrage avancé par propriété
+  - Édition inline (double-clic, Enter/Escape)
+  - Multi-sélection avec checkbox
+  - Suppression groupée
+  - Export CSV de la sélection
+  - Pagination configurable
 
-### Phase 11 : Data Management (CRUD) - En cours (55%)
+### Phase 11 : Data Management (CRUD) - Terminé (100%)
 La Phase 11 introduit la gestion complète des données directement dans l'application :
 - [x] **Infrastructure** Data Service et hooks React
 - [x] **Création** d'entités sans passer par Excel
 - [x] **Édition** des entités existantes
 - [x] **Suppression** avec gestion des relations
-- [ ] **Import intelligent** (modes Replace, Merge, Add only)
-- [ ] **Copier/Coller** et duplication
-- [ ] **Vue DataTable** pour édition en masse
+- [x] **Relations** Création et suppression de relations entre entités
+- [x] **Import intelligent** (modes Replace, Merge, Add only)
+- [x] **Copier/Coller** Ctrl+C/V/D (ClipboardService, useClipboard hook)
+- [x] **Menu contextuel** copier/coller (clic-droit sur le graphe)
+- [x] **Vue DataTable** pour édition en masse (bouton "Données")
 
 > 📋 Spécifications complètes : [BACKLOG_DATA_MANAGEMENT.md](./BACKLOG_DATA_MANAGEMENT.md)
 
@@ -285,4 +313,5 @@ La Phase 11 introduit la gestion complète des données directement dans l'appli
 
 ---
 
-*Document mis à jour le 30 novembre 2025*
+*Document généré et maintenu dans le cadre du projet KG-Oversight.*
+*Dernière mise à jour : 3 décembre 2025*

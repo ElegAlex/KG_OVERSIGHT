@@ -9,6 +9,7 @@
  * - Hooks React pour l'intégration UI
  * - Composants d'édition d'entités
  * - Types et schémas des 16 types d'entités
+ * - Clipboard pour copier/coller des entités (Phase 11.7)
  */
 
 // Types
@@ -22,6 +23,9 @@ export * from './services';
 
 // Hooks
 export * from './hooks';
+
+// Stores (Jotai atoms)
+export * from './stores';
 
 // Components
 export * from './components';

@@ -3,7 +3,7 @@
  * Design system inspiré Linear/Vercel
  */
 
-import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar, Plus } from 'lucide-react';
+import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar, Plus, Table2 } from 'lucide-react';
 import { useAtom, useAtomValue } from 'jotai';
 import { cn } from '@/lib/utils';
 import { statPillColors, type StatPillColor } from '@/styles/colors';
@@ -23,6 +23,7 @@ interface HeaderProps {
   onOpenImport?: () => void;
   onOpenScenarios?: () => void;
   onOpenCreate?: () => void;
+  onOpenDataTable?: () => void;
 }
 
 interface StatPillProps {
@@ -90,6 +91,7 @@ export function Header({
   onOpenImport,
   onOpenScenarios,
   onOpenCreate,
+  onOpenDataTable,
 }: HeaderProps) {
   const [timelineSize, setTimelineSize] = useAtom(timelineSizeAtom);
 
@@ -210,6 +212,16 @@ export function Header({
             >
               <Upload className="w-4 h-4" />
               <span className="text-sm font-medium">Import</span>
+            </button>
+          )}
+          {onOpenDataTable && (
+            <button
+              onClick={onOpenDataTable}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-colors"
+              title="Vue tabulaire des données"
+            >
+              <Table2 className="w-4 h-4" />
+              <span className="text-sm font-medium">Données</span>
             </button>
           )}
           {onOpenDashboard && (

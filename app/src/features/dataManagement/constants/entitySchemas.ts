@@ -1685,4 +1685,37 @@ export function isRelationAllowed(
   );
 }
 
+// =============================================================================
+// Groupes de types d'entités (pour DataTable et TypeSelector)
+// =============================================================================
+
+export interface NodeTypeGroup {
+  name: string;
+  types: NodeType[];
+}
+
+export const NODE_TYPE_GROUPS: NodeTypeGroup[] = [
+  {
+    name: 'Organisation',
+    types: ['SousTraitant', 'Contrat', 'AccordQualite', 'DomaineService'],
+  },
+  {
+    name: 'Événements qualité',
+    types: ['Audit', 'Inspection', 'Finding', 'EvenementQualite', 'Decision', 'EvaluationRisque'],
+  },
+  {
+    name: 'Études et réunions',
+    types: ['EtudeClinique', 'ReunionQualite'],
+  },
+  {
+    name: 'Suivi',
+    types: ['Alerte', 'Evenement', 'KQI', 'ContexteReglementaire'],
+  },
+];
+
+/**
+ * Liste de tous les types de nœuds
+ */
+export const ALL_NODE_TYPES: NodeType[] = NODE_TYPE_GROUPS.flatMap((g) => g.types);
+
 export default ENTITY_SCHEMAS;

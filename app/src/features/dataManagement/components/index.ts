@@ -15,5 +15,13 @@ export { EntityCreatorDialog } from './EntityCreatorDialog';
 // Sélecteur de type d'entité
 export { TypeSelector } from './TypeSelector';
 
+// Gestion des relations (Phase 11.5)
+export { RelationList } from './RelationList';
+export { RelationCreatorDialog } from './RelationCreatorDialog';
+
+// DataTable (Phase 11.8)
+export * from './DataTable';
+export { DataTablePanel } from './DataTablePanel';
+
 // Composants de champs
 export * from './fields';

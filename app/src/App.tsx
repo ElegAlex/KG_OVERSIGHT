@@ -14,6 +14,7 @@ import {
   GraphLegend,
   LayoutSelector,
   ExportDialog,
+  GraphContextMenu,
   exportGraph,
   generateFilename,
   type LayoutType,
@@ -26,7 +27,7 @@ import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsC
 import { kqiPanelOpenAtom, closeKQIPanelAtom } from '@features/kqi';
 import { ImportWizard } from '@features/import';
 import { ScenarioSelector, ScenarioPlayer, ScenarioEditor, ERDScenarioEditor } from '@features/scenarios';
-import { EntityCreatorDialog } from '@features/dataManagement';
+import { EntityCreatorDialog, DeleteConfirmDialog, DataTablePanel, useClipboard } from '@features/dataManagement';
 import { Header } from '@/components/layout';
 import { UpdateChecker } from '@shared/components/UpdateChecker';
 import { NotificationContainer } from '@shared/components/NotificationContainer';
@@ -139,6 +140,9 @@ function AppContent() {
   // État du créateur d'entités
   const [isEntityCreatorOpen, setIsEntityCreatorOpen] = useState(false);
 
+  // État du panneau DataTable
+  const [isDataTableOpen, setIsDataTableOpen] = useState(false);
+
   // Layout actuel
   const [currentLayout, setCurrentLayout] = useState<LayoutType>('forceAtlas2');
 
@@ -146,6 +150,12 @@ function AppContent() {
   const setAlerts = useSetAtom(setAlertsAtom);
   const [isAlertsPanelOpen, setIsAlertsPanelOpen] = useAtom(alertsPanelOpenAtom);
   const alertsCounts = useAtomValue(alertsCountByLevelAtom);
+
+  // Clipboard (Phase 11.7)
+  const clipboard = useClipboard();
+
+  // État du dialogue de suppression
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Appliquer le thème au chargement
   useEffect(() => {
@@ -255,6 +265,7 @@ function AppContent() {
         onOpenImport={() => setIsImportWizardOpen(true)}
         onOpenScenarios={() => setIsScenarioSelectorOpen(true)}
         onOpenCreate={() => setIsEntityCreatorOpen(true)}
+        onOpenDataTable={() => setIsDataTableOpen(true)}
       />
 
       {/* Contenu principal */}
@@ -264,39 +275,53 @@ function AppContent() {
           <FilterPanel />
         </aside>
 
-        {/* Zone centrale du graphe */}
-        <main className="app-main graph-pattern-bg">
-          <GraphCanvas
-            ref={graphCanvasRef}
-            key={theme}
-            currentLayout={currentLayout}
-            onLayoutChange={handleLayoutChange}
-          />
+        {/* Zone centrale du graphe avec menu contextuel */}
+        <GraphContextMenu
+          hasSelection={!!selectedNode}
+          hasClipboardContent={clipboard.hasContent}
+          canDuplicate={clipboard.canDuplicate}
+          clipboardDescription={clipboard.contentDescription}
+          selectedNodeName={selectedNode?.nom || selectedNode?.id}
+          onCopy={() => clipboard.copySelected()}
+          onCopyWithRelations={() => clipboard.copySelected({ includeRelations: true })}
+          onPaste={() => clipboard.paste()}
+          onDuplicate={() => clipboard.duplicate()}
+          onDuplicateWithRelations={() => clipboard.duplicate(undefined, { includeRelations: true })}
+          onDelete={() => setIsDeleteDialogOpen(true)}
+        >
+          <main className="app-main graph-pattern-bg">
+            <GraphCanvas
+              ref={graphCanvasRef}
+              key={theme}
+              currentLayout={currentLayout}
+              onLayoutChange={handleLayoutChange}
+            />
 
-          {/* Sélecteur de layout flottant */}
-          <LayoutSelector
-            currentLayout={currentLayout}
-            onLayoutChange={handleLayoutChange}
-            isLayoutRunning={graphCanvasRef.current?.isLayoutRunning}
-            className="absolute top-3 left-4 z-20"
-          />
+            {/* Sélecteur de layout flottant */}
+            <LayoutSelector
+              currentLayout={currentLayout}
+              onLayoutChange={handleLayoutChange}
+              isLayoutRunning={graphCanvasRef.current?.isLayoutRunning}
+              className="absolute top-3 left-4 z-20"
+            />
 
-          {/* Légende flottante */}
-          <GraphLegend
-            className="absolute top-3 right-4 z-20"
-            showStudyContext={!!selectedStudyId}
-          />
+            {/* Légende flottante */}
+            <GraphLegend
+              className="absolute top-3 right-4 z-20"
+              showStudyContext={!!selectedStudyId}
+            />
 
-          {/* Contrôles flottants */}
-          <GraphControls
-            className="absolute bottom-4 right-4 z-20"
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onFitToView={handleFitToView}
-            onResetLayout={handleResetLayout}
-            onExportPNG={() => setIsExportDialogOpen(true)}
-          />
-        </main>
+            {/* Contrôles flottants */}
+            <GraphControls
+              className="absolute bottom-4 right-4 z-20"
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onFitToView={handleFitToView}
+              onResetLayout={handleResetLayout}
+              onExportPNG={() => setIsExportDialogOpen(true)}
+            />
+          </main>
+        </GraphContextMenu>
 
         {/* Sidebar droite - Détails ou combo SousTraitant+KQI */}
         {selectedNode && (
@@ -346,6 +371,19 @@ function AppContent() {
       <EntityCreatorDialog
         isOpen={isEntityCreatorOpen}
         onClose={() => setIsEntityCreatorOpen(false)}
+      />
+
+      {/* Dialogue de suppression (context menu) */}
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        node={selectedNode}
+        onClose={() => setIsDeleteDialogOpen(false)}
+      />
+
+      {/* Panneau DataTable */}
+      <DataTablePanel
+        isOpen={isDataTableOpen}
+        onClose={() => setIsDataTableOpen(false)}
       />
 
       {/* Sélecteur de scénarios */}
