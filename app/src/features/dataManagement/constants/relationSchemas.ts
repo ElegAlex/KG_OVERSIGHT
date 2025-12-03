@@ -42,6 +42,7 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     hasProperties: true,
     properties: [
       { name: 'niveau', label: 'Niveau', type: 'number', required: false },
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
     ],
   },
 
@@ -52,7 +53,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un sous-traitant à un contrat',
     sourceTypes: ['SousTraitant'],
     targetTypes: ['Contrat'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   EST_COUVERT_PAR_QA: {
@@ -62,7 +66,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un sous-traitant à un accord qualité',
     sourceTypes: ['SousTraitant'],
     targetTypes: ['AccordQualite'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   A_VERSION_SUIVANTE: {
@@ -72,7 +79,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Versionnement des contrats',
     sourceTypes: ['Contrat'],
     targetTypes: ['Contrat'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   QA_A_VERSION_SUIVANTE: {
@@ -82,7 +92,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Versionnement des accords qualité',
     sourceTypes: ['AccordQualite'],
     targetTypes: ['AccordQualite'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   POSSEDE_SERVICE: {
@@ -92,7 +105,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un sous-traitant à ses domaines de service',
     sourceTypes: ['SousTraitant'],
     targetTypes: ['DomaineService'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   // Audits et Inspections
@@ -103,7 +119,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un audit à un sous-traitant',
     sourceTypes: ['Audit'],
     targetTypes: ['SousTraitant'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   A_ETE_INSPECTE_PAR: {
@@ -113,7 +132,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une inspection à un sous-traitant',
     sourceTypes: ['Inspection'],
     targetTypes: ['SousTraitant'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   GENERE_FINDING: {
@@ -123,7 +145,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un audit à ses findings',
     sourceTypes: ['Audit'],
     targetTypes: ['Finding'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   INSPECTION_GENERE_FINDING: {
@@ -133,7 +158,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une inspection à ses findings',
     sourceTypes: ['Inspection'],
     targetTypes: ['Finding'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   // Événements qualité
@@ -144,7 +172,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un événement qualité à un sous-traitant',
     sourceTypes: ['EvenementQualite'],
     targetTypes: ['SousTraitant'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   SURVENU_DANS_ETUDE: {
@@ -154,7 +185,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un événement qualité à une étude clinique',
     sourceTypes: ['EvenementQualite'],
     targetTypes: ['EtudeClinique'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   QE_DECLENCHE_ALERTE: {
@@ -164,7 +198,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un événement qualité à une alerte',
     sourceTypes: ['EvenementQualite'],
     targetTypes: ['Alerte'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   AUDIT_DECLENCHE_ALERTE: {
@@ -174,7 +211,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un audit à une alerte',
     sourceTypes: ['Audit'],
     targetTypes: ['Alerte'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   // Décisions
@@ -185,7 +225,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une décision à un audit',
     sourceTypes: ['Decision'],
     targetTypes: ['Audit'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   DECISION_JUSTIFIEE_PAR_QE: {
@@ -195,7 +238,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une décision à un événement qualité',
     sourceTypes: ['Decision'],
     targetTypes: ['EvenementQualite'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   DECISION_JUSTIFIEE_PAR_INSPECTION: {
@@ -205,7 +251,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une décision à une inspection',
     sourceTypes: ['Decision'],
     targetTypes: ['Inspection'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   DECISION_JUSTIFIEE_PAR_FINDING: {
@@ -215,7 +264,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une décision à un finding',
     sourceTypes: ['Decision'],
     targetTypes: ['Finding'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   RESULTE_DE_EVALUATION: {
@@ -225,7 +277,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une décision à une évaluation de risque',
     sourceTypes: ['Decision'],
     targetTypes: ['EvaluationRisque'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   // Évaluations
@@ -240,6 +295,7 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     properties: [
       { name: 'score_evaluation', label: 'Score', type: 'number', required: false },
       { name: 'en_reevaluation', label: 'En réévaluation', type: 'boolean', required: false },
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
     ],
   },
 
@@ -250,7 +306,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une entité à un contexte réglementaire',
     sourceTypes: ['SousTraitant', 'Audit', 'Inspection'],
     targetTypes: ['ContexteReglementaire'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   A_ETE_SUIVI_PAR: {
@@ -260,7 +319,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un sujet à une réunion qualité',
     sourceTypes: ['ReunionQualite'],
     targetTypes: ['SousTraitant', 'Audit', 'Finding', 'EvenementQualite'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   // Études cliniques
@@ -274,6 +336,7 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     hasProperties: true,
     properties: [
       { name: 'role', label: 'Rôle', type: 'text', required: false },
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
     ],
   },
 
@@ -285,7 +348,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie une cause à un événement',
     sourceTypes: ['EvenementQualite', 'Finding'],
     targetTypes: ['Evenement'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   EVT_CONCERNE_ST: {
@@ -295,7 +361,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un événement à un sous-traitant',
     sourceTypes: ['Evenement'],
     targetTypes: ['SousTraitant'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 
   // KQI
@@ -306,7 +375,10 @@ export const RELATION_SCHEMAS: Record<EdgeType, RelationSchema> = {
     description: 'Lie un KQI à un sous-traitant',
     sourceTypes: ['KQI'],
     targetTypes: ['SousTraitant'],
-    hasProperties: false,
+    hasProperties: true,
+    properties: [
+      { name: 'date_lien', label: 'Date du lien', type: 'date', required: false },
+    ],
   },
 };
 

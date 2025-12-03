@@ -15,13 +15,15 @@ import {
   Plus,
   AlertTriangle,
   Loader2,
+  Pencil,
 } from 'lucide-react';
 import { allNodesAtom, allEdgesAtom } from '@shared/stores/selectionAtoms';
 import { getNodeColor, getNodeLabel } from '@shared/utils/nodeStyles';
 import { cn } from '@/lib/utils';
 import type { GraphNode, GraphEdge, NodeType } from '@data/types';
-import { getRelationLabel, getRelationLabelReverse } from '../constants/relationSchemas';
+import { getRelationLabel, getRelationLabelReverse, getRelationSchema } from '../constants/relationSchemas';
 import { useDataMutations } from '../hooks/useDataMutations';
+import { RelationEditor } from './RelationEditor';
 
 // =============================================================================
 // Types
@@ -40,6 +42,7 @@ interface RelationItemProps {
   isOutgoing: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  onEdit?: () => void;
   isDeleting: boolean;
 }
 
@@ -59,6 +62,7 @@ function RelationItem({
   isOutgoing,
   onSelect,
   onDelete,
+  onEdit,
   isDeleting,
 }: RelationItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -74,6 +78,32 @@ function RelationItem({
     : edge.source;
 
   const nodeType = relatedNode?._type;
+
+  // Récupérer le schéma et les propriétés
+  const schema = getRelationSchema(edge._type);
+  const hasEditableProperties = schema?.hasProperties && schema.properties?.length;
+
+  // Construire la liste des propriétés à afficher
+  const displayProperties = useMemo(() => {
+    if (!schema?.properties) return [];
+    return schema.properties
+      .filter((prop) => {
+        const value = (edge as Record<string, unknown>)[prop.name];
+        return value !== undefined && value !== null && value !== '';
+      })
+      .map((prop) => {
+        const value = (edge as Record<string, unknown>)[prop.name];
+        let displayValue: string;
+        if (prop.type === 'date' && value) {
+          displayValue = new Date(value as string).toLocaleDateString('fr-FR');
+        } else if (prop.type === 'boolean') {
+          displayValue = value ? 'Oui' : 'Non';
+        } else {
+          displayValue = String(value);
+        }
+        return { label: prop.label, value: displayValue };
+      });
+  }, [edge, schema]);
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -123,6 +153,17 @@ function RelationItem({
           <p className="text-sm text-slate-300 truncate group-hover:text-white transition-colors">
             {nodeName}
           </p>
+          {displayProperties.length > 0 && (
+            <p className="text-[10px] text-slate-600 truncate mt-0.5">
+              {displayProperties.map((p, i) => (
+                <span key={p.label}>
+                  {i > 0 && ' • '}
+                  <span className="text-slate-500">{p.label.toLowerCase()}:</span>{' '}
+                  <span className="text-slate-400">{p.value}</span>
+                </span>
+              ))}
+            </p>
+          )}
         </div>
 
         {/* Bouton supprimer ou confirmation */}
@@ -164,6 +205,18 @@ function RelationItem({
               exit={{ opacity: 0 }}
               className="flex items-center gap-1"
             >
+              {hasEditableProperties && onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-indigo-500/20 text-slate-500 hover:text-indigo-400 transition-all"
+                  title="Modifier les propriétés"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button
                 onClick={handleDeleteClick}
                 className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-all"
@@ -194,6 +247,7 @@ export function RelationList({
   const allEdges = useAtomValue(allEdgesAtom);
   const { deleteEdge, state } = useDataMutations();
   const [deletingEdgeId, setDeletingEdgeId] = useState<string | null>(null);
+  const [editingEdge, setEditingEdge] = useState<GraphEdge | null>(null);
 
   // Calculer les relations entrantes et sortantes
   const { incomingEdges, outgoingEdges } = useMemo(() => {
@@ -270,6 +324,7 @@ export function RelationList({
                     isOutgoing={true}
                     onSelect={() => onSelectNode(edge.target)}
                     onDelete={() => handleDeleteRelation(edge.id)}
+                    onEdit={() => setEditingEdge(edge)}
                     isDeleting={deletingEdgeId === edge.id}
                   />
                 );
@@ -302,6 +357,7 @@ export function RelationList({
                     isOutgoing={false}
                     onSelect={() => onSelectNode(edge.source)}
                     onDelete={() => handleDeleteRelation(edge.id)}
+                    onEdit={() => setEditingEdge(edge)}
                     isDeleting={deletingEdgeId === edge.id}
                   />
                 );
@@ -333,6 +389,16 @@ export function RelationList({
             </button>
           )}
         </div>
+      )}
+
+      {/* Dialog d'édition de relation */}
+      {editingEdge && (
+        <RelationEditor
+          edge={editingEdge}
+          isOpen={!!editingEdge}
+          onClose={() => setEditingEdge(null)}
+          onSaved={() => setEditingEdge(null)}
+        />
       )}
     </div>
   );

@@ -92,7 +92,32 @@ export const clearNotificationsAtom = atom(null, (get, set) => {
 });
 
 // =============================================================================
-// Helpers pour utilisation simplifiée
+// Helper function pour utilisation hors composants React
+// =============================================================================
+
+// Store global pour accès direct (utilisé par les services)
+let globalSetNotification: ((notification: Omit<Notification, 'id' | 'timestamp'>) => void) | null = null;
+
+export function setGlobalNotificationSetter(
+  setter: (notification: Omit<Notification, 'id' | 'timestamp'>) => void
+) {
+  globalSetNotification = setter;
+}
+
+/**
+ * Ajoute une notification depuis n'importe où dans l'application
+ * Note: Nécessite que NotificationContainer soit monté
+ */
+export function addNotification(notification: Omit<Notification, 'id' | 'timestamp'>) {
+  if (globalSetNotification) {
+    globalSetNotification(notification);
+  } else {
+    console.warn('[Notification] Store not initialized, notification skipped:', notification.message);
+  }
+}
+
+// =============================================================================
+// Helpers atoms pour utilisation dans composants React
 // =============================================================================
 
 export const showSuccessAtom = atom(

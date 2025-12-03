@@ -3,12 +3,13 @@
  * Design system inspiré Linear/Vercel
  */
 
-import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar, Plus, Table2 } from 'lucide-react';
+import { Network, Circle, GitBranch, AlertTriangle, Building2, Settings, HelpCircle, Sun, Moon, BarChart3, Upload, Play, Calendar, Plus, Table2, Undo2, Redo2 } from 'lucide-react';
 import { useAtom, useAtomValue } from 'jotai';
 import { cn } from '@/lib/utils';
 import { statPillColors, type StatPillColor } from '@/styles/colors';
 import { themeAtom, type Theme } from '@shared/stores/themeAtom';
 import { timelineSizeAtom } from '@shared/stores/selectionAtoms';
+import { useUndoRedo } from '@features/dataManagement/hooks';
 import type { LucideIcon } from 'lucide-react';
 
 interface HeaderProps {
@@ -94,6 +95,7 @@ export function Header({
   onOpenDataTable,
 }: HeaderProps) {
   const [timelineSize, setTimelineSize] = useAtom(timelineSizeAtom);
+  const { canUndo, canRedo, undo, redo, lastUndoDescription, nextRedoDescription } = useUndoRedo();
 
   const toggleTimeline = () => {
     setTimelineSize((prev) => (prev === 'collapsed' ? 'normal' : 'collapsed'));
@@ -171,6 +173,36 @@ export function Header({
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-0.5 mr-2">
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              className={cn(
+                "p-2 rounded-lg transition-colors",
+                canUndo
+                  ? "text-slate-400 hover:text-white hover:bg-white/5"
+                  : "text-slate-600 cursor-not-allowed"
+              )}
+              title={canUndo ? `Annuler: ${lastUndoDescription} (Ctrl+Z)` : "Rien à annuler"}
+            >
+              <Undo2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              className={cn(
+                "p-2 rounded-lg transition-colors",
+                canRedo
+                  ? "text-slate-400 hover:text-white hover:bg-white/5"
+                  : "text-slate-600 cursor-not-allowed"
+              )}
+              title={canRedo ? `Rétablir: ${nextRedoDescription} (Ctrl+Y)` : "Rien à rétablir"}
+            >
+              <Redo2 className="w-4 h-4" />
+            </button>
+          </div>
+
           {onOpenCreate && (
             <button
               onClick={onOpenCreate}

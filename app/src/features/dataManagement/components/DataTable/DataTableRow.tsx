@@ -72,7 +72,18 @@ export const DataTableRow = memo(function DataTableRow({
 
       {/* Colonnes de données */}
       {columns.map((column, colIndex) => {
-        const value = data[column.key as keyof GraphNode];
+        // Accès dynamique aux propriétés (les données sont chargées depuis CSV)
+        const nodeAsRecord = data as Record<string, unknown>;
+
+        // Résolution des colonnes virtuelles
+        let value: unknown;
+        if (column.key === '_label') {
+          // _label = nom || description (selon le type d'entité)
+          value = nodeAsRecord.nom ?? nodeAsRecord.description ?? '';
+        } else {
+          value = nodeAsRecord[column.key];
+        }
+
         const isThisCellEditing = isRowEditing && editingCell?.column === column.key;
 
         return (

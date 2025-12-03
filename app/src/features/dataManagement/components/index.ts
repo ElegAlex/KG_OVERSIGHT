@@ -18,6 +18,7 @@ export { TypeSelector } from './TypeSelector';
 // Gestion des relations (Phase 11.5)
 export { RelationList } from './RelationList';
 export { RelationCreatorDialog } from './RelationCreatorDialog';
+export { RelationEditor } from './RelationEditor';
 
 // DataTable (Phase 11.8)
 export * from './DataTable';

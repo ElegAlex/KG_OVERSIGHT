@@ -6,12 +6,13 @@
  * - Expose les mutations CRUD pour les composants React
  * - Gère les états de chargement et d'erreur
  * - Synchronise les atoms Jotai après chaque mutation
- * - Intègre l'historique pour undo/redo
+ * - Intègre l'historique pour undo/redo (snapshots avant chaque mutation)
  */
 
-import { useCallback, useState } from 'react';
-import { useAtom } from 'jotai';
+import { useCallback, useState, useRef } from 'react';
+import { useAtom, useSetAtom } from 'jotai';
 import { allNodesAtom, allEdgesAtom } from '@shared/stores/selectionAtoms';
+import { pushHistoryAtom, initHistoryAtom } from '../stores/historyAtoms';
 import type { NodeType, EdgeType, GraphNode, GraphEdge } from '@data/types';
 import type {
   DataServiceResult,
@@ -68,6 +69,10 @@ interface EdgeMutations {
     type: EdgeType,
     properties?: Record<string, unknown>
   ) => Promise<DataServiceResult<GraphEdge>>;
+  updateEdge: (
+    edgeId: string,
+    changes: Partial<Omit<GraphEdge, 'id' | '_type' | 'source' | 'target'>>
+  ) => Promise<DataServiceResult<GraphEdge>>;
   deleteEdge: (edgeId: string) => Promise<DataServiceResult<boolean>>;
 }
 
@@ -107,6 +112,13 @@ export function useDataMutations(): DataMutationsHook {
   const [nodes, setNodes] = useAtom(allNodesAtom);
   const [edges, setEdges] = useAtom(allEdgesAtom);
 
+  // History atoms
+  const pushHistory = useSetAtom(pushHistoryAtom);
+  const initHistory = useSetAtom(initHistoryAtom);
+
+  // Track if history is initialized
+  const historyInitialized = useRef(false);
+
   // ==========================================================================
   // Helpers
   // ==========================================================================
@@ -129,6 +141,23 @@ export function useDataMutations(): DataMutationsHook {
     dataService.updateEdgesCache(edges);
   }, [nodes, edges]);
 
+  /**
+   * Sauvegarde un snapshot avant une mutation
+   * Initialise l'historique au premier appel
+   */
+  const saveHistorySnapshot = useCallback(
+    (description: string) => {
+      // Initialiser l'historique au premier appel
+      if (!historyInitialized.current) {
+        initHistory({ nodes, edges });
+        historyInitialized.current = true;
+      }
+      // Sauvegarder le snapshot
+      pushHistory({ description, nodes, edges });
+    },
+    [nodes, edges, pushHistory, initHistory]
+  );
+
   // ==========================================================================
   // CRUD Nodes
   // ==========================================================================
@@ -141,6 +170,7 @@ export function useDataMutations(): DataMutationsHook {
     ): Promise<DataServiceResult<GraphNode>> => {
       startMutation('createNode');
       syncCaches();
+      saveHistorySnapshot(`Créer ${type}`);
 
       try {
         const result = await dataService.createNode(type, data, options);
@@ -165,7 +195,7 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setNodes]
+    [startMutation, endMutation, syncCaches, setNodes, saveHistorySnapshot]
   );
 
   const updateNode = useCallback(
@@ -176,6 +206,7 @@ export function useDataMutations(): DataMutationsHook {
     ): Promise<DataServiceResult<GraphNode>> => {
       startMutation('updateNode');
       syncCaches();
+      saveHistorySnapshot('Modifier entité');
 
       try {
         const result = await dataService.updateNode(nodeId, updates, options);
@@ -200,7 +231,7 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setNodes]
+    [startMutation, endMutation, syncCaches, setNodes, saveHistorySnapshot]
   );
 
   const deleteNode = useCallback(
@@ -210,6 +241,7 @@ export function useDataMutations(): DataMutationsHook {
     ): Promise<DataServiceResult<DeleteResult>> => {
       startMutation('deleteNode');
       syncCaches();
+      saveHistorySnapshot('Supprimer entité');
 
       try {
         const result = await dataService.deleteNode(nodeId, options);
@@ -244,7 +276,7 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setNodes, setEdges]
+    [startMutation, endMutation, syncCaches, setNodes, setEdges, saveHistorySnapshot]
   );
 
   const deleteNodes = useCallback(
@@ -254,6 +286,7 @@ export function useDataMutations(): DataMutationsHook {
     ): Promise<DataServiceResult<DeleteResult>> => {
       startMutation('deleteNodes');
       syncCaches();
+      saveHistorySnapshot(`Supprimer ${nodeIds.length} entités`);
 
       try {
         const result = await dataService.deleteNodes(nodeIds, options);
@@ -287,7 +320,7 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setNodes, setEdges]
+    [startMutation, endMutation, syncCaches, setNodes, setEdges, saveHistorySnapshot]
   );
 
   const duplicateNode = useCallback(
@@ -297,6 +330,7 @@ export function useDataMutations(): DataMutationsHook {
     ): Promise<DataServiceResult<{ node: GraphNode; edges: GraphEdge[] }>> => {
       startMutation('duplicateNode');
       syncCaches();
+      saveHistorySnapshot('Dupliquer entité');
 
       try {
         const result = await dataService.duplicateNode(nodeId, options);
@@ -332,7 +366,7 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setNodes, setEdges]
+    [startMutation, endMutation, syncCaches, setNodes, setEdges, saveHistorySnapshot]
   );
 
   // ==========================================================================
@@ -348,6 +382,7 @@ export function useDataMutations(): DataMutationsHook {
     ): Promise<DataServiceResult<GraphEdge>> => {
       startMutation('createEdge');
       syncCaches();
+      saveHistorySnapshot('Créer relation');
 
       try {
         const result = await dataService.createEdge({
@@ -376,13 +411,48 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setEdges]
+    [startMutation, endMutation, syncCaches, setEdges, saveHistorySnapshot]
+  );
+
+  const updateEdge = useCallback(
+    async (
+      edgeId: string,
+      changes: Partial<Omit<GraphEdge, 'id' | '_type' | 'source' | 'target'>>
+    ): Promise<DataServiceResult<GraphEdge>> => {
+      startMutation('updateEdge');
+      syncCaches();
+      saveHistorySnapshot('Modifier relation');
+
+      try {
+        const result = await dataService.updateEdge(edgeId, changes);
+
+        if (result.success && result.data) {
+          setEdges((prev) => {
+            const newEdges = new Map(prev);
+            newEdges.set(edgeId, result.data!);
+            return newEdges;
+          });
+        }
+
+        endMutation(result.error?.message);
+        return result;
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Erreur inconnue';
+        endMutation(errorMsg);
+        return {
+          success: false,
+          error: { code: 'UNKNOWN_ERROR', message: errorMsg },
+        };
+      }
+    },
+    [startMutation, endMutation, syncCaches, setEdges, saveHistorySnapshot]
   );
 
   const deleteEdge = useCallback(
     async (edgeId: string): Promise<DataServiceResult<boolean>> => {
       startMutation('deleteEdge');
       syncCaches();
+      saveHistorySnapshot('Supprimer relation');
 
       try {
         const result = await dataService.deleteEdge(edgeId);
@@ -406,7 +476,7 @@ export function useDataMutations(): DataMutationsHook {
         };
       }
     },
-    [startMutation, endMutation, syncCaches, setEdges]
+    [startMutation, endMutation, syncCaches, setEdges, saveHistorySnapshot]
   );
 
   // ==========================================================================
@@ -492,6 +562,7 @@ export function useDataMutations(): DataMutationsHook {
 
     // Edge mutations
     createEdge,
+    updateEdge,
     deleteEdge,
 
     // Validation

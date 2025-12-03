@@ -67,7 +67,7 @@ export interface DataTableState {
 const DEFAULT_PAGE_SIZE = 50;
 
 const DEFAULT_STATE: DataTableState = {
-  selectedType: 'SousTraitant',
+  selectedType: null as unknown as NodeType, // null = tous les types
   sortConfigs: [],
   filters: [],
   selectedRows: new Set(),

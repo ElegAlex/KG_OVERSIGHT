@@ -30,8 +30,8 @@ import type { FilterConfig } from '../../stores/dataTableAtoms';
 // =============================================================================
 
 interface DataTableToolbarProps {
-  selectedType: NodeType;
-  onTypeChange: (type: NodeType) => void;
+  selectedType: NodeType | null;
+  onTypeChange: (type: NodeType | null) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedCount: number;
@@ -71,7 +71,7 @@ export function DataTableToolbar({
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const hasFilters = filters.length > 0 || searchQuery.length > 0;
 
-  const currentSchema = ENTITY_SCHEMAS[selectedType];
+  const currentSchema = selectedType ? ENTITY_SCHEMAS[selectedType] : null;
 
   return (
     <div className="flex flex-col gap-2 p-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -84,16 +84,41 @@ export function DataTableToolbar({
             onClick={() => setShowTypeSelector(!showTypeSelector)}
             className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: currentSchema?.color || '#6b7280' }}
-            />
-            <span className="font-medium">{currentSchema?.labelPlural || selectedType}</span>
+            {selectedType ? (
+              <>
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: currentSchema?.color || '#6b7280' }}
+                />
+                <span className="font-medium">{currentSchema?.labelPlural || selectedType}</span>
+              </>
+            ) : (
+              <>
+                <span className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
+                <span className="font-medium">Toutes les données</span>
+              </>
+            )}
             <span className="text-gray-500 dark:text-gray-400 text-sm">({totalRows})</span>
           </button>
 
           {showTypeSelector && (
             <div className="absolute top-full left-0 mt-1 z-50 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto">
+              {/* Option "Tous" */}
+              <button
+                type="button"
+                onClick={() => {
+                  onTypeChange(null);
+                  setShowTypeSelector(false);
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  selectedType === null ? 'bg-blue-50 dark:bg-blue-900/30' : ''
+                }`}
+              >
+                <span className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
+                <span className="font-medium">Toutes les données</span>
+              </button>
+              <div className="border-t border-gray-200 dark:border-gray-700" />
+
               {NODE_TYPE_GROUPS.map((group) => (
                 <div key={group.name}>
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-gray-50 dark:bg-gray-900">

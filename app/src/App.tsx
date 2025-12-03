@@ -27,7 +27,7 @@ import { AlertsPanel, getRuleEngine, setAlertsAtom, alertsPanelOpenAtom, alertsC
 import { kqiPanelOpenAtom, closeKQIPanelAtom } from '@features/kqi';
 import { ImportWizard } from '@features/import';
 import { ScenarioSelector, ScenarioPlayer, ScenarioEditor, ERDScenarioEditor } from '@features/scenarios';
-import { EntityCreatorDialog, DeleteConfirmDialog, DataTablePanel, useClipboard } from '@features/dataManagement';
+import { EntityCreatorDialog, DeleteConfirmDialog, DataTablePanel, useClipboard, useKeyboardShortcuts } from '@features/dataManagement';
 import { Header } from '@/components/layout';
 import { UpdateChecker } from '@shared/components/UpdateChecker';
 import { NotificationContainer } from '@shared/components/NotificationContainer';
@@ -156,6 +156,18 @@ function AppContent() {
 
   // État du dialogue de suppression
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Raccourcis clavier globaux (Phase 11 Sprint Correctif 2)
+  useKeyboardShortcuts({
+    onCreateNew: () => setIsEntityCreatorOpen(true),
+    onDelete: selectedNode ? () => setIsDeleteDialogOpen(true) : undefined,
+    onEscape: () => {
+      // Fermer les dialogs ouverts
+      if (isDashboardOpen) setIsDashboardOpen(false);
+      else if (isAlertsPanelOpen) setIsAlertsPanelOpen(false);
+      else if (isDataTableOpen) setIsDataTableOpen(false);
+    },
+  });
 
   // Appliquer le thème au chargement
   useEffect(() => {

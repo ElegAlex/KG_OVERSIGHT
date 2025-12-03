@@ -55,3 +55,18 @@ export type {
   EditingCell,
   DataTableState,
 } from './dataTableAtoms';
+
+// History (Undo/Redo)
+export {
+  historyStateAtom,
+  canUndoAtom,
+  canRedoAtom,
+  historyCountAtom,
+  lastUndoDescriptionAtom,
+  nextRedoDescriptionAtom,
+  pushHistoryAtom,
+  undoAtom,
+  redoAtom,
+  clearHistoryAtom,
+  initHistoryAtom,
+} from './historyAtoms';

@@ -515,6 +515,49 @@ export async function readEdge(edgeId: string): Promise<DataServiceResult<GraphE
 }
 
 /**
+ * Met à jour une relation existante
+ */
+export async function updateEdge(
+  edgeId: string,
+  changes: Partial<Omit<GraphEdge, 'id' | '_type' | 'source' | 'target'>>
+): Promise<DataServiceResult<GraphEdge>> {
+  try {
+    // 1. Vérifier que l'edge existe
+    const existingEdge = edgesCache.get(edgeId);
+    if (!existingEdge) {
+      return failure(
+        createError('EDGE_NOT_FOUND', `La relation "${edgeId}" n'existe pas`, 'id')
+      );
+    }
+
+    // 2. Fusionner les changements (protéger les champs immuables)
+    const updatedEdge: GraphEdge = {
+      ...existingEdge,
+      ...changes,
+      id: existingEdge.id,
+      _type: existingEdge._type,
+      source: existingEdge.source,
+      target: existingEdge.target,
+    } as GraphEdge;
+
+    // 3. Mettre à jour le cache
+    edgesCache.set(edgeId, updatedEdge);
+
+    // 4. Persister
+    await persistence.putEdge(updatedEdge);
+
+    console.log(`[DataService] Edge updated: ${edgeId}`, changes);
+
+    return success(updatedEdge);
+  } catch (error) {
+    console.error('[DataService] Update edge error:', error);
+    return failure(
+      createError('PERSISTENCE_ERROR', `Erreur lors de la mise à jour: ${error}`)
+    );
+  }
+}
+
+/**
  * Supprime une relation
  */
 export async function deleteEdge(edgeId: string): Promise<DataServiceResult<boolean>> {
@@ -694,6 +737,7 @@ export default {
   // CRUD Edges
   createEdge,
   readEdge,
+  updateEdge,
   deleteEdge,
   getNodeEdges,
   getOutgoingEdges,

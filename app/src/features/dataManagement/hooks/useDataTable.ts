@@ -156,6 +156,19 @@ export function useDataTable(): UseDataTableReturn {
   // ==========================================================================
 
   const columns = useMemo((): ColumnDefinition[] => {
+    // Mode "tous les types" : colonnes communes
+    // Note: certaines entités ont 'nom', d'autres ont 'description' comme identifiant principal
+    // On utilise une colonne spéciale '_label' qui sera résolue dynamiquement
+    if (!selectedType) {
+      return [
+        { key: '_type', label: 'Type', type: 'text', sortable: true, filterable: true, editable: false },
+        { key: '_label', label: 'Libellé', type: 'text', sortable: true, filterable: true, editable: false },
+        { key: 'statut', label: 'Statut', type: 'text', sortable: true, filterable: true, editable: false },
+        { key: 'criticite', label: 'Criticité', type: 'text', sortable: true, filterable: true, editable: false },
+        { key: 'source_donnees', label: 'Source', type: 'text', sortable: true, filterable: true, editable: false },
+      ];
+    }
+
     const schema = getEntitySchema(selectedType);
     if (!schema) return [];
 
@@ -177,11 +190,14 @@ export function useDataTable(): UseDataTableReturn {
   // ==========================================================================
 
   const filteredAndSortedData = useMemo(() => {
-    // 1. Filtrer par type
-    let data = Array.from(nodes.values()).filter((node) => {
-      const nodeType = node._type || node.type;
-      return nodeType === selectedType;
-    });
+    // 1. Filtrer par type (null = tous les types)
+    let data = Array.from(nodes.values());
+    if (selectedType) {
+      data = data.filter((node) => {
+        const nodeType = node._type || node.type;
+        return nodeType === selectedType;
+      });
+    }
 
     // 2. Appliquer la recherche textuelle
     if (searchQuery.trim()) {
@@ -202,7 +218,7 @@ export function useDataTable(): UseDataTableReturn {
     // 3. Appliquer les filtres
     for (const filter of filters) {
       data = data.filter((node) => {
-        const value = node[filter.column as keyof GraphNode];
+        const value = (node as Record<string, unknown>)[filter.column];
         const filterValue = filter.value;
 
         switch (filter.operator) {
@@ -228,12 +244,21 @@ export function useDataTable(): UseDataTableReturn {
       });
     }
 
+    // Helper pour résoudre les colonnes virtuelles
+    const resolveColumnValue = (node: GraphNode, columnKey: string): unknown => {
+      const nodeRecord = node as Record<string, unknown>;
+      if (columnKey === '_label') {
+        return nodeRecord.nom ?? nodeRecord.description ?? '';
+      }
+      return nodeRecord[columnKey];
+    };
+
     // 4. Appliquer le tri
     if (sortConfigs.length > 0) {
       data.sort((a, b) => {
         for (const sort of sortConfigs) {
-          const aValue = a[sort.column as keyof GraphNode];
-          const bValue = b[sort.column as keyof GraphNode];
+          const aValue = resolveColumnValue(a, sort.column);
+          const bValue = resolveColumnValue(b, sort.column);
 
           let comparison = 0;
           if (aValue === null || aValue === undefined) comparison = 1;
@@ -365,7 +390,7 @@ export function useDataTable(): UseDataTableReturn {
     (rowId: string, column: string) => {
       const node = nodes.get(rowId);
       if (node) {
-        startEditingAction(rowId, column, node[column as keyof GraphNode]);
+        startEditingAction(rowId, column, (node as Record<string, unknown>)[column]);
       }
     },
     [nodes, startEditingAction]
@@ -462,8 +487,15 @@ export function useDataTable(): UseDataTableReturn {
     const csvRows = [headers.join(';')];
 
     for (const node of selectedData) {
+      const nodeRecord = node as Record<string, unknown>;
       const row = columns.map((col) => {
-        const value = node[col.key as keyof GraphNode];
+        // Résolution des colonnes virtuelles
+        let value: unknown;
+        if (col.key === '_label') {
+          value = nodeRecord.nom ?? nodeRecord.description ?? '';
+        } else {
+          value = nodeRecord[col.key];
+        }
         if (value === null || value === undefined) return '';
         if (typeof value === 'string' && value.includes(';')) {
           return `"${value.replace(/"/g, '""')}"`;

@@ -149,13 +149,15 @@ export function DataTableCell({
   }
 
   // Mode affichage
+  const displayValue = formatValueForDisplay(value, column.type);
+
   return (
     <td
-      className={`border-r border-gray-200 dark:border-gray-700 truncate max-w-[200px] ${compact ? 'p-1 text-sm' : 'p-2'} ${column.editable ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
+      className={`border-r border-gray-200 dark:border-gray-700 truncate max-w-[200px] text-gray-900 dark:text-gray-100 ${compact ? 'p-1 text-sm' : 'p-2'} ${column.editable ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
       onDoubleClick={handleDoubleClick}
-      title={column.editable ? 'Double-clic pour modifier' : undefined}
+      title={String(value)}
     >
-      {formatValueForDisplay(value, column.type)}
+      {displayValue}
     </td>
   );
 

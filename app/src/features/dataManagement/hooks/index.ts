@@ -11,5 +11,9 @@ export {
 
 export { useClipboard } from './useClipboard';
 
+export { useUndoRedo } from './useUndoRedo';
+
+export { useKeyboardShortcuts } from './useKeyboardShortcuts';
+
 export { useDataTable } from './useDataTable';
 export type { ColumnDefinition, DataTableRow, UseDataTableReturn } from './useDataTable';

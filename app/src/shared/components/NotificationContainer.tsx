@@ -3,6 +3,7 @@
  * Conteneur pour afficher les notifications/toasts
  */
 
+import { useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
@@ -10,6 +11,8 @@ import { cn } from '@/lib/utils';
 import {
   notificationsAtom,
   removeNotificationAtom,
+  addNotificationAtom,
+  setGlobalNotificationSetter,
   type Notification,
   type NotificationType,
 } from '../stores/notificationStore';
@@ -61,6 +64,13 @@ function NotificationItem({ notification, onDismiss }: NotificationItemProps) {
 export function NotificationContainer() {
   const notifications = useAtomValue(notificationsAtom);
   const removeNotification = useSetAtom(removeNotificationAtom);
+  const addNotification = useSetAtom(addNotificationAtom);
+
+  // Enregistrer le setter global pour permettre les notifications hors composants
+  useEffect(() => {
+    setGlobalNotificationSetter(addNotification);
+    return () => setGlobalNotificationSetter(() => {});
+  }, [addNotification]);
 
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 items-end">

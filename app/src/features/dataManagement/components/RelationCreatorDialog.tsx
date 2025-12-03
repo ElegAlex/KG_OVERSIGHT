@@ -43,7 +43,7 @@ interface RelationCreatorDialogProps {
   onCreated?: (edgeId: string) => void;
 }
 
-type Step = 'select-type' | 'select-target' | 'confirm';
+type Step = 'select-type' | 'select-target' | 'properties' | 'confirm';
 
 // =============================================================================
 // Composant principal
@@ -63,6 +63,7 @@ export function RelationCreatorDialog({
   const [selectedRelationType, setSelectedRelationType] = useState<EdgeType | null>(null);
   const [selectedTargetNode, setSelectedTargetNode] = useState<GraphNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [properties, setProperties] = useState<Record<string, unknown>>({});
   const [error, setError] = useState<string | null>(null);
 
   // Reset le state quand le dialog s'ouvre
@@ -72,6 +73,7 @@ export function RelationCreatorDialog({
       setSelectedRelationType(null);
       setSelectedTargetNode(null);
       setSearchQuery('');
+      setProperties({});
       setError(null);
     }
   }, [isOpen]);
@@ -87,6 +89,12 @@ export function RelationCreatorDialog({
     if (!selectedRelationType) return [];
     return getValidTargetTypes(sourceNode._type as NodeType, selectedRelationType);
   }, [sourceNode._type, selectedRelationType]);
+
+  // Schéma de la relation sélectionnée
+  const selectedRelationSchema = useMemo(() => {
+    if (!selectedRelationType) return null;
+    return RELATION_SCHEMAS[selectedRelationType];
+  }, [selectedRelationType]);
 
   // Nœuds cibles filtrés
   const filteredTargetNodes = useMemo(() => {
@@ -129,8 +137,13 @@ export function RelationCreatorDialog({
   // Gérer la sélection du nœud cible
   const handleSelectTargetNode = useCallback((node: GraphNode) => {
     setSelectedTargetNode(node);
-    setStep('confirm');
-  }, []);
+    // Vérifier si le type de relation a des propriétés
+    if (selectedRelationSchema?.hasProperties && selectedRelationSchema.properties?.length) {
+      setStep('properties');
+    } else {
+      setStep('confirm');
+    }
+  }, [selectedRelationSchema]);
 
   // Retour à l'étape précédente
   const handleBack = useCallback(() => {
@@ -138,21 +151,39 @@ export function RelationCreatorDialog({
     if (step === 'select-target') {
       setStep('select-type');
       setSelectedRelationType(null);
-    } else if (step === 'confirm') {
+    } else if (step === 'properties') {
       setStep('select-target');
       setSelectedTargetNode(null);
+      setProperties({});
+    } else if (step === 'confirm') {
+      // Revenir à properties si la relation a des propriétés, sinon à select-target
+      if (selectedRelationSchema?.hasProperties && selectedRelationSchema.properties?.length) {
+        setStep('properties');
+      } else {
+        setStep('select-target');
+        setSelectedTargetNode(null);
+      }
     }
-  }, [step]);
+  }, [step, selectedRelationSchema]);
 
   // Créer la relation
   const handleCreate = useCallback(async () => {
     if (!selectedRelationType || !selectedTargetNode) return;
 
     setError(null);
+    // Filtrer les propriétés vides
+    const cleanedProperties: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(properties)) {
+      if (value !== undefined && value !== null && value !== '') {
+        cleanedProperties[key] = value;
+      }
+    }
+
     const result = await createEdge(
       sourceNode.id,
       selectedTargetNode.id,
-      selectedRelationType
+      selectedRelationType,
+      Object.keys(cleanedProperties).length > 0 ? cleanedProperties : undefined
     );
 
     if (result.success && result.data) {
@@ -161,7 +192,7 @@ export function RelationCreatorDialog({
     } else {
       setError(result.error?.message ?? 'Erreur lors de la création de la relation');
     }
-  }, [selectedRelationType, selectedTargetNode, sourceNode.id, createEdge, onCreated, onClose]);
+  }, [selectedRelationType, selectedTargetNode, sourceNode.id, properties, createEdge, onCreated, onClose]);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -203,11 +234,22 @@ export function RelationCreatorDialog({
               number={2}
               label="Cible"
               active={step === 'select-target'}
-              completed={step === 'confirm'}
+              completed={step === 'properties' || step === 'confirm'}
             />
+            {selectedRelationSchema?.hasProperties && selectedRelationSchema.properties?.length && (
+              <>
+                <ChevronRight className="w-4 h-4 text-slate-600" />
+                <StepIndicator
+                  number={3}
+                  label="Propriétés"
+                  active={step === 'properties'}
+                  completed={step === 'confirm'}
+                />
+              </>
+            )}
             <ChevronRight className="w-4 h-4 text-slate-600" />
             <StepIndicator
-              number={3}
+              number={selectedRelationSchema?.hasProperties && selectedRelationSchema.properties?.length ? 4 : 3}
               label="Confirmer"
               active={step === 'confirm'}
               completed={false}
@@ -235,6 +277,17 @@ export function RelationCreatorDialog({
                   onSearchChange={setSearchQuery}
                   onSelect={handleSelectTargetNode}
                   onBack={handleBack}
+                />
+              )}
+
+              {step === 'properties' && selectedRelationType && selectedTargetNode && selectedRelationSchema && (
+                <StepProperties
+                  key="properties"
+                  schema={selectedRelationSchema}
+                  properties={properties}
+                  onPropertiesChange={setProperties}
+                  onBack={handleBack}
+                  onNext={() => setStep('confirm')}
                 />
               )}
 
@@ -469,6 +522,119 @@ function StepSelectTarget({
             )}
           </div>
         )}
+      </div>
+    </motion.div>
+  );
+}
+
+function StepProperties({
+  schema,
+  properties,
+  onPropertiesChange,
+  onBack,
+  onNext,
+}: {
+  schema: { properties?: { name: string; label: string; type: 'text' | 'number' | 'date' | 'boolean'; required: boolean }[] };
+  properties: Record<string, unknown>;
+  onPropertiesChange: (props: Record<string, unknown>) => void;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const handleFieldChange = (name: string, value: unknown) => {
+    onPropertiesChange({ ...properties, [name]: value });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="flex-1 flex flex-col p-4"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          onClick={onBack}
+          className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <span className="text-xs text-slate-400">Propriétés de la relation (optionnel)</span>
+      </div>
+
+      <div className="flex-1 overflow-y-auto space-y-4">
+        {schema.properties?.map((prop) => (
+          <div key={prop.name} className="space-y-1.5">
+            <label className="block text-xs font-medium text-slate-400">
+              {prop.label}
+              {prop.required && <span className="text-red-400 ml-1">*</span>}
+            </label>
+            {prop.type === 'text' && (
+              <input
+                type="text"
+                value={(properties[prop.name] as string) || ''}
+                onChange={(e) => handleFieldChange(prop.name, e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-white/10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                placeholder={`Saisir ${prop.label.toLowerCase()}...`}
+              />
+            )}
+            {prop.type === 'number' && (
+              <input
+                type="number"
+                value={(properties[prop.name] as number) ?? ''}
+                onChange={(e) => handleFieldChange(prop.name, e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-white/10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                placeholder={`Saisir ${prop.label.toLowerCase()}...`}
+              />
+            )}
+            {prop.type === 'date' && (
+              <input
+                type="date"
+                value={(properties[prop.name] as string) || ''}
+                onChange={(e) => handleFieldChange(prop.name, e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-white/10 text-sm text-white focus:outline-none focus:border-indigo-500"
+              />
+            )}
+            {prop.type === 'boolean' && (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleFieldChange(prop.name, !properties[prop.name])}
+                  className={cn(
+                    'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                    properties[prop.name] ? 'bg-indigo-600' : 'bg-slate-700'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                      properties[prop.name] ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+                <span className="text-sm text-slate-300">
+                  {properties[prop.name] ? 'Oui' : 'Non'}
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
+        <button
+          onClick={onBack}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-colors"
+        >
+          Retour
+        </button>
+        <button
+          onClick={onNext}
+          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors flex items-center gap-2"
+        >
+          Continuer
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </motion.div>
   );
