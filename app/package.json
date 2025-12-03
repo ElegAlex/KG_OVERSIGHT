@@ -1,7 +1,7 @@
 {
   "name": "kg-oversight",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Knowledge Graph pour la supervision qualité des sous-traitants (essais cliniques)",
   "type": "module",
   "scripts": {
