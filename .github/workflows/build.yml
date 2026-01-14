@@ -10,6 +10,7 @@ on:
       - 'v*'
   pull_request:
     branches: [main]
+  workflow_dispatch:  # Permet le déclenchement manuel
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
